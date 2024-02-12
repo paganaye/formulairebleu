@@ -1,0 +1,1 @@
+{"version":3,"file":"SettingsPage-x1WuXK6t.js","sources":["../../src/pages/SettingsPage.tsx"],"sourcesContent":["import { Component } from \"solid-js\";\n\nconst SettingsPage: Component = () => {\n\n  return (\n    <>HI Settings\n    </>\n  );\n};\n\nexport default SettingsPage;\n"],"names":["SettingsPage"],"mappings":"AAEA,MAAMA,EAA0BA,IAE9B"}
