@@ -1,7 +1,19 @@
 {
   "author": "Pascal GANAYE",
+  "dependencies": {
+    "@types/bootstrap": "^5.2.10",
+    "bootstrap": "^5.3.3",
+    "handlebars": "^4.7.8",
+    "solid-js": "^1.9.4"
+  },
+  "description": "A technology agnostic form builder",
   "devDependencies": {
-    "typescript": "^5.7.3"
+    "tsup": "^8.3.5",
+    "tsup-preset-solid": "^2.2.0",
+    "typescript": "^5.7.3",
+    "validate-package-exports": "^0.8.0",
+    "vite": "^6.0.11",
+    "vite-plugin-solid": "^2.11.0"
   },
   "files": [
     "dist",
@@ -9,12 +21,25 @@
   ],
   "keywords": [],
   "license": "ISC",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "name": "formulairebleu",
   "scripts": {
-    "build": "tsc"
+    "tsc": "tsc",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "validate-package-exports": "validate-package-exports",
+    "vite": "vite"
   },
-  "types": "dist/index.d.ts",
-  "version": "1.0.0"
+  "version": "1.0.4",
+  "browser": {},
+  "typesVersions": {},
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    "import": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  }
 }
