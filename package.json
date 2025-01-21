@@ -1,6 +1,7 @@
 {
   "author": "Pascal GANAYE",
   "devDependencies": {
+    "@types/bootstrap": "^5.2.10",
     "typescript": "^5.7.3"
   },
   "files": [
@@ -16,5 +17,10 @@
     "build": "tsc"
   },
   "types": "dist/index.d.ts",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "handlebars": "^4.7.8",
+    "solid-js": "^1.9.4"
+  }
 }
