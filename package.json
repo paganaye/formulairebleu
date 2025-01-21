@@ -1,46 +1,20 @@
 {
-  "name": "formulaire-bleu",
-  "version": "1.3.21-dev",
-  "scripts": {
-    "~~~~~~~ library ~~~~~~~": "",
-    "library-build": "tsc --build library",
-    "library-push": "pnpm run library-build && clasp push",
-    "~~~~~~~ client ~~~~~~~~": "",
-    "client-dev": "vite dev --open",
-    "client-build": "tsc --build . && vite build",
-    "~~~~~~~ publish ~~~~~~~~": "",
-    "purge-latest": "curl https://purge.jsdelivr.net/gh/paganaye/formulairebleu@latest/dist/index.js",
-    "publish-minor": "node publish.mjs minor",
-    "publish-patch": "node publish.mjs patch",
-    "~~~~~~~ todo ~~~~~~~~": "",
-    "--todo-release": "node releaseProcess.cjs",
-    "--todo-rsync-fb": "rsync -azP --chown=debian:debian --no-p -e ssh --exclude=.git/ --exclude=node_modules . debian@ganaye.com:~/fb",
-    "--todo-deploy-fb": "pnpm run build && pnpm run rsync-fb",
-    "~~~~~~~ pre-install ~~~~~~~~": "",
-    "install-clasp": "pnpm install @google/clasp -g"
-  },
-  "dependencies": {
-    "@popperjs/core": "^2.11.8",
-    "quill": "^1.3.7",
-    "solid-js": "^1.8.12",
-    "tailwind-merge": "^2.2.1"
-  },
+  "author": "Pascal GANAYE",
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.10",
-    "@types/google-apps-script": "^1.0.79",
-    "autoprefixer": "^10.4.17",
-    "axios": "^1.6.7",
-    "daisyui": "^4.6.1",
-    "googleapis": "^131.0.0",
-    "inquirer": "^9.2.13",
-    "postcss": "^8.4.33",
-    "semver": "^7.5.4",
-    "shelljs": "^0.8.5",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.12",
-    "vite-plugin-solid": "^2.9.1"
+    "typescript": "^5.7.3"
   },
-  "author": "",
-  "license": "All Rights Reserved"
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [],
+  "license": "ISC",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "name": "formulairebleu",
+  "scripts": {
+    "build": "tsc"
+  },
+  "types": "dist/index.d.ts",
+  "version": "1.0.0"
 }
