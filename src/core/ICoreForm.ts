@@ -110,7 +110,7 @@ export interface IVariantType<TFormEngine extends IFormViewEngine = IFormViewEng
   defaultValue?: 'void';
 }
 
-export type IVariantMemberType<TKey extends string = string, TType extends IFormType = IFormType> = { key: TKey, label?: string } & TType;
+export type IVariantMemberType<TKind extends string = string, TType extends IFormType = IFormType> = { key: TKind, label?: string } & TType;
 
 export interface IArrayType<TFormEngine extends IFormViewEngine = IFormViewEngine> extends DataTypeBase<'array'> {
   entryType: IFormType<TFormEngine>;

@@ -1,12 +1,12 @@
 import { Component, createEffect, createMemo, createSignal } from 'solid-js';
-import { Box, ArrayBox, getDefaultValue } from '../core/Box';
+import { Box, getDefaultValue } from '../core/Box';
 import { IRenderOptions, OnValueChanged } from './FormVue';
 import { InputRenderer, InputTop } from './InputRenderer';
 import { ArrayRenderer, IColumn, SortOrder } from './ArrayRenderer';
 import { IArrayType, ISelectionList } from '../core/ICoreForm';
 
 export type ArrayInputProps = {
-  box: ArrayBox;
+  box: Box;
   onValueChanged: (options: OnValueChanged) => void;
   label: string;
   options: IRenderOptions;

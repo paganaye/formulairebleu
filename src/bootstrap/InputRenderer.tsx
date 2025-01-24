@@ -104,6 +104,7 @@ export const Title: Component<TitleProps> = (props) => {
   } else {
     title = parentType + " " + String(props.index + 1)
   }
+  
   return (
     <>
       {title}

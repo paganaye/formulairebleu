@@ -89,7 +89,7 @@ const FormBody: Component<FormBodyProps> = (props) => {
   return (
     <div class="container">
       <InputRenderer
-        label={props.form.name}
+        label={props.form.dataType.label ?? props.form.name}
         box={getRootBox() as any}
         onValueChanged={onValueChanged}
         options={options}

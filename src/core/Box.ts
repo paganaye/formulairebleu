@@ -44,8 +44,11 @@ export class Box {
     return this._errors.getValue();
   }
 
+  static lastBoxId: number = 0;
+
   static getUniqueId(): number {
-    return Math.floor(Math.random() * 1_000_000);
+    Box.lastBoxId += 1;
+    return Box.lastBoxId;
   }
 
 
@@ -61,10 +64,12 @@ export class Box {
     this.setJSONValue(value as JSONValue, true);
   }
 
-  setJSONValue(value: JSONValue, validate: boolean): void {
+  setJSONValue(value: JSONValue | undefined, validate: boolean): void {
     const type = this._type.getValue();
     let innerValue: BoxInnerValue;
-
+    if (value === undefined && "defaultValue" in type) {
+      value = type.defaultValue;
+    }
     switch (type.type) {
       case 'number':
         innerValue = value == null ? null : Number(value);
@@ -105,6 +110,22 @@ export class Box {
           innerValue = { type, members };
           break;
         }
+      case 'variant':
+        {
+          const variants = type.variants;
+          let variantKey = (value && typeof value === 'object' && "key" in value) ? value.key : undefined;
+          let variantType = variants.find(v => v.key === variantKey);
+          if (!variantType) { value = null; variantType = variants[0]; }
+          innerValue = {
+            type: type,
+            key: String(variantKey),
+            value: Box.enBox(this, this.name, variantType, value)
+          }
+        }
+      case 'void':
+        break;
+      default:
+        throw new Error("Type not implemented " + (type as any).type)
     }
 
     this._innerValue.setValue(innerValue);
@@ -115,7 +136,7 @@ export class Box {
       const valueObj = value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
       for (const memberType of membersTypes) {
         if ('key' in memberType) {
-          const memberValue = valueObj?.[memberType.key as any] ?? null;
+          const memberValue = valueObj?.[memberType.key as any];
           members.push(Box.enBox(this as any, memberType.key as any, memberType, memberValue) as any);
         }
       }
@@ -138,6 +159,21 @@ export class Box {
       return type.variants;
     } else return [];
   }
+
+  setVariantKey(key: string) {
+    let type = this._type.getValue() as unknown as IVariantType;
+    if (type.type === "variant") {
+      let variantType = type.variants.find(t => t.key == key);
+      if (variantType) {
+        this._innerValue.setValue({
+          type: type,
+          key,
+          value: Box.enBox(this, this.name, variantType, undefined)
+        });
+      }
+    }
+  }
+
 
   getInnerVariant(): BoxInnerVariant | undefined {
     if (this._type.getValue().type === "variant") {
@@ -212,24 +248,16 @@ export type PageNo = {
 
 export type BoxInnerArray = { type: IArrayType; entries: Box[] };
 export type BoxInnerObject = { type: IObjectType; members: Box[] };
-export type BoxInnerVariant = { type: IVariantType, member: IVariantMemberType, value: Box; };
-export type BoxInnerValue = | null
+export type BoxInnerVariant = { type: IVariantType, key: string, value: Box; };
+export type BoxInnerValue = null
   | number
   | string
   | boolean
   | BoxInnerArray
-  | BoxInnerObject;
+  | BoxInnerObject
+  | BoxInnerVariant;
 
 type ErrorString = string;
-
-export type BooleanBox = Box
-export type NumberBox = Box
-export type StringBox = Box
-export type ArrayBox = Box
-export type ObjectBox = Box
-export type VariantBox = Box
-export type ConstBox = Box
-export type VidBox = Box
 
 export function getDefaultValue(type: IFormType): JSONValue {
   switch (type.type) {
