@@ -69,6 +69,19 @@ export class Box {
     if (value === undefined && "defaultValue" in type) {
       value = type.defaultValue;
     }
+
+    let newBoxes = (membersTypes: IObjectMemberType[]) => {
+      let members: Box[] = [];
+      const valueObj = value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
+      for (const memberType of membersTypes) {
+        if ('key' in memberType) {
+          const memberValue = valueObj?.[memberType.key as any];
+          members.push(Box.enBox(this as any, memberType.key as any, memberType, memberValue) as any);
+        }
+      }
+      return members;
+    }
+
     switch (type.type) {
       case 'number':
         innerValue = value == null ? null : Number(value);
@@ -96,20 +109,26 @@ export class Box {
           innerValue = { type, members };
           break;
         }
+
       case 'variant':
         {
           const variants = type.variants;
           let variantKey = (value && typeof value === 'object' && "key" in value) ? value.key : undefined;
           let variantType = variants.find(v => v.key === variantKey);
-          if (!variantType) { value = null; variantType = variants[0]; }
+          if (!variantType) {
+            value = null;
+            variantType = variants[0] ?? { key: 'empty', type: 'void' };
+          }
           innerValue = {
             type: type,
             key: String(variantKey),
-            value: Box.enBox(this, this.name, variantType, value)
+            value: Box.enBox(this, this.name, variantType!, value)
           }
+          break;
         }
       case 'void':
-        break;
+        return
+
       default:
         // case 'date':
         {
@@ -121,17 +140,7 @@ export class Box {
     this._innerValue.setValue(innerValue);
     if (validate) this.validate();
 
-    function newBoxes(membersTypes: IObjectMemberType[]): Box[] {
-      let members: Box[] = [];
-      const valueObj = value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
-      for (const memberType of membersTypes) {
-        if ('key' in memberType) {
-          const memberValue = valueObj?.[memberType.key as any];
-          members.push(Box.enBox(this as any, memberType.key as any, memberType, memberValue) as any);
-        }
-      }
-      return members;
-    }
+
   }
 
   getMembers(): Box[] {

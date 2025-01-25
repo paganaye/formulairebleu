@@ -1,7 +1,7 @@
 import { Component } from 'solid-js';
 import { IRenderOptions, OnValueChanged } from './FormVue';
 import { getUniqueId } from '../core/Utils';
-import { Box, StringBox } from '../core/Box';
+import { Box } from '../core/Box';
 import { InputBottom, InputTop } from './InputRenderer';
 
 export type JSONInputProps = {

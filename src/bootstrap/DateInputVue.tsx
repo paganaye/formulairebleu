@@ -29,14 +29,15 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
     let result: string;
     if (!isFocused()) result = "string";
     else switch (props.box.getType().type as any) {
-      case "date":
-        result = "date";
-        break;
       case "time":
         result = "time";
         break;
       case "datetime":
         result = "datetime-local"
+        break;
+      case "date":
+      default:
+        result = "date";
         break;
     }
     console.log("inputType", result)
@@ -47,7 +48,7 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
     let value = props.box.getJSONValue() as any as (IJSONDate | null)
     let result: string;
     //🇫🇷
-    let dt: Date | null = (!value && typeof value.value != "string") ? null : new Date(Date.parse(value.value))
+    let dt: Date | null = (!value || typeof value.value != "string") ? null : new Date(Date.parse(value.value))
     if (!(dt instanceof Date) || isNaN(dt.getTime())) {
       result = ""
     } else {

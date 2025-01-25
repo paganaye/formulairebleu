@@ -2,11 +2,11 @@ import { Component, For } from 'solid-js';
 import { IRenderOptions, OnValueChanged } from './FormVue';
 import { ConstVue } from './ConstVue';
 import { InputBottom, InputRenderer, InputTop } from './InputRenderer';
-import { ObjectBox } from '../core/Box';
+import { Box } from '../core/Box';
 
 
 export type ObjectInputProps = {
-  box: ObjectBox;
+  box: Box;
   onValueChanged: (options: OnValueChanged) => void;
   label: string;
   options: IRenderOptions;
