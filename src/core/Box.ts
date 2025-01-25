@@ -15,7 +15,6 @@ export class Value<T = any> {
   }
 }
 
-
 export class Box {
   readonly uniqueId: number;
   public pageNo = new Value<PageNo>({} as any);
@@ -91,19 +90,6 @@ export class Box {
       case 'const':
         innerValue = null;
         break;
-      case 'date':
-        {
-          const membersTypes: IKeyedMemberType[] = [
-            { key: "day", type: 'number', minValue: 1, maxValue: 31 },
-            { key: "month", type: 'number', minValue: 1, maxValue: 12 },
-            { key: "year", type: 'number', minValue: 1900, maxValue: 2100 }
-          ]
-          const members = newBoxes(membersTypes);
-          innerValue = {
-            type: { type: 'object', membersTypes }, members
-          };
-          break;
-        }
       case 'object':
         {
           const members = newBoxes(type.membersTypes);
@@ -125,7 +111,11 @@ export class Box {
       case 'void':
         break;
       default:
-        throw new Error("Type not implemented " + (type as any).type)
+        // case 'date':
+        {
+          innerValue = value as any;
+          break;
+        }
     }
 
     this._innerValue.setValue(innerValue);

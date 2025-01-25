@@ -11,6 +11,7 @@ import { OnValueChanged, IRenderOptions, formatTemplateString } from './FormVue'
 import { ErrorsVue, ErrorVue } from './ErrorsVue';
 import { VariantInput } from './VariantInput';
 import { IFormType, IKeyedMemberType } from '../core/ICoreForm';
+import { DateInputVue } from './DateInputVue';
 
 export interface InputRenderProps {
   label: string | undefined;
@@ -34,6 +35,27 @@ export const InputRenderer: Component<InputRenderProps> = (props) => {
       'object': ObjectInput,
       'variant': VariantInput,
       'selectionList': SelectionListInput,
+      'date': DateInputVue,
+      'time': DateInputVue,
+      'datetime': DateInputVue
+
+      // 'file': FileInput,
+      // 'text': TextInput,
+      // 'url': UrlInput,
+      // 'email': EmailInput,
+      // 'phone': PhoneInput,
+      // 'color': ColorInput,
+      // 'password': PasswordInput,
+      // 'range': RangeInput,
+      // 'richtext': RichTextInput,
+      // 'address': AddressInput,
+      // 'location': LocationInput, // map
+      // 'autocomplete': AutocompleteInput,
+      // 'datetimeWithTimezone': DateTimeWithTimezoneInput,
+      // 'signature': SignatureInput,
+      // 'captcha': CaptchaInput,
+      // 'ordering': OrderingInput,
+      // 'rating': RatingInput,      
     };
     result = inputComponents[type?.view?.type ?? 'undefined'] ?? inputComponents[type?.type ?? 'undefined'];
     if (!result && 'selectionList' in type) {
@@ -104,7 +126,7 @@ export const Title: Component<TitleProps> = (props) => {
   } else {
     title = parentType + " " + String(props.index + 1)
   }
-  
+
   return (
     <>
       {title}

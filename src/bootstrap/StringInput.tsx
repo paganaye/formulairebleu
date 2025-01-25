@@ -1,11 +1,11 @@
 import { Component, createEffect } from 'solid-js';
 import { IRenderOptions, OnValueChanged } from './FormVue';
 import { getUniqueId } from '../core/Utils';
-import { StringBox } from '../core/Box';
 import { InputBottom, InputTop } from './InputRenderer';
+import { Box } from '../core/Box';
 
 export type StringInputProps = {
-  box: StringBox;
+  box: Box;
   onValueChanged: (options: OnValueChanged) => void;
   label: string;
   options: IRenderOptions;

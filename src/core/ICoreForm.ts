@@ -25,6 +25,7 @@ export type IFormViewEngine = {
   void?: IView;
   singleSelection?: IView;
   multipleSelection?: IView;
+  knownObject?: IView
 };
 
 
@@ -49,7 +50,8 @@ export type IFormType<TFormEngine extends IFormViewEngine = IFormViewEngine> =
   | IObjectType<TFormEngine>
   | IStringType<TFormEngine>
   | IVariantType<TFormEngine>
-  | IVoidType<TFormEngine>;
+  | IVoidType<TFormEngine>
+  | IKnownType<TFormEngine>;
 
 interface DataTypeBase<TPrimitiveType extends PrimitiveType> {
   type: TPrimitiveType;
@@ -82,6 +84,11 @@ export interface INumberType<TFormEngine extends IFormViewEngine = IFormViewEngi
 export interface IObjectType<TFormEngine extends IFormViewEngine = IFormViewEngine> extends DataTypeBase<'object'> {
   membersTypes: IObjectMemberType[];
   view?: TFormEngine['object'];
+}
+
+
+export interface IKnownType<TFormEngine extends IFormViewEngine = IFormViewEngine> extends DataTypeBase<KnownObject> {
+  view?: TFormEngine['knownObject'];
 }
 
 export const DATE_OBJECT = Symbol("DATE_OBJECT")
@@ -138,12 +145,17 @@ export type PrimitiveType =
   | 'array'
   | 'boolean'
   | 'const'
-  | 'date'
   | 'number'
   | 'object'
   | 'string'
   | 'variant'
-  | 'void';
+  | 'void'
+  | KnownObject;
+
+export type KnownObject =
+  | 'date'
+  | 'time'
+  | 'datetime';
 
 
 export type ISelectionEntry = {

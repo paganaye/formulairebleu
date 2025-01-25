@@ -75,21 +75,12 @@ form1 = {
     name: 'MyFirstForm',
     version: '1',
     dataType: {
-        type: 'variant',
-        help: "This is an object wit str2, num2, date2 and bool2 members.",
-        label: "Object2 label here",
-        variants: [
-            { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
-            { key: 'num1', type: 'number', label: 'A simple number', defaultValue: 123, help: 'Here you can enter an unconstrained number with default view.' },
-            { key: 'bool1', type: 'boolean', label: 'A simple boolean', defaultValue: false, help: 'Here you can enter an unconstrained boolean with default view.' },
-            { key: 'date1', type: 'date', label: 'A simple date', defaultValue: "", help: 'Here you can enter an unconstrained boolean with default view.' },
-        ]
-
+        type: 'time', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.'
     }
 }
 
 
-let [getValue, setValue] = createSignal({})
+let [getValue, setValue] = createSignal({ type: "date " })
 
 
 function App() {
