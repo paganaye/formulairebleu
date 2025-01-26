@@ -39,21 +39,22 @@ export class FormContext {
   paginate(rootBox: Box) {
     let pageNo = 1;
     let lineNo = 0
+    let firstNonObjectSeen: boolean = false;
 
     let recurse = (box: Box) => {
       let originalType = box.getType();
       let actualType = this.getActualType(originalType)
-      if (originalType.pageBreak || actualType.pageBreak) {
+      if ((originalType.pageBreak || actualType.pageBreak) && lineNo > 0) {
         pageNo += 1;
         lineNo = 0;
       }
-      lineNo += 1;
       let startPage = pageNo;
       let startLine = lineNo;
 
       let typeType = actualType.type;
       switch (typeType) {
         case 'array':
+          firstNonObjectSeen = true;
           let entries = box.getEntries()
           for (let e of entries) {
             recurse(e)
@@ -76,6 +77,7 @@ export class FormContext {
         case 'number':
         case 'string':
         case 'time':
+          lineNo += 1;
           break;
         case 'void':
           break;
