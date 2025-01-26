@@ -19,13 +19,13 @@ Styles.add(".buttons.btn:focus", {
 
 export const Buttons: Component<DialogButtonsProps> = (props) => {
   return <For each={props.buttons}>
-    {(button) => {
+      {(button) => {
       return (
         <button tabIndex={0}
-          type="button"
-          class={"buttons btn " + button.class}
-          onClick={() => button.action()}
+            type="button"
+            class={"buttons btn " + button.class}
+            onClick={() => button.action()}
         > {button.text}</button>);
-    }}
+      }}
   </For>;
 };

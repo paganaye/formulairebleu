@@ -19,6 +19,7 @@ export class FormContext {
   templates: Record<string, IFormType>;
   isReadonly: boolean = false;
   readonly pageNo = new Value(0);
+  readonly pageCount = new Value(1);
 
   constructor(templates: Record<string, IFormType>) {
     this.templates = templates;
@@ -34,6 +35,66 @@ export class FormContext {
     }
     return templateType ?? type;
   }
+
+  paginate(rootBox: Box) {
+    let pageNo = 1;
+    let lineNo = 0
+
+    let recurse = (box: Box) => {
+      let originalType = box.getType();
+      let actualType = this.getActualType(originalType)
+      if (originalType.pageBreak || actualType.pageBreak) {
+        pageNo += 1;
+        lineNo = 0;
+      }
+      lineNo += 1;
+      let startPage = pageNo;
+      let startLine = lineNo;
+
+      let typeType = actualType.type;
+      switch (typeType) {
+        case 'array':
+          let entries = box.getEntries()
+          for (let e of entries) {
+            recurse(e)
+          }
+          break;
+        case 'object':
+          let members = box.getMembers()
+          for (let m of members) {
+            recurse(m)
+          }
+          break;
+        case 'variant':
+          let variant = box.getInnerVariant();
+          recurse(variant.value)
+          break;
+        case 'boolean':
+        case 'const':
+        case 'date':
+        case 'datetime':
+        case 'number':
+        case 'string':
+        case 'time':
+          break;
+        case 'void':
+          break;
+        default: {
+          //
+        }
+      }
+      box.pageNo.setValue({
+        startPage,
+        startLine,
+        endPage: pageNo,
+        endLine: lineNo
+      })
+    }
+
+    recurse(rootBox)
+    this.pageCount.setValue(pageNo);
+  }
+
 
 }
 
@@ -255,65 +316,6 @@ export class Box {
   public static unBox(value: Box): JSONValue {
     let val = value.getJSONValue();
     return val;
-  }
-
-  static paginate(rootBox: Box, context: FormContext) {
-    let pageNo = 1;
-    let lineNo = 0
-
-    let recurse = (box: Box) => {
-      let actualType = context.getActualType(box.getType())
-      if (actualType.pageBreak) {
-        if (lineNo > 0) {
-          pageNo += 1;
-          lineNo = 0;
-        }
-      }
-      lineNo += 1;
-      let startPage = pageNo;
-      let startLine = lineNo;
-
-      let typeType = actualType.type;
-      switch (typeType) {
-        case 'array':
-          let entries = box.getEntries()
-          for (let e of entries) {
-            recurse(e)
-          }
-          break;
-        case 'object':
-          let members = box.getMembers()
-          for (let m of members) {
-            recurse(m)
-          }
-          break;
-        case 'variant':
-          let variant = box.getInnerVariant();
-          recurse(variant.value)
-          break;
-        case 'boolean':
-        case 'const':
-        case 'date':
-        case 'datetime':
-        case 'number':
-        case 'string':
-        case 'time':
-          break;
-        case 'void':
-          break;
-        default: {
-          //
-        }
-      }
-      box.pageNo.setValue({
-        startPage,
-        startLine,
-        endPage: pageNo,
-        endLine: lineNo
-      })
-    }
-
-    recurse(rootBox)
   }
 
 }

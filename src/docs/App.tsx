@@ -1,7 +1,7 @@
 import { createSignal } from 'solid-js'
-import { BootstrapFormVue } from '../bootstrap/BootstrapFormVue'
 import { IBootstrapForm } from '../bootstrap/IBootstrapForm'
 import { ensureBootstrapLoaded } from '../bootstrap/ensureBootstrapLoaded'
+import { BootstrapFormVue } from '../bootstrap/BootstrapFormVue';
 
 
 ensureBootstrapLoaded();
@@ -18,7 +18,35 @@ let form1: IBootstrapForm = {
         help: "Parent object help",
         label: "Parent Object Label",
         membersTypes: [
-            { key: 'tel', type: 'telephone' as any },
+            { key: 'tel1', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel2', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel3', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel4', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel5', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
+            { key: 'tel', type: 'telephone' as any, pageBreak: true },
             {
                 key: 'o1',
                 type: 'object',

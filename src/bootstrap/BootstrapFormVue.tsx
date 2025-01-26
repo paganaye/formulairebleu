@@ -16,6 +16,7 @@ import { SelectionListInput } from './SelectionListInput';
 import { StringInput } from './StringInput';
 import { VariantInput } from './VariantInput';
 import { ErrorVue } from './ErrorsVue';
+import { Pager } from './Pager';
 
 export class BootstrapContext extends FormContext {
   constructor(templates: Record<string, IFormType>) {
@@ -77,7 +78,7 @@ const FormBody: Component<FormBodyProps> = (props) => {
     currentJSONString = propJSONString;
     const newBox = Box.enBox(null, props.form.name, props.form.dataType, props.value);
     setRootBox(newBox);
-    Box.paginate(newBox, props.context);
+    props.context.paginate(newBox);
 
   });
 
@@ -89,7 +90,7 @@ const FormBody: Component<FormBodyProps> = (props) => {
     props.setValue(jsonValue);
 
     if (onValueChanged?.pagesChanged) {
-      Box.paginate(rootBox, props.context);
+      props.context.paginate(rootBox);
     }
   }
 
@@ -193,10 +194,9 @@ export const BootstrapFormVue: Component<IFormProps> = (props) => {
         context={context}
         {...props}
         header=<h1>{props.form.name}</h1>
-        footer={<Buttons buttons={[
-          { text: "<", action: () => { pageNo.setValue(pageNo.getValue() - 1) }, class: "" },
-          { text: String(pageNo.getValue()), action: () => { }, class: "" },
-          { text: ">", action: () => { pageNo.setValue(pageNo.getValue() + 1) }, class: "" }]} />
+        footer={<>
+          <Pager pageCount={context.pageCount.getValue()} onPageSelected={p => pageNo.setValue(p)} selectedPage={pageNo.getValue()} />
+        </>
         }
       />
     </main >

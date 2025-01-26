@@ -1,15 +1,14 @@
 import { Component, createSignal, createMemo, For, Show, JSX, onCleanup } from "solid-js";
-import { formatTemplateString, BootstrapContext } from "./BootstrapFormVue";
 import { keepFocus } from "../core/Utils";
 import { getUniqueId } from "../core/Utils";
-import { Value } from "../core/Box";
+import { FormContext, Value } from "../core/Box";
 import { Styles } from "../core/Styles";
 import { Box } from "../core/Box";
 import { IBootstrapViewEngine, IBootstrapListView } from "./IBootstrapForm";
 import { JSONObject, JSONValue } from "../core/Utils";
 
 export type ArrayRendererProps<T = any> = {
-  context: BootstrapContext;
+  context: FormContext;
   viewAsType: IBootstrapViewEngine['array'] | undefined;
   label: string;
   // entryType: IDataType;
@@ -411,7 +410,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
       <ul class="list-group">
         <For each={props.entries}>
           {(entry) => {
-            const title = formatTemplateString(view?.templateString, entry as any);
+            const title = "TODO"; //formatTemplateString(view?.templateString, entry as any);
             const inputType = props.selectionType === "multiple" ? "checkbox" : "radio";
             return (
               <li class="list-group-item" onClick={handleListItemClick} style="cursor: pointer;">
