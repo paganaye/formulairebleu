@@ -32,8 +32,7 @@ export const InputRenderer: Component<InputRenderProps> = (props) => {
   })
 
   return <>
-    <pre>{JSON.stringify(props.box?.pageNo?.getValue())}</pre>
-    <Show when={isVisible()} fallback={(<ErrorVue error={`${props.label} box is null`} />)}>
+    <Show when={isVisible()}>
       <Dynamic component={inputComponent()} {...props} />
     </Show>
   </>;
