@@ -1,5 +1,5 @@
 import { Component, For } from 'solid-js';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
 import { ConstVue } from './ConstVue';
 import { InputBottom, InputRenderer, InputTop } from './InputRenderer';
 import { Box } from '../core/Box';
@@ -7,10 +7,10 @@ import { Box } from '../core/Box';
 
 export type ObjectInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   level: number;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 export const ObjectInput: Component<ObjectInputProps> = (props) => {
@@ -29,7 +29,7 @@ export const ObjectInput: Component<ObjectInputProps> = (props) => {
                 box={sub}
                 level={props.level + 1}
                 onValueChanged={(o) => props.onValueChanged(o)}
-                options={props.options} />
+                context={props.context} />
             </div>
           );
         }}

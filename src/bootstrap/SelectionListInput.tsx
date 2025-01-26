@@ -1,6 +1,6 @@
 import { Component, createMemo, createSignal } from 'solid-js';
 import { Box } from '../core/Box';
-import { OnValueChanged, IRenderOptions } from './FormVue';
+import { OnValueChanged, BootstrapContext } from './BootstrapFormVue';
 import { ErrorVue } from './ErrorsVue';
 import { SingleSelectionVue } from './SingleSelectionVue';
 import { MultipleSelectionVue } from './MultipleSelectionVue';
@@ -9,9 +9,9 @@ import { IBootstrapMultipleSelectionView, IBootstrapSingleSelectionView } from '
 
 export type SelectionListInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 export const SelectionListInput: Component<SelectionListInputProps> = (props) => {

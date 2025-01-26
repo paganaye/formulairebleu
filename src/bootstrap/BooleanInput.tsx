@@ -1,5 +1,5 @@
 import { Component, createMemo } from 'solid-js';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
 import { getUniqueId } from '../core/Utils';
 import { Styles } from '../core/Styles';
 import { InputBottom, InputTop } from './InputRenderer';
@@ -7,9 +7,9 @@ import { Box } from '../core/Box';
 
 export type BooleanInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 Styles.add(".form-control.for-checkbox.form-switch", {
@@ -55,7 +55,7 @@ export const BooleanInput: Component<BooleanInputProps> = (props) => {
           class="form-check-input"
           id={id}
           checked={props.box.getJSONValue() === true} // Assurez que seules les valeurs `true` cochent le champ
-          readOnly={props.options.readonly}
+          readOnly={props.context.isReadonly}
           onBlur={(e) => props.box.validate()}
           onChange={(e) => {
             // Bascule entre true et false (l’état indeterminate est géré séparément)

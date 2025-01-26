@@ -1,16 +1,16 @@
 import { Component, createEffect, createMemo, createSignal } from 'solid-js';
 import { Box, getDefaultValue } from '../core/Box';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { OnValueChanged, BootstrapContext } from './BootstrapFormVue';
 import { InputRenderer, InputTop } from './InputRenderer';
 import { ArrayRenderer, IColumn, SortOrder } from './ArrayRenderer';
 import { IArrayType, ISelectionList } from '../core/ICoreForm';
 
 export type ArrayInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   level: number;
-  options: IRenderOptions;
+  context: BootstrapContext;
   selectionList?: ISelectionList;
   isSelected?: (item: any) => boolean;
   onSelectionChanged?: (item: any, newValue: boolean) => void;
@@ -29,7 +29,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
   }
 
   function addButton() {
-    return props.options.readonly ? <></>
+    return props.context.isReadonly ? <></>
       : <button
         class="btn btn-sm btn-secondary mt-2"
         onClick={() => {
@@ -43,7 +43,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
   }
 
   function deleteButton(index: () => number) {
-    return props.options.readonly ? <></>
+    return props.context.isReadonly ? <></>
       : <button
         class="btn btn-sm btn-secondary mt-2"
         onClick={() => {
@@ -65,7 +65,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
       onValueChanged={() => {
         props.onValueChanged({});
       }}
-      options={props.options} />;
+      context={props.context} />;
   }
 
   const columns = createMemo(() => {
@@ -89,7 +89,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
       onValueChanged={(o) => {
         props.onValueChanged(o)
       }}
-      options={props.options}
+      context={props.context}
     />)
   }
 
@@ -97,7 +97,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
     <ArrayRenderer
       entries={getEntries()}
       viewAsType={props.box.getType().view as any}
-      options={props.options}
+      context={props.context}
       label={props.label}
       addButton={addButton}
       deleteButton={deleteButton}

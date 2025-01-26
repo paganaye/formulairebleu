@@ -1,10 +1,12 @@
 import { IQuery } from "./IQuery";
 import { JSONValue } from "./Utils";
 import { ArrayValidation, BooleanValidation, DateValidation, NumberValidation, StringValidation, Validation } from "./Validation";
+import { Component, JSX } from 'solid-js';
 
 export interface ICoreForm<TFormEngine extends IFormViewEngine = IFormViewEngine> {
   version: '1';
   name: string;
+  templates?: Record<string, IFormType<IFormViewEngine>>;
   dataType: IFormType<TFormEngine>;
 }
 
@@ -132,7 +134,9 @@ export interface IVoidType<TFormEngine extends IFormViewEngine = IFormViewEngine
 
 
 export type IObjectMemberType = IKeyedMemberType | IConstType;
-export type IKeyedMemberType<TKey extends string = string, TType extends IFormType<IFormViewEngine> = IFormType<IFormViewEngine>> = { key: TKey } & TType;
+export type IKeyedMemberType<TKey extends string = string, TType extends IFormType<IFormViewEngine> = IFormType<IFormViewEngine>> = {
+  key: TKey
+} & TType;
 
 export interface IConstType<TFormEngine extends IFormViewEngine = IFormViewEngine> extends DataTypeBase<'const'> {
   value: string;

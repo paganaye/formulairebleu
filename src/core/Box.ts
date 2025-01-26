@@ -15,9 +15,32 @@ export class Value<T = any> {
   }
 }
 
+export class FormContext {
+  templates: Record<string, IFormType>;
+  isReadonly: boolean = false;
+  readonly pageNo = new Value(0);
+
+  constructor(templates: Record<string, IFormType>) {
+    this.templates = templates;
+  }
+
+  getActualType(type: IFormType): IFormType {
+    let viewType = type?.view?.type;
+    let templateType: IFormType | undefined;
+    if (viewType) templateType = this.templates[viewType];
+    if (!templateType) {
+      let typeType = type?.type;
+      templateType = this.templates[typeType];
+    }
+    return templateType ?? type;
+  }
+
+}
+
+
 export class Box {
   readonly uniqueId: number;
-  public pageNo = new Value<PageNo>({} as any);
+  public pageNo = new Value<IPageNo>(undefined);
   private _innerValue: Value<BoxInnerValue>;
   private _type: Value<IFormType>;
   private _errors: Value<ErrorString[]>;
@@ -173,7 +196,6 @@ export class Box {
     }
   }
 
-
   getInnerVariant(): BoxInnerVariant | undefined {
     if (this._type.getValue().type === "variant") {
       let value = this._innerValue.getValue();
@@ -234,16 +256,75 @@ export class Box {
     let val = value.getJSONValue();
     return val;
   }
+
+  static paginate(rootBox: Box, context: FormContext) {
+    let pageNo = 1;
+    let lineNo = 0
+
+    let recurse = (box: Box) => {
+      let actualType = context.getActualType(box.getType())
+      if (actualType.pageBreak) {
+        if (lineNo > 0) {
+          pageNo += 1;
+          lineNo = 0;
+        }
+      }
+      lineNo += 1;
+      let startPage = pageNo;
+      let startLine = lineNo;
+
+      let typeType = actualType.type;
+      switch (typeType) {
+        case 'array':
+          let entries = box.getEntries()
+          for (let e of entries) {
+            recurse(e)
+          }
+          break;
+        case 'object':
+          let members = box.getMembers()
+          for (let m of members) {
+            recurse(m)
+          }
+          break;
+        case 'variant':
+          let variant = box.getInnerVariant();
+          recurse(variant.value)
+          break;
+        case 'boolean':
+        case 'const':
+        case 'date':
+        case 'datetime':
+        case 'number':
+        case 'string':
+        case 'time':
+          break;
+        case 'void':
+          break;
+        default: {
+          //
+        }
+      }
+      box.pageNo.setValue({
+        startPage,
+        startLine,
+        endPage: pageNo,
+        endLine: lineNo
+      })
+    }
+
+    recurse(rootBox)
+  }
+
 }
 
-
 // Supporting types
-export type PageNo = {
+export interface IPageNo {
   startPage: number;
   startLine: number;
   endPage: number;
   endLine: number;
-};
+}
 
 export type BoxInnerArray = { type: IArrayType; entries: Box[] };
 export type BoxInnerObject = { type: IObjectType; members: Box[] };

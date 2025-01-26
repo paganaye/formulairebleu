@@ -1,67 +1,25 @@
 import { Component, createEffect, createMemo, createSignal, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
-import { ArrayInput } from './ArrayInput';
-import { BooleanInput } from './BooleanInput';
-import { NumberInput } from './NumberInput';
-import { ObjectInput } from './ObjectInput';
-import { SelectionListInput } from './SelectionListInput';
-import { StringInput } from './StringInput';
 import { Box } from '../core/Box';
-import { OnValueChanged, IRenderOptions, formatTemplateString } from './FormVue';
+import { OnValueChanged, BootstrapContext, formatTemplateString } from './BootstrapFormVue';
 import { ErrorsVue, ErrorVue } from './ErrorsVue';
-import { VariantInput } from './VariantInput';
 import { IFormType, IKeyedMemberType } from '../core/ICoreForm';
-import { DateInputVue } from './DateInputVue';
 
 export interface InputRenderProps {
   label: string | undefined;
   level: number;
   box?: Box;
-  onValueChanged: (options: OnValueChanged) => void;
-  options: IRenderOptions;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
+  context: BootstrapContext;
 }
 
 
 export const InputRenderer: Component<InputRenderProps> = (props) => {
-  let isVisible = undefined;
   let [inputComponent, setInputComponent] = createSignal<Component<any>>();
 
   function inferComponentFromType(type: IFormType): Component<any> {
     let result: Component<any>;
-    const inputComponents: Record<string, Component<any>> = {
-      'string': StringInput,
-      'boolean': BooleanInput,
-      'number': NumberInput,
-      'array': ArrayInput,
-      'object': ObjectInput,
-      'variant': VariantInput,
-      'selectionList': SelectionListInput,
-      'date': DateInputVue,
-      'time': DateInputVue,
-      'datetime': DateInputVue
-
-      // 'file': FileInput,
-      // 'text': TextInput,
-      // 'url': UrlInput,
-      // 'email': EmailInput,
-      // 'phone': PhoneInput,
-      // 'color': ColorInput,
-      // 'password': PasswordInput,
-      // 'range': RangeInput,
-      // 'richtext': RichTextInput,
-      // 'address': AddressInput,
-      // 'location': LocationInput, // map
-      // 'autocomplete': AutocompleteInput,
-      // 'datetimeWithTimezone': DateTimeWithTimezoneInput,
-      // 'signature': SignatureInput,
-      // 'captcha': CaptchaInput,
-      // 'ordering': OrderingInput,
-      // 'rating': RatingInput,      
-    };
-    result = inputComponents[type?.view?.type ?? 'undefined'] ?? inputComponents[type?.type ?? 'undefined'];
-    if (!result && 'selectionList' in type) {
-      return () => <ErrorVue error={`${props.label} type is un ${JSON.stringify(type?.selectionList ?? null)}`} />
-    }
+    result = props.context.getRenderer(type)
     return result;
   }
 
@@ -69,12 +27,13 @@ export const InputRenderer: Component<InputRenderProps> = (props) => {
     setInputComponent(() => inferComponentFromType(props.box?.getType() as any));
   })
 
-  if (props.options.filter) {
-    isVisible = props.options.filter(props);
-  }
+  const isVisible = createMemo(() => {
+    return props.context.isBoxVisible(props.box);
+  })
 
   return <>
-    <Show when={props.box} fallback={(<ErrorVue error={`${props.label} box is null`} />)}>
+    <pre>{JSON.stringify(props.box?.pageNo?.getValue())}</pre>
+    <Show when={isVisible()} fallback={(<ErrorVue error={`${props.label} box is null`} />)}>
       <Dynamic component={inputComponent()} {...props} />
     </Show>
   </>;
@@ -83,7 +42,7 @@ export const InputRenderer: Component<InputRenderProps> = (props) => {
 
 type InputTopProps = {
   box: Box;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 export const InputTop: Component<InputTopProps> = (props) => {
@@ -96,7 +55,7 @@ export const InputTop: Component<InputTopProps> = (props) => {
 
 type InputBottomProps = {
   box: Box;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 export const InputBottom: Component<InputBottomProps> = (props) => {

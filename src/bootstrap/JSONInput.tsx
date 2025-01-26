@@ -1,14 +1,14 @@
 import { Component } from 'solid-js';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
 import { getUniqueId } from '../core/Utils';
 import { Box } from '../core/Box';
 import { InputBottom, InputTop } from './InputRenderer';
 
 export type JSONInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 // unfinished
@@ -24,7 +24,7 @@ export const JSONInput: Component<JSONInputProps> = (props) => {
           id={id}
           class="form-control"
           value={(props.box.getJSONValue() || "") as any}
-          readOnly={props.options.readonly}
+          readOnly={props.context.isReadonly}
           placeholder=""
           onInput={(e) => {
             let newValue = String(e.currentTarget.value);

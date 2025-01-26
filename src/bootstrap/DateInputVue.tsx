@@ -1,14 +1,14 @@
 import { Component, createMemo, createSignal, Show } from 'solid-js';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
 import { getUniqueId } from '../core/Utils';
 import { InputBottom, InputTop } from './InputRenderer';
 import { Box } from '../core/Box';
 
 export type DateInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 export interface IJSONDate {
@@ -83,7 +83,7 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
             id={id}
             class="form-control number-input"
             value={inputValue()}
-            readOnly={props.options.readonly || !isFocused()}
+            readOnly={props.context.isReadonly || !isFocused()}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
               if (!isFocused()) {

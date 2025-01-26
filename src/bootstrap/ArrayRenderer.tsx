@@ -1,6 +1,5 @@
 import { Component, createSignal, createMemo, For, Show, JSX, onCleanup } from "solid-js";
-//import { Box } from "./Box";
-import { formatTemplateString, IRenderOptions } from "./FormVue";
+import { formatTemplateString, BootstrapContext } from "./BootstrapFormVue";
 import { keepFocus } from "../core/Utils";
 import { getUniqueId } from "../core/Utils";
 import { Value } from "../core/Box";
@@ -10,7 +9,7 @@ import { IBootstrapViewEngine, IBootstrapListView } from "./IBootstrapForm";
 import { JSONObject, JSONValue } from "../core/Utils";
 
 export type ArrayRendererProps<T = any> = {
-  options: IRenderOptions;
+  context: BootstrapContext;
   viewAsType: IBootstrapViewEngine['array'] | undefined;
   label: string;
   // entryType: IDataType;
@@ -434,20 +433,6 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
       {props.addButton?.()}
     </>);
   }
-
-
-  // function onViewChanged(value: string) {
-  //   console.log("onViewInput", value);
-  //   viewAsType.setValue(value as any);
-  // }
-
-  let entries = [
-    { key: "table", label: "Table" },
-    { key: "tabs", label: "Tabs" },
-    { key: "accordion", label: "Accordion" },
-    { key: "list", label: "List" },
-    { key: "flow", label: "Flow" }
-  ];
 
   const render = createMemo(() => {
     const renderFunctions = {

@@ -1,14 +1,14 @@
 import { Component, createEffect } from 'solid-js';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
 import { getUniqueId } from '../core/Utils';
 import { InputBottom, InputTop } from './InputRenderer';
 import { Box } from '../core/Box';
 
 export type StringInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 let masks: Record<string, RegExp> = {
@@ -66,7 +66,7 @@ export const StringInput: Component<StringInputProps> = (props) => {
           id={id}
           class="form-control"
           value={(props.box.getJSONValue() || "") as any}
-          readOnly={props.options.readonly}
+          readOnly={props.context.isReadonly}
           placeholder={"" /*placeholder is required for form-floating to work*/}
           required={props.box.getType().mandatory}
           onInput={(e) => {

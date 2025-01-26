@@ -1,15 +1,15 @@
 import { Component, createEffect } from 'solid-js';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
 import { InputBottom, InputRenderer, InputTop } from './InputRenderer';
 import { Box, Value } from '../core/Box';
 import { SingleSelectionVue } from './SingleSelectionVue';
 
 export type VariantInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   level: number;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 
@@ -33,7 +33,7 @@ export const VariantInput: Component<VariantInputProps> = (props) => {
     <>
       <InputTop {...props} />
       <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={variantKeyString.getValue()} entries={entries} setSelectedKey={(k) => onViewChanged(String(k))} label={"View as:"} />
-      <InputRenderer box={props.box.getInnerVariant()?.value} label={props.label} onValueChanged={props.onValueChanged} options={props.options} level={props.level} />
+      <InputRenderer box={props.box.getInnerVariant()?.value} label={props.label} onValueChanged={props.onValueChanged} context={props.context} level={props.level} />
       <InputBottom {...props} />
     </>
   );

@@ -1,5 +1,5 @@
 import { Component, createSignal, Show } from 'solid-js';
-import { IRenderOptions, OnValueChanged } from './FormVue';
+import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
 import { getUniqueId } from '../core/Utils';
 import { InputBottom, InputTop } from './InputRenderer';
 import { Styles } from '../core/Styles';
@@ -8,9 +8,9 @@ import { JSONValue } from '../core/Utils';
 
 export type NumberInputProps = {
   box: Box;
-  onValueChanged: (options: OnValueChanged) => void;
+  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  options: IRenderOptions;
+  context: BootstrapContext;
 };
 
 Styles.add('input.number-input', {
@@ -58,7 +58,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
                 ? (props.box.getJSONValue() ?? '') as any
                 : formatNumber(props.box.getJSONValue())
             }
-            readOnly={props.options.readonly || !isFocused()}
+            readOnly={props.context.isReadonly || !isFocused()}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
               if (!isFocused()) {

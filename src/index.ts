@@ -3,7 +3,7 @@
 import { ensureBootstrapLoaded } from './bootstrap/ensureBootstrapLoaded'
 export * from './bootstrap/IBootstrapForm';
 export * from './core/ICoreForm';
-export * from './bootstrap/FormVue';
+export * from './bootstrap/BootstrapFormVue';
 
 ensureBootstrapLoaded();
 
