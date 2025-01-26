@@ -21,8 +21,8 @@ export class FormContext {
   readonly pageNo = new Value(0);
   readonly pageCount = new Value(1);
 
-  constructor(templates: Record<string, IFormType>) {
-    this.templates = templates;
+  constructor(templates?: Record<string, IFormType>) {
+    this.templates = templates ?? {};
   }
 
   getActualType(type: IFormType): IFormType {

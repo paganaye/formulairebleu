@@ -22,9 +22,7 @@ export function closeTopModal() {
   }
 }
 
-
-
-const InnerModalVue: Component<InnerModalProps> = (props) => {
+export const InnerModalVue: Component<InnerModalProps> = (props) => {
   let animationTimeout: number | undefined;
   const [showBackdrop, setShowBackdrop] = createSignal(false);
   const [showModal, setShowModal] = createSignal(false);
