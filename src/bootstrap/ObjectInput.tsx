@@ -9,6 +9,7 @@ export type ObjectInputProps = {
   box: Box;
   onValueChanged: (options: OnValueChanged) => void;
   label: string;
+  level: number;
   options: IRenderOptions;
 };
 
@@ -26,6 +27,7 @@ export const ObjectInput: Component<ObjectInputProps> = (props) => {
               <InputRenderer
                 label={sub.getType().label ?? sub.name}
                 box={sub}
+                level={props.level + 1}
                 onValueChanged={(o) => props.onValueChanged(o)}
                 options={props.options} />
             </div>

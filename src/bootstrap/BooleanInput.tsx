@@ -40,13 +40,13 @@ export const BooleanInput: Component<BooleanInputProps> = (props) => {
     inputRef = ref;
     inputRef.indeterminate = props.box.getJSONValue() === null;
   }
-  return (
+  return (<>
+    <InputTop {...props} />
     <div class={`d-flex flex-column form-control for-checkbox position-relative ${isSwitch() ? "form-switch" : ""}`}
       onMouseDown={(e) => {
         e.preventDefault();
         inputRef?.focus();
       }}>
-      <InputTop {...props} />
       <div class="d-flex flex-row">
         <input
           tabindex="0"
@@ -71,5 +71,5 @@ export const BooleanInput: Component<BooleanInputProps> = (props) => {
       </div>
       <InputBottom {...props} />
     </div>
-  );
+  </>);
 };

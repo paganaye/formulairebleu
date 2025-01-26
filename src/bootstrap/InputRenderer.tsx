@@ -15,6 +15,7 @@ import { DateInputVue } from './DateInputVue';
 
 export interface InputRenderProps {
   label: string | undefined;
+  level: number;
   box?: Box;
   onValueChanged: (options: OnValueChanged) => void;
   options: IRenderOptions;

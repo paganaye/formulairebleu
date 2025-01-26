@@ -1,4 +1,4 @@
-import { Component, createEffect, Show } from 'solid-js';
+import { Component, createEffect, JSX, Show } from 'solid-js';
 import { createSignal } from "solid-js";
 import ModalVue, { PopupVue } from './ModalVue';
 import { Buttons } from "./Buttons";
@@ -8,31 +8,6 @@ import { ICoreForm } from '../core/ICoreForm';
 import { Box } from '../core/Box';
 import { JSONValue } from '../core/Utils';
 
-
-interface IFormProps {
-  form: ICoreForm,
-  value: JSONValue,
-  setValue: (v: JSONValue) => void,
-}
-
-export const FormVue: Component<IFormProps> = (props) => {
-  const [getPageNo, setPageNo] = createSignal(1);
-  return (
-    <main>
-      <p>this is form vue</p>
-      <FormBody
-        {...props}
-        pageNo={getPageNo()}
-      />
-      <Buttons buttons={[
-        { text: "<", action: () => { setPageNo(getPageNo() - 1) }, class: "" },
-        { text: String(getPageNo()), action: () => { }, class: "" },
-        { text: ">", action: () => { setPageNo(getPageNo() + 1) }, class: "" }]} />
-    </main >
-  );
-
-}
-
 export interface IRenderOptions {
   filter?: (input: InputRenderProps) => boolean;
   readonly: boolean;
@@ -41,6 +16,8 @@ export interface IRenderOptions {
 export type OnValueChanged = { pagesChanged?: boolean };
 
 interface FormBodyProps extends IFormProps {
+  header?: JSX.Element;
+  footer?: JSX.Element;
   pageNo?: number
 }
 
@@ -88,12 +65,15 @@ const FormBody: Component<FormBodyProps> = (props) => {
 
   return (
     <div class="container">
+      {props.header}
       <InputRenderer
         label={props.form.dataType.label ?? props.form.name}
+        level={1}
         box={getRootBox() as any}
         onValueChanged={onValueChanged}
         options={options}
       />
+      {props.footer}
     </div>
   );
 };
@@ -163,4 +143,29 @@ export function formatTemplateString(templateString: string, data: Record<string
     errorSpan.innerText = String(e);
     return errorSpan;
   }
+}
+
+interface IFormProps {
+  form: ICoreForm,
+  value: JSONValue,
+  setValue: (v: JSONValue) => void,
+}
+
+export const FormVue: Component<IFormProps> = (props) => {
+  const [getPageNo, setPageNo] = createSignal(1);
+  return (
+    <main>
+      <FormBody
+        {...props}
+        pageNo={getPageNo()}
+        header=<h1>{props.form.name}</h1>
+        footer={<Buttons buttons={[
+          { text: "<", action: () => { setPageNo(getPageNo() - 1) }, class: "" },
+          { text: String(getPageNo()), action: () => { }, class: "" },
+          { text: ">", action: () => { setPageNo(getPageNo() + 1) }, class: "" }]} />
+        }
+      />
+    </main >
+  );
+
 }

@@ -44,30 +44,34 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
     return result;
   })
 
+  function isValidDate(dt: Date | undefined) {
+    const maxDate = new Date("9999-12-31T23:59:59"); // Limite maximale
+    return (dt instanceof Date && !isNaN(dt.getTime()) && dt <= maxDate)
+  }
+
   const inputValue = createMemo(() => {
     let value = props.box.getJSONValue() as any as (IJSONDate | null)
     let result: string;
-    //🇫🇷
+    // 🇫🇷
     let dt: Date | null = (!value || typeof value.value != "string") ? null : new Date(Date.parse(value.value))
     if (!(dt instanceof Date) || isNaN(dt.getTime())) {
       result = ""
     } else {
       switch (props.box.getType().type as string) {
         case "time":
-          result = dt.toISOString().split("T")[1];
+          result = dt.toISOString().split("T")[1].substring(0, 8); // we keep hh:mm:ss
           break;
         case "datetime":
           result = dt.toISOString();
           break;
         case "date":
         default:
-          result = dt.toISOString().split("T")[0];
-
+          result = dt.toISOString().split("T")[0]; // we keep yyyy/mm/dd
       }
     }
-    console.log("inputValue", result)
     return result;
   })
+
 
   return (
     <>
@@ -94,9 +98,10 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
             onInput={(e) => {
               if (isFocused()) {
                 let dateValue = e.currentTarget.valueAsDate;
-                props.box.setValue({ type: 'date', value: dateValue == null ? null : dateValue.toISOString() });
-                props.onValueChanged({});
-
+                if (isValidDate(dateValue)) {
+                  props.box.setValue({ type: 'date', value: dateValue == null ? null : dateValue.toISOString() });
+                  props.onValueChanged({});
+                }
               }
             }}
           />

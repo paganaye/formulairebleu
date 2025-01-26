@@ -12,8 +12,8 @@ let form1: IBootstrapForm = {
     version: '1',
     dataType: {
         type: 'object',
-        help: "This is an object wit str1, num1, date1 and bool1 members.",
-        label: "Object1 label here",
+        help: "Parent object help",
+        label: "Parent Object Label",
         membersTypes: [
             {
                 key: 'o1',
@@ -71,24 +71,13 @@ let form1: IBootstrapForm = {
     }
 }
 
-form1 = {
-    name: 'MyFirstForm',
-    version: '1',
-    dataType: {
-        type: 'time', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.'
-    }
-}
-
 
 let [getValue, setValue] = createSignal({ type: "date " })
-
 
 function App() {
 
     return (
         <>
-            <p>Hi I don't reall need all this</p>
-            {"this is " + "solid.js"}
             <FormVue form={form1} value={getValue()} setValue={setValue} />
         </>
     )

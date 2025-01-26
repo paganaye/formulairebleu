@@ -9,6 +9,7 @@ export type ArrayInputProps = {
   box: Box;
   onValueChanged: (options: OnValueChanged) => void;
   label: string;
+  level: number;
   options: IRenderOptions;
   selectionList?: ISelectionList;
   isSelected?: (item: any) => boolean;
@@ -59,6 +60,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
   function renderEntry(entry: Box, index: () => number) {
     return <InputRenderer
       label={entry.name}
+      level={props.level + 1}
       box={entry}
       onValueChanged={() => {
         props.onValueChanged({});
@@ -83,6 +85,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
     return (<InputRenderer
       label={column.label ?? column.key}
       box={column.memberIndex == null ? entry2 : (entry2 as any).getMembers()[column.memberIndex ?? 0]}
+      level={props.level + 1}
       onValueChanged={(o) => {
         props.onValueChanged(o)
       }}
