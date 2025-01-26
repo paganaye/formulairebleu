@@ -1,7 +1,7 @@
 import { createSignal } from 'solid-js'
 
 
-import { FormVue, IBootstrapForm, ISelectionList } from 'formulairebleu';
+import { BootstrapFormVue, IBootstrapForm, ISelectionList } from 'formulairebleu';
 
 let stringList1: ISelectionList = {
   multiple: false,
@@ -44,7 +44,7 @@ function App() {
     <>
       <p>Hi</p>
       {"this is " + "solid.js"}
-      <FormVue form={form1} value={getValue()} setValue={setValue} />
+      <BootstrapFormVue form={form1} value={getValue()} setValue={setValue} />
       <p>hi<b>Poulain</b></p>
     </>
   )

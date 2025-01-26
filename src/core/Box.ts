@@ -103,7 +103,7 @@ export class FormContext {
 
 export class Box {
   readonly uniqueId: number;
-  public pageNo = new Value<IPageNo>(undefined);
+  public pageNo = new Value<IPageNo>(undefined as any);
   private _innerValue: Value<BoxInnerValue>;
   private _type: Value<IFormType>;
   private _errors: Value<ErrorString[]>;
