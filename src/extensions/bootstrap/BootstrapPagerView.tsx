@@ -1,5 +1,5 @@
 import { Component, For, Show } from "solid-js";
-import { Styles } from "../core/Styles";
+import { Styles } from "../../core/Styles";
 
 export interface PagerProps {
   pageCount: number;

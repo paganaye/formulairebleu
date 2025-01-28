@@ -1,16 +1,16 @@
 import { Component, createSignal, Show } from 'solid-js';
-import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
-import { getUniqueId } from '../core/Utils';
-import { InputBottom, InputTop } from './InputRenderer';
-import { Styles } from '../core/Styles';
-import { Box } from '../core/Box';
-import { JSONValue } from '../core/Utils';
+import { getUniqueId } from "../../core/Utils";
+import { Styles } from "../../core/Styles";
+import { Box } from "../../core/Box";
+import { JSONValue } from "../../core/Utils";
+import { OnValueChanged } from '../../core/FormEngine';
+import { BootstrapEngine } from './BootstrapEngine';
 
 export type NumberInputProps = {
   box: Box;
   onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  context: BootstrapContext;
+  engine: BootstrapEngine;
 };
 
 Styles.add('input.number-input', {
@@ -21,7 +21,7 @@ Styles.add('input.number-input[type="string"]', {
   paddingRight: '27px !important' // add the width of the up-down number input when it's hidden
 });
 
-export const NumberInput: Component<NumberInputProps> = (props) => {
+export const BootstrapNumberView: Component<NumberInputProps> = (props) => {
   let id = getUniqueId(`num_${props.label}`);
   const [isFocused, setIsFocused] = createSignal(false);
   const suffix = (props.box.getType().view as any)?.suffix;
@@ -46,7 +46,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 
   return (
     <>
-      <InputTop {...props} />
+      {/* <InputTop {...props} /> */}
       <div class="input-group mb-3">
         <div class="form-floating">
           <input
@@ -58,7 +58,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
                 ? (props.box.getJSONValue() ?? '') as any
                 : formatNumber(props.box.getJSONValue())
             }
-            readOnly={props.context.isReadonly || !isFocused()}
+            readOnly={props.engine.isReadonly || !isFocused()}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
               if (!isFocused()) {
@@ -86,7 +86,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
           <span class="input-group-text" id="basic-addon2">{suffix}</span>
         </Show>
       </div>
-      <InputBottom {...props} />
+      {/* <InputBottom {...props} /> */}
     </>
   );
 };

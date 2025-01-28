@@ -1,22 +1,24 @@
 import { Component, createEffect, createMemo, createSignal } from 'solid-js';
-import { Box, getDefaultValue } from '../core/Box';
-import { OnValueChanged, BootstrapContext } from './BootstrapFormVue';
-import { InputRenderer, InputTop } from './InputRenderer';
-import { ArrayRenderer, IColumn, SortOrder } from './ArrayRenderer';
-import { IArrayType, ISelectionList } from '../core/ICoreForm';
+import { Box, getDefaultValue } from "../../core/Box";
+import { ArrayRenderer, IColumn, SortOrder } from './BootstrapArrayRenderer';
+import { formulairebleu } from "../../core/IForm";
+import { OnValueChanged } from '../../core/FormEngine';
+import { BootstrapEngine } from './BootstrapEngine';
+type IArrayType = formulairebleu.IArrayType;
+type ISelectionList = formulairebleu.ISelectionList;
 
 export type ArrayInputProps = {
   box: Box;
   onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   level: number;
-  context: BootstrapContext;
+  engine: BootstrapEngine;
   selectionList?: ISelectionList;
   isSelected?: (item: any) => boolean;
   onSelectionChanged?: (item: any, newValue: boolean) => void;
 };
 
-export const ArrayInput: Component<ArrayInputProps> = (props) => {
+export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
   let [getEntries, setEntries] = createSignal<any[]>(props.box.getEntries())
 
   createEffect(() => {
@@ -29,7 +31,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
   }
 
   function addButton() {
-    return props.context.isReadonly ? <></>
+    return props.engine.isReadonly ? <></>
       : <button
         class="btn btn-sm btn-secondary mt-2"
         onClick={() => {
@@ -43,7 +45,7 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
   }
 
   function deleteButton(index: () => number) {
-    return props.context.isReadonly ? <></>
+    return props.engine.isReadonly ? <></>
       : <button
         class="btn btn-sm btn-secondary mt-2"
         onClick={() => {
@@ -58,14 +60,15 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
   }
 
   function renderEntry(entry: Box, index: () => number) {
-    return <InputRenderer
-      label={entry.name}
-      level={props.level + 1}
-      box={entry}
-      onValueChanged={() => {
-        props.onValueChanged({});
-      }}
-      context={props.context} />;
+    return <>todo</>
+    // <InputRenderer
+    //   label={entry.name}
+    //   level={props.level + 1}
+    //   box={entry}
+    //   onValueChanged={() => {
+    //     props.onValueChanged({});
+    //   }}
+    //   engine={props.engine} />;
   }
 
   const columns = createMemo(() => {
@@ -82,29 +85,30 @@ export const ArrayInput: Component<ArrayInputProps> = (props) => {
   })
 
   function renderEntryField(entry2: Box, index: () => number, column: IColumn) {
-    return (<InputRenderer
-      label={column.label ?? column.key}
-      box={column.memberIndex == null ? entry2 : (entry2 as any).getMembers()[column.memberIndex ?? 0]}
-      level={props.level + 1}
-      onValueChanged={(o) => {
-        props.onValueChanged(o)
-      }}
-      context={props.context}
-    />)
+    return <>todo</>
+    // (<InputRenderer
+    //   label={column.label ?? column.key}
+    //   box={column.memberIndex == null ? entry2 : (entry2 as any).getMembers()[column.memberIndex ?? 0]}
+    //   level={props.level + 1}
+    //   onValueChanged={(o) => {
+    //     props.onValueChanged(o)
+    //   }}
+    //   context={props.engine}
+    // />)
   }
 
   return <>
     <ArrayRenderer
       entries={getEntries()}
       viewAsType={props.box.getType().view as any}
-      context={props.context}
+      engine={props.engine}
       label={props.label}
       addButton={addButton}
       deleteButton={deleteButton}
       renderEntry={renderEntry}
       renderEntryField={renderEntryField}
-      inputTop={() => <InputTop{...props as any} />}
-      inputBottom={() => <InputTop{...props as any} />}
+      inputTop={() => <p>todo</p> /*<InputTop{...props as any} />*/}
+      inputBottom={() => <p>todo</p>/*<InputTop{...props as any} />*/}
       isSelected={() => false}
       onSelectionChanged={() => undefined}
       columns={columns()}

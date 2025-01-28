@@ -1,34 +1,38 @@
 import { Component, createMemo, createSignal } from 'solid-js';
-import { Box } from '../core/Box';
-import { OnValueChanged, BootstrapContext } from './BootstrapFormVue';
-import { ErrorVue } from './ErrorsVue';
-import { SingleSelectionVue } from './SingleSelectionVue';
-import { MultipleSelectionVue } from './MultipleSelectionVue';
-import { ISelectionEntry, ISelectionList, IView } from '../core/ICoreForm';
-import { IBootstrapMultipleSelectionView, IBootstrapSingleSelectionView } from './IBootstrapForm';
+import { Box } from "../../core/Box";
+import { ErrorView } from './BootstrapErrorsView';
+import { SingleSelectionVue } from './BootstrapSingleSelectionView';
+import { MultipleSelectionVue } from './BootstrapMultipleSelectionView';
+import { formulairebleu } from "../../core/IForm";
+type ISelectionEntry = formulairebleu.ISelectionEntry;
+type ISelectionList = formulairebleu.ISelectionList;
+type IView = formulairebleu.IView;
+import { IBootstrapMultipleSelectionView, IBootstrapSingleSelectionView } from './BootstrapForm';
+import { OnValueChanged } from '../../core/FormEngine';
+import { BootstrapEngine } from './BootstrapEngine';
 
 export type SelectionListInputProps = {
   box: Box;
   onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  context: BootstrapContext;
+  engine: BootstrapEngine;
 };
 
-export const SelectionListInput: Component<SelectionListInputProps> = (props) => {
+export const BootstrapSelectionListView: Component<SelectionListInputProps> = (props) => {
 
   let comp = createMemo(() => {
     let selectionList: ISelectionList | undefined = (props.box.getType() as any).selectionList ?? props.box.getType().selectionList;
     if (!selectionList) {
-      return <ErrorVue error="Internal Error, no selection list set." />
+      return <ErrorView error="Internal Error, no selection list set." />
     }
     if (!Array.isArray(selectionList.entries)) {
-      return <ErrorVue error="dynamic-selection is not implemented yet." />
+      return <ErrorView error="dynamic-selection is not implemented yet." />
     }
     let entries: ISelectionEntry[] = selectionList.entries;
     if (!entries) {
-      return <ErrorVue error="Internal Error, no selection entries set." />
+      return <ErrorView error="Internal Error, no selection entries set." />
     } else if (entries.length == 0) {
-      return <ErrorVue error="Empty selection list." />
+      return <ErrorView error="Empty selection list." />
     }
     let view: IView = (props.box.getType() as any).selectionList ?? props.box.getType().view;
     if (selectionList.multiple) {

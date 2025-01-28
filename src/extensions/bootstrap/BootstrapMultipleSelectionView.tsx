@@ -1,7 +1,9 @@
 import { createMemo, For, JSX } from "solid-js";
-import { ISelectionEntry } from "../core/ICoreForm";
-import { IBootstrapMultipleSelectionView } from "./IBootstrapForm";
-import { getUniqueId } from "../core/Utils";
+import { formulairebleu } from "../../core/IForm";
+type ISelectionEntry = formulairebleu.ISelectionEntry;
+
+import { IBootstrapMultipleSelectionView } from "./BootstrapForm";
+import { getUniqueId } from "../../core/Utils";
 
 export type MultipleSelectionProps = {
   label: string;

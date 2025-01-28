@@ -1,15 +1,21 @@
+
 import { Component, createMemo } from 'solid-js';
-import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
-import { getUniqueId } from '../core/Utils';
-import { Styles } from '../core/Styles';
-import { InputBottom, InputTop } from './InputRenderer';
-import { Box } from '../core/Box';
+import { getUniqueId } from "../../core/Utils";
+import { Styles } from "../../core/Styles";
+import { Box } from "../../core/Box";
+import { formulairebleu } from '../../core/IForm';
+import { OnValueChanged } from '../../core/FormEngine';
+import { BootstrapEngine } from './BootstrapEngine';
+
+export interface IBootstapSwitchType {
+  type: 'switch'
+}
 
 export type BooleanInputProps = {
   box: Box;
   onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  context: BootstrapContext;
+  engine: BootstrapEngine;
 };
 
 Styles.add(".form-control.for-checkbox.form-switch", {
@@ -32,8 +38,10 @@ Styles.add(".form-check-input:indeterminate", {
 });
 
 
-export const BooleanInput: Component<BooleanInputProps> = (props) => {
-  const isSwitch = createMemo(() => (props.box.getType().view?.type === "switch"));
+export const BootstrapBooleanView: Component<BooleanInputProps> = (props) => {
+  let typeView: formulairebleu.IFormType = props.box.getType();
+  // je suis obligé de mettre as any ici
+  const isSwitch = createMemo(() => ((typeView as any)?.view?.type === "switch"));
   let id = getUniqueId(`bool_${props.label}`);
   let inputRef: HTMLInputElement;
   function setInputRef(ref: HTMLInputElement) {
@@ -41,7 +49,7 @@ export const BooleanInput: Component<BooleanInputProps> = (props) => {
     inputRef.indeterminate = props.box.getJSONValue() === null;
   }
   return (<>
-    <InputTop {...props} />
+    {/* <InputTop {...props} /> */}
     <div class={`d-flex flex-column form-control for-checkbox position-relative ${isSwitch() ? "form-switch" : ""}`}
       onMouseDown={(e) => {
         e.preventDefault();
@@ -55,7 +63,7 @@ export const BooleanInput: Component<BooleanInputProps> = (props) => {
           class="form-check-input"
           id={id}
           checked={props.box.getJSONValue() === true} // Assurez que seules les valeurs `true` cochent le champ
-          readOnly={props.context.isReadonly}
+          readOnly={props.engine.isReadonly}
           onBlur={(e) => props.box.validate()}
           onChange={(e) => {
             // Bascule entre true et false (l’état indeterminate est géré séparément)
@@ -69,7 +77,7 @@ export const BooleanInput: Component<BooleanInputProps> = (props) => {
         }}
         >{props.label}</label>
       </div>
-      <InputBottom {...props} />
+      {/* <InputBottom {...props} /> */}
     </div>
   </>);
 };

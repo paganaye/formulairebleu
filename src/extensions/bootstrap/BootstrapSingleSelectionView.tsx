@@ -1,7 +1,9 @@
 import { For, JSX } from "solid-js";
-import { getUniqueId, JSONValue } from "../core/Utils";
-import { ISelectionEntry, IView } from '../core/ICoreForm';
-import { IBootstrapRadioButtonsView } from './IBootstrapForm';
+import { getUniqueId, JSONValue } from "../../core/Utils";
+import { formulairebleu } from "../../core/IForm";
+type ISelectionEntry = formulairebleu.ISelectionEntry;
+type IView = formulairebleu.IView;
+import { IBootstrapRadioButtonsView } from './BootstrapForm';
 import { Bootstrap } from "./ensureBootstrapLoaded";
 
 

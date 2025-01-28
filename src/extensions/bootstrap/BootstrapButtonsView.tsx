@@ -1,5 +1,5 @@
 import { Component, For } from "solid-js";
-import { Styles } from "../core/Styles";
+import { Styles } from "../../core/Styles";
 
 
 export interface DialogButton {

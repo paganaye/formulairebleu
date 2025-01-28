@@ -1,13 +1,13 @@
 import { Component } from 'solid-js';
-import { Box } from '../core/Box';
+import { Box } from "../../core/Box";
+import { ConstView } from './BootstrapConstView';
 
-export type ConstVueProps = {
-  label?: string | undefined;
+export type VoidVueProps = {
   box: Box;
 };
 
 
-export const ConstVue: Component<ConstVueProps> = (props) => {
+export const VoidView: Component<VoidVueProps> = (props) => {
   // switch (props.view) {
   //   case "html":
   //     return <div innerHTML={props.data} />;
@@ -22,5 +22,8 @@ export const ConstVue: Component<ConstVueProps> = (props) => {
   //   case "object":
   //     return <p>Todo</p>;
   // }
-  return <>TODO</>
+
+  //props.box.getType().view.content
+  //{type: 'const', data: '', view: 'html'}
+  return <ConstView {...props.box.getType().view as any} />
 };

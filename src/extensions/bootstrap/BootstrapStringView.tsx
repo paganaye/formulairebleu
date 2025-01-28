@@ -1,14 +1,14 @@
 import { Component, createEffect } from 'solid-js';
-import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
-import { getUniqueId } from '../core/Utils';
-import { InputBottom, InputTop } from './InputRenderer';
-import { Box } from '../core/Box';
+import { getUniqueId } from "../../core/Utils";
+import { Box } from "../../core/Box";
+import { OnValueChanged } from '../../core/FormEngine';
+import { BootstrapEngine } from './BootstrapEngine';
 
 export type StringInputProps = {
   box: Box;
   onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  context: BootstrapContext;
+  engine: BootstrapEngine;
 };
 
 let masks: Record<string, RegExp> = {
@@ -47,7 +47,7 @@ const applyMask = (value: string, mask: string, pos: number): { newValue: string
 };
 
 
-export const StringInput: Component<StringInputProps> = (props) => {
+export const BootstrapStringView: Component<StringInputProps> = (props) => {
   let id = getUniqueId(`txt_${props.label}`);
   let mask: string | undefined;
 
@@ -59,14 +59,14 @@ export const StringInput: Component<StringInputProps> = (props) => {
 
   return (
     <>
-      <InputTop {...props as any} />
+      {/* <InputTop {...props as any} /> */}
       <div class="form-floating">
         <input
           type="text"
           id={id}
           class="form-control"
           value={(props.box.getJSONValue() || "") as any}
-          readOnly={props.context.isReadonly}
+          readOnly={props.engine.isReadonly}
           placeholder={"" /*placeholder is required for form-floating to work*/}
           required={props.box.getType().mandatory}
           onInput={(e) => {
@@ -96,7 +96,7 @@ export const StringInput: Component<StringInputProps> = (props) => {
         />
         <label for={id} class="form-label">{props.label}</label>
       </div>
-      <InputBottom {...props as any} />
+      {/* <InputBottom {...props as any} /> */}
     </>
   );
 };

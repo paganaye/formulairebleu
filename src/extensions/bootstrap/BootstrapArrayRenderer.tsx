@@ -1,15 +1,16 @@
 import { Component, createSignal, createMemo, For, Show, JSX, onCleanup } from "solid-js";
-import { keepFocus } from "../core/Utils";
-import { getUniqueId } from "../core/Utils";
-import { FormContext, Value } from "../core/Box";
-import { Styles } from "../core/Styles";
-import { Box } from "../core/Box";
-import { IBootstrapViewEngine, IBootstrapListView } from "./IBootstrapForm";
-import { JSONObject, JSONValue } from "../core/Utils";
+import { keepFocus } from "../../core/Utils";
+import { getUniqueId } from "../../core/Utils";
+import { Value } from "../../core/Box";
+import { Styles } from "../../core/Styles";
+import { Box } from "../../core/Box";
+import { IBootstrapListView } from "./BootstrapForm";
+import { JSONObject, JSONValue } from "../../core/Utils";
+import { FormEngine } from "../../core/FormEngine";
 
 export type ArrayRendererProps<T = any> = {
-  context: FormContext;
-  viewAsType: IBootstrapViewEngine['array'] | undefined;
+  engine: FormEngine;
+  viewAsType: any | undefined;
   label: string;
   // entryType: IDataType;
   entries: T[]
@@ -284,40 +285,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
     );
   }
 
-  function renderAsAccordion() {
-    const [openIndex, setOpenIndex] = createSignal<number | null>(0);
 
-    return (<>
-      <div class="accordion" id="accordionExample">
-        <For each={props.entries}>
-          {(entry, index) => (
-            <div class="accordion-item">
-              <h2 class="accordion-header" id={`heading-${index()}`}>
-                <button
-                  class={`accordion-button ${openIndex() === index() ? '' : 'collapsed'}`}
-                  type="button"
-                  onClick={() => setOpenIndex(openIndex() === index() ? null : index())}
-                >
-                  Item {index() + 1}
-                </button>
-              </h2>
-              <div
-                id={`collapse-${index()}`}
-                class={`accordion-collapse collapse ${openIndex() === index() ? 'show' : ''}`}
-                aria-labelledby={`heading-${index()}`}
-              >
-                <div class="accordion-body">
-                  {props.renderEntry?.(entry, index)}
-                </div>
-              </div>
-            </div>
-          )}
-        </For>
-      </div>
-      {props.inputBottom?.()}
-      {props.addButton?.()}
-    </>);
-  }
 
   function renderAsCarousel() {
     return <p>TODO</p>
@@ -437,7 +405,6 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
     const renderFunctions = {
       table: renderAsTable,
       tabs: renderAsTabs,
-      accordion: renderAsAccordion,
       carousel: renderAsCarousel,
       list: renderAsList,
       flow: renderAsFlow,

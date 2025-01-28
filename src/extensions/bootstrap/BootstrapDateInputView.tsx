@@ -1,14 +1,14 @@
 import { Component, createMemo, createSignal, Show } from 'solid-js';
-import { BootstrapContext, OnValueChanged } from './BootstrapFormVue';
-import { getUniqueId } from '../core/Utils';
-import { InputBottom, InputTop } from './InputRenderer';
-import { Box } from '../core/Box';
+import { getUniqueId } from "../../core/Utils";
+import { Box } from "../../core/Box";
+import { OnValueChanged } from '../../core/FormEngine';
+import { BootstrapEngine } from './BootstrapEngine';
 
 export type DateInputProps = {
   box: Box;
   onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
-  context: BootstrapContext;
+  engine: BootstrapEngine;
 };
 
 export interface IJSONDate {
@@ -16,7 +16,7 @@ export interface IJSONDate {
   value: string;
 }
 
-export const DateInputVue: Component<DateInputProps> = (props) => {
+export const DateInputView: Component<DateInputProps> = (props) => {
   let id = getUniqueId(`num_${props.label}`);
   const [isFocused, setIsFocused] = createSignal(false);
   const suffix = (props.box.getType().view as any)?.suffix;
@@ -75,7 +75,7 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
 
   return (
     <>
-      <InputTop {...props} />
+      {/* <InputTop {...props} /> */}
       <div class="input-group mb-3">
         <div class="form-floating">
           <input
@@ -83,7 +83,7 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
             id={id}
             class="form-control number-input"
             value={inputValue()}
-            readOnly={props.context.isReadonly || !isFocused()}
+            readOnly={props.engine.isReadonly || !isFocused()}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
               if (!isFocused()) {
@@ -111,7 +111,7 @@ export const DateInputVue: Component<DateInputProps> = (props) => {
           <span class="input-group-text" id="basic-addon2">{suffix}</span>
         </Show>
       </div>
-      <InputBottom {...props} />
+      {/* <InputBottom {...props} /> */}
     </>
   );
 };

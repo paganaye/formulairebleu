@@ -1,4 +1,18 @@
-import { IArrayType, IObjectType, IFormType, IFormViewEngine, IVariantType, IVariantMemberType, IObjectMemberType, IBooleanType, IConstType, IDateType, INumberType, IStringType, IVoidType, IKeyedMemberType } from './ICoreForm';
+import { formulairebleu } from './IForm';
+type IArrayType = formulairebleu.IArrayType;
+type IObjectType = formulairebleu.IObjectType;
+type IFormType = formulairebleu.IFormType;
+type IVariantType = formulairebleu.IVariantType;
+type IVariantMemberType = formulairebleu.IVariantMemberType;
+type IObjectMemberType = formulairebleu.IObjectMemberType;
+// type IBooleanType = formulairebleu.IBooleanType;
+// type IConstType = formulairebleu.IConstType;
+// type IDateType = formulairebleu.IDateType;
+// type INumberType = formulairebleu.INumberType;
+// type IStringType = formulairebleu.IStringType;
+// type IVoidType = formulairebleu.IVoidType;
+// type IKeyedMemberType = formulairebleu.IKeyedMemberType;
+
 import { Accessor, Setter, createSignal } from 'solid-js';
 import { JSONObject, JSONValue } from './Utils';
 
@@ -14,92 +28,6 @@ export class Value<T = any> {
     this._setValue(value as any);
   }
 }
-
-export class FormContext {
-  templates: Record<string, IFormType>;
-  isReadonly: boolean = false;
-  readonly pageNo = new Value(0);
-  readonly pageCount = new Value(1);
-
-  constructor(templates?: Record<string, IFormType>) {
-    this.templates = templates ?? {};
-  }
-
-  getActualType(type: IFormType): IFormType {
-    let viewType = type?.view?.type;
-    let templateType: IFormType | undefined;
-    if (viewType) templateType = this.templates[viewType];
-    if (!templateType) {
-      let typeType = type?.type;
-      templateType = this.templates[typeType];
-    }
-    return templateType ?? type;
-  }
-
-  paginate(rootBox: Box) {
-    let pageNo = 1;
-    let lineNo = 0
-    let firstNonObjectSeen: boolean = false;
-
-    let recurse = (box: Box) => {
-      let originalType = box.getType();
-      let actualType = this.getActualType(originalType)
-      if ((originalType.pageBreak || actualType.pageBreak) && lineNo > 0) {
-        pageNo += 1;
-        lineNo = 0;
-      }
-      let startPage = pageNo;
-      let startLine = lineNo;
-
-      let typeType = actualType.type;
-      switch (typeType) {
-        case 'array':
-          firstNonObjectSeen = true;
-          let entries = box.getEntries()
-          for (let e of entries) {
-            recurse(e)
-          }
-          break;
-        case 'object':
-          let members = box.getMembers()
-          for (let m of members) {
-            recurse(m)
-          }
-          break;
-        case 'variant':
-          let variant = box.getInnerVariant();
-          recurse(variant.value)
-          break;
-        case 'boolean':
-        case 'const':
-        case 'date':
-        case 'datetime':
-        case 'number':
-        case 'string':
-        case 'time':
-          lineNo += 1;
-          break;
-        case 'void':
-          break;
-        default: {
-          //
-        }
-      }
-      box.pageNo.setValue({
-        startPage,
-        startLine,
-        endPage: pageNo,
-        endLine: lineNo
-      })
-    }
-
-    recurse(rootBox)
-    this.pageCount.setValue(pageNo);
-  }
-
-
-}
-
 
 export class Box {
   readonly uniqueId: number;
@@ -137,7 +65,7 @@ export class Box {
   }
 
 
-  getType() {
+  getType(): IFormType {
     return this._type.getValue()
   }
 
@@ -160,10 +88,10 @@ export class Box {
       let members: Box[] = [];
       const valueObj = value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
       for (const memberType of membersTypes) {
-        if ('key' in memberType) {
-          const memberValue = valueObj?.[memberType.key as any];
-          members.push(Box.enBox(this as any, memberType.key as any, memberType, memberValue) as any);
-        }
+        //if ('key' in memberType) {
+        const memberValue = valueObj?.[memberType.key as any];
+        members.push(Box.enBox(this as any, memberType.key as any, memberType, memberValue) as any);
+        //}
       }
       return members;
     }
@@ -307,10 +235,10 @@ export class Box {
     this._innerValue.setValue({ type, entries: boxes } as any);
   }
 
-  static enBox<TFormEngine extends IFormViewEngine>(
+  static enBox(
     parent: Box | null,
     name: string,
-    type: IFormType<TFormEngine>,
+    type: IFormType,
     value: any
   ): Box {
     return new Box(parent, name, type, value);

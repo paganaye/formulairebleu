@@ -1,6 +1,6 @@
 import { Component, JSX, onCleanup, Show, createSignal, createEffect } from "solid-js";
 import { Portal } from "solid-js/web";
-import { Buttons, DialogButton } from "./Buttons";
+import { Buttons, DialogButton } from "./BootstrapButtonsView";
 
 const [currentModals, setCurrentModals] = createSignal<InnerModalPropsPlus[]>([]);
 
@@ -22,7 +22,7 @@ export function closeTopModal() {
   }
 }
 
-export const InnerModalVue: Component<InnerModalProps> = (props) => {
+export const InnerModalView: Component<InnerModalProps> = (props) => {
   let animationTimeout: number | undefined;
   const [showBackdrop, setShowBackdrop] = createSignal(false);
   const [showModal, setShowModal] = createSignal(false);
@@ -123,8 +123,8 @@ interface IPopupProps {
   children: JSX.Element;
   title?: string;
 }
-export const PopupVue: Component<IPopupProps> = (props) => {
-  return <InnerModalVue {...props} backDropClickClosesModal={true} />
+export const PopupView: Component<IPopupProps> = (props) => {
+  return <InnerModalView {...props} backDropClickClosesModal={true} />
 }
 
 interface IModalProps {
@@ -135,8 +135,8 @@ interface IModalProps {
   buttons?: DialogButton[]
 }
 
-export const ModalVue: Component<IModalProps> = (props) => {
-  return <InnerModalVue {...props} backDropClickClosesModal={false} />
+export const ModalView: Component<IModalProps> = (props) => {
+  return <InnerModalView {...props} backDropClickClosesModal={false} />
 }
 
-export default ModalVue;
+export default ModalView;

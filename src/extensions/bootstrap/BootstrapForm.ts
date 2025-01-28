@@ -1,4 +1,8 @@
-import { ICoreForm, IFormViewEngine, IView } from "../core/ICoreForm";
+import { formulairebleu } from "../../core/IForm";
+//type IConstType = formulairebleu.IConstType;
+type IView = formulairebleu.IView;
+
+import { ConstValue } from "../../core/IQuery";
 
 export interface IBootstrapRadioButtonsView extends IView {
   type: 'radiobuttons';
@@ -66,10 +70,6 @@ export interface IBootstrapTabsView extends IView {
   type: 'tabs';
 }
 
-export interface IBootstrapAccordionView extends IView {
-  type: 'accordion';
-}
-
 export interface IBootstrapListView extends IView {
   type: 'list';
   ordered?: boolean;
@@ -81,34 +81,15 @@ export interface IBootstrapVariantView extends IView {
   // to be expanded
 }
 
-export interface IBootstrapVoidView extends IView {
-  type: 'void';
-  // to be expanded
-}
+export type IConstValue = ConstValue
+
 
 export interface IBootstrapConstView extends IView {
   type: 'const';
   // to be expanded
 }
 
-
-export interface IBootstrapViewEngine extends IFormViewEngine {
-  array: IBootstrapFlowView | IBootstrapTableView | IBootstrapTabsView | IBootstrapAccordionView | IBootstrapListView,
-  boolean: IBootstrapCheckboxView | IBootstrapSwitchView | IBootstrapSingleSelectionView,
-  const: IBootstrapConstView,
-  date: IBootstrapDateView,
-  number: IBootstrapNumberTextboxView | IBootstrapSingleSelectionView,
-  object: IBootstrapObjectView,
-  string: IBootstrapTextboxView | IBootstrapMaskedTextboxView | IBootstrapSingleSelectionView | IBootstrapMultipleSelectionView,
-  variant: IBootstrapVariantView,
-  void: IBootstrapVoidView,
-  singleSelection: IBootstrapSingleSelectionView,
-  multipleSelection: IBootstrapMultipleSelectionView
-}
-
 export type IBootstrapSingleSelectionView = IBootstrapDropDownView | IBootstrapRadioButtonsView
 export type IBootstrapMultipleSelectionView = IBootstrapDropDownView | IBootstrapCheckboxesView
 
-export interface IBootstrapForm extends ICoreForm<IBootstrapViewEngine> {
-}
 
