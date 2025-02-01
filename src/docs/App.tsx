@@ -1,4 +1,4 @@
-import { Router, Route, A } from "@solidjs/router";
+import { Route, HashRouter } from "@solidjs/router";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import FormEditor from "./pages/FormEditor";
@@ -10,13 +10,13 @@ ensureBootstrapLoaded()
 
 export default function App() {
     return (<>
-        <Router>
+        <HashRouter>
             <Route path="/" component={Home} />
             <Route path="/about" component={About} />
             <Route path="/form-editor" component={FormEditor} />
             <Route path="/tests" component={Tests} />
             <Route path="*404" component={NotFound} />
-            </Router>
+        </HashRouter>
     </>);
 }
 

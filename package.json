@@ -27,10 +27,12 @@
   "name": "formulairebleu",
   "scripts": {
     "tsc": "tsc",
-    "build": "tsup",
+    "build": "vite build",
+    "build-lib": "tsup",
     "build:watch": "tsup --watch",
     "validate-package-exports": "validate-package-exports",
-    "vite": "vite"
+    "vite": "vite",
+    "pages":"npx vite build && gh-pages -d dist"
   },
   "version": "1.0.6",
   "browser": {},
