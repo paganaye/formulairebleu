@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@solidjs/router':
+        specifier: ^0.15.3
+        version: 0.15.3(solid-js@1.9.4)
       '@types/bootstrap':
         specifier: ^5.2.10
         version: 5.2.10
@@ -537,6 +540,11 @@ packages:
   '@sigstore/verify@2.0.0':
     resolution: {integrity: sha512-Ggtq2GsJuxFNUvQzLoXqRwS4ceRfLAJnrIHUDrzAD0GgnOhwujJkKkxM/s5Bako07c3WtAs/sZo5PJq7VHjeDg==}
     engines: {node: ^18.17.0 || >=20.5.0}
+
+  '@solidjs/router@0.15.3':
+    resolution: {integrity: sha512-iEbW8UKok2Oio7o6Y4VTzLj+KFCmQPGEpm1fS3xixwFBdclFVBvaQVeibl1jys4cujfAK5Kn6+uG2uBm3lxOMw==}
+    peerDependencies:
+      solid-js: ^1.8.6
 
   '@tufjs/canonical-json@2.0.0':
     resolution: {integrity: sha512-yVtV8zsdo8qFHe+/3kw81dSLyF7D576A5cCFCi4X7B39tWT7SekaEFUnvnWJHz+9qO7qJTah1JbrDjWKqFtdWA==}
@@ -2007,6 +2015,10 @@ snapshots:
       '@sigstore/bundle': 3.0.0
       '@sigstore/core': 2.0.0
       '@sigstore/protobuf-specs': 0.3.3
+
+  '@solidjs/router@0.15.3(solid-js@1.9.4)':
+    dependencies:
+      solid-js: 1.9.4
 
   '@tufjs/canonical-json@2.0.0': {}
 

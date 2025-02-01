@@ -1,22 +1,20 @@
-import { Router, Route, A } from "@solidjs/router";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import FormEditor from "./pages/FormEditor";
-import NotFound from "./pages/NotFound";
-import Tests from "./pages/Tests";
-import { ensureBootstrapLoaded } from "../extensions/bootstrap/ensureBootstrapLoaded";
+import { A } from "@solidjs/router";
+import { Styles } from "../../core/Styles";
 
-ensureBootstrapLoaded()
-
+Styles.add('nav.main-nav', {
+    padding: '5px'
+})
+Styles.add('nav.main-nav > A', {
+    margin: '5px'
+})
 export default function App() {
     return (<>
-        <Router>
-            <Route path="/" component={Home} />
-            <Route path="/about" component={About} />
-            <Route path="/form-editor" component={FormEditor} />
-            <Route path="/tests" component={Tests} />
-            <Route path="*404" component={NotFound} />
-            </Router>
+        <nav class="main-nav">
+            <A href="/" activeClass="active">Home</A>
+            <A href="/form-editor">Form Editor</A>
+            <A href="/tests">Tests</A>
+            <A href="/about">About</A>
+        </nav>
     </>);
 }
 

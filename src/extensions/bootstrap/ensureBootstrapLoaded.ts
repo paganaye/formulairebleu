@@ -1,7 +1,7 @@
 import type * as BootstrapLib from 'bootstrap';
 
 export var Bootstrap: typeof BootstrapLib;
-export function ensureBootstrapLoaded(): void {
+export function ensureBootstrapLoaded() {
 
     function isBootstrapCssLoaded(): boolean {
         const testElement = document.createElement('div');

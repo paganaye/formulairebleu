@@ -1,6 +1,7 @@
 {
   "author": "Pascal GANAYE",
   "dependencies": {
+    "@solidjs/router": "^0.15.3",
     "@types/bootstrap": "^5.2.10",
     "bootstrap": "^5.3.3",
     "handlebars": "^4.7.8",
