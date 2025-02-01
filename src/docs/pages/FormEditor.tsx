@@ -2,7 +2,9 @@ import Nav from "../components/Nav";
 
 export default function FormEditor() {
     return (<>
-        <Nav />
-        <div>Form Editor</div>
+        <div class="container">
+            <Nav />
+            <h1>Éditeur de formulaire</h1>
+        </div>
     </>);
 }

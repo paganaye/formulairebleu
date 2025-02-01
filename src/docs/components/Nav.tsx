@@ -1,5 +1,6 @@
 import { A } from "@solidjs/router";
 import { Styles } from "../../core/Styles";
+import { LANG } from '../Lang'
 
 Styles.add('nav.main-nav', {
     padding: '5px'
@@ -10,10 +11,10 @@ Styles.add('nav.main-nav > A', {
 export default function App() {
     return (<>
         <nav class="main-nav">
-            <A href="/" activeClass="active">Home</A>
-            <A href="/form-editor">Form Editor</A>
-            <A href="/tests">Tests</A>
-            <A href="/about">About</A>
+            <A href="/" activeClass="active">{LANG.menu_home}</A>
+            <A href="/form-editor">{LANG.menu_form_editor}</A>
+            <A href="/tests">{LANG.menu_tests}</A>
+            <A href="/about">{LANG.menu_about}</A>
         </nav>
     </>);
 }

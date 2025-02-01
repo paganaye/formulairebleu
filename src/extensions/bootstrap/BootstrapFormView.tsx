@@ -7,24 +7,17 @@ type IForm = formulairebleu.IForm;
 type IFormType = formulairebleu.IFormType;
 import { Box } from "../../core/Box";
 import { JSONValue } from "../../core/Utils";
-import { BootstrapArrayView } from './BootstrapArrayView';
-import { BootstrapBooleanView } from './BootstrapBooleanView';
-import { DateInputView } from './BootstrapDateInputView';
-import { BootstrapNumberView } from './BootstrapNumberView';
-import { BootstrapObjectView } from './BootstrapObjectView';
-import { BootstrapSelectionListView } from './BootstrapSelectionListView';
-import { BootstrapStringView } from './BootstrapStringView';
-import { BootstrapVariantView } from './BootstrapVariantView';
-import { ErrorView } from './BootstrapErrorsView';
 import { Pager } from './BootstrapPagerView';
-import { VoidView } from './BootstrapVoidView';
 import { FormEngine, IFormProps, OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
 
 
 
-interface FormBodyProps extends IFormProps {
+interface FormBodyProps {
   engine: BootstrapEngine;
+  form: IForm,
+  value: JSONValue,
+  setValue: (v: JSONValue) => void,
   header?: JSX.Element;
   footer?: JSX.Element;
 }
@@ -55,7 +48,6 @@ const FormBody: Component<FormBodyProps> = (props) => {
     const jsonValue = Box.unBox(rootBox);
     currentJSONString = JSON.stringify(jsonValue)
     props.setValue(jsonValue);
-
     if (onValueChanged?.pagesChanged) {
       props.engine.paginate(rootBox);
     }
@@ -145,13 +137,16 @@ export function formatTemplateString(templateString: string, data: Record<string
   }
 }
 
-export const BootstrapFormView: Component<IFormProps & { engine: FormEngine }> = (props) => {
+export const BootstrapFormView: Component<{ engine: FormEngine } & IFormProps> = (props) => {
   let pageNo = props.engine.pageNo;
+
   return (
     <main>
       <FormBody
         engine={props.engine}
-        {...props}
+        form={props.form}
+        value={props.value}
+        setValue={props.setValue}
         header=<h1>{props.form.name}</h1>
         footer={<>
           <Pager pageCount={props.engine.pageCount.getValue()} onPageSelected={p => pageNo.setValue(p)} selectedPage={pageNo.getValue()} />

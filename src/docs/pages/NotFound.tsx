@@ -2,7 +2,9 @@ import Nav from "../components/Nav";
 
 export default function NotFound() {
     return (<>
-        <Nav />
-        <div>Not Found</div>
+        <div class="container">
+            <Nav />
+            <h1>Cette page n'existe pas</h1>
+        </div>
     </>);
 }
