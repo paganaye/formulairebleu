@@ -42,6 +42,7 @@ let form1 = {
                     { key: 'e', type: "datetime" },
                     { key: 'f', type: "time" },
                     { key: 'g', type: 'number', view: { type: "mynumber1", min: 1 } },
+                    { key: 'h', type: "array", entryType: { type: "string" } }
                     // { type: "void", help: "hello", view: { type: "const", data: "<p>this is <b>HTML</b></p>", view: "html" } satisfies ConstValue },
                     // { type: "void", help: "hello", view: htmlView },
                     // { key: 'tel1', type: 'telephone' as any, pageBreak: true }

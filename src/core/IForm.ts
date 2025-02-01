@@ -33,7 +33,7 @@ export namespace formulairebleu {
 
   export type GetFormViews<T extends PrimitiveType = any> = FormPrimitives[T]['views']
   export type GetFormType<T extends PrimitiveType = any> = FormPrimitives[T]['type']
-  export type IFormType = OneOf<FormPrimitives>['type'];
+  export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType;
 
   export interface TypeBase<PrimType extends PrimitiveType> {
     label?: string;
@@ -45,7 +45,6 @@ export namespace formulairebleu {
     templateString?: string;
     pageBreak?: boolean;
     selectionList?: ISelectionList
-    view?: OneOf<GetFormViews<PrimType>>
   }
 
 
@@ -54,6 +53,7 @@ export namespace formulairebleu {
     entryType: IFormType;
     primaryKeys?: string[];
     validations?: ArrayValidation[];
+    view?: OneOf<IArrayViews>
   }
 
   export interface IArrayViews {
@@ -63,6 +63,7 @@ export namespace formulairebleu {
     type: 'boolean';
     defaultValue?: boolean;
     validations?: BooleanValidation[];
+    view?: OneOf<IBooleanViews>
   }
 
   export interface IBooleanViews {
@@ -72,6 +73,7 @@ export namespace formulairebleu {
     type: 'const';
     value: JSONValue;
     key?: undefined;
+    view?: OneOf<IConstViews>
   }
 
   export interface IConstViews {
@@ -79,6 +81,7 @@ export namespace formulairebleu {
 
   export interface IDateType extends TypeBase<'date'> {
     type: 'date';
+    view?: OneOf<IDateViews>
   }
 
   export interface IDateViews {
@@ -86,6 +89,7 @@ export namespace formulairebleu {
 
   export interface IDateTimeType extends TypeBase<'datetime'> {
     type: 'datetime';
+    view?: OneOf<IDateTimeViews>
   }
 
   export interface IDateTimeViews {
@@ -107,6 +111,7 @@ export namespace formulairebleu {
   export interface IObjectType extends TypeBase<'object'> {
     type: 'object';
     membersTypes: IObjectMemberType[];
+    view?: OneOf<IObjectViews>
   }
 
   export interface IObjectViews {
@@ -116,6 +121,7 @@ export namespace formulairebleu {
     type: 'string';
     defaultValue?: string;
     validations?: StringValidation[];
+    view?: OneOf<IStringViews>
   }
 
   export interface IStringViews {
@@ -123,6 +129,7 @@ export namespace formulairebleu {
 
   export interface ITimeType extends TypeBase<'time'> {
     type: 'time';
+    view?: OneOf<ITimeViews>
   }
 
   export interface ITimeViews {
@@ -133,6 +140,7 @@ export namespace formulairebleu {
     type: 'variant';
     variants: IVariantMemberType[];
     defaultValue?: 'void';
+    view?: OneOf<IVariantViews>
   }
 
   export interface IVariantViews {
@@ -141,6 +149,7 @@ export namespace formulairebleu {
 
   export interface IVoidType extends TypeBase<'void'> {
     type: 'void';
+    view?: OneOf<IVoidViews>
   }
 
   export interface IVoidViews {
