@@ -1,11 +1,11 @@
-import { Component, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { JsxComponent, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { ConstValue } from "../../core/IQuery";
 
 export type ConstVueProps = Omit<ConstValue, 'type'> & {
 
 };
 
-export const ConstView: Component<ConstVueProps> = (props) => {
+export const ConstView: JsxComponent<ConstVueProps> = (props) => {
 
   switch (props.view) {
     case "html":

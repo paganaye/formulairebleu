@@ -1,14 +1,11 @@
-import { Component, Show, Value, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { JSONValue, JsxComponent, Show, Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
-import { JSONValue } from "../../core/Utils";
-import { OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
 
 export type NumberInputProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   engine: BootstrapEngine;
 };
@@ -21,7 +18,7 @@ Styles.add('input.number-input[type="string"]', {
   paddingRight: '27px !important' // add the width of the up-down number input when it's hidden
 });
 
-export const BootstrapNumberView: Component<NumberInputProps> = (props) => {
+export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
   let id = getUniqueId(`num_${props.label}`);
   const isFocused = new Value(false);
   const suffix = (props.box.getType().view as any)?.suffix;
@@ -49,8 +46,10 @@ export const BootstrapNumberView: Component<NumberInputProps> = (props) => {
       {/* <InputTop {...props} /> */}
       <div class="input-group mb-3">
         <div class="form-floating">
+
           <input
-            type={isFocused.getValue() ? "number" : "string"}
+            x-test={isFocused}
+            type={computed({ isFocused }, (p) => p.isFocused ? "number" : "string")}
             id={id}
             class="form-control number-input"
             value={
@@ -58,7 +57,7 @@ export const BootstrapNumberView: Component<NumberInputProps> = (props) => {
                 ? (props.box.getJSONValue() ?? '') as any
                 : formatNumber(props.box.getJSONValue())
             }
-            readOnly={props.engine.isReadonly || !isFocused.getValue()}
+            readOnly={computed({ isFocused }, (p) => (props.engine.isReadonly || !isFocused.getValue()))}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
               if (!isFocused.getValue()) {
@@ -75,7 +74,6 @@ export const BootstrapNumberView: Component<NumberInputProps> = (props) => {
                 let rawValue = e.currentTarget.value;
                 let parsedValue = parseNumber(rawValue);
                 props.box.setValue(parsedValue);
-                props.onValueChanged({});
 
               }
             }}

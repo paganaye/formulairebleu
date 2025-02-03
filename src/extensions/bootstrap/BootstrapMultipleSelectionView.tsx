@@ -1,6 +1,5 @@
-import { createMemo, For, JSX } from "../../core/jsx";
-import { formulairebleu } from "../../core/IForm";
-type ISelectionEntry = formulairebleu.ISelectionEntry;
+import { computed, For, JsxComponent } from "../../core/tiny-jsx";
+import { ISelectionEntry } from "../../core/IForm";
 
 import { IBootstrapMultipleSelectionView } from "./BootstrapForm";
 import { getUniqueId } from "../../core/Utils";
@@ -13,12 +12,12 @@ export type MultipleSelectionProps = {
   view: IBootstrapMultipleSelectionView;
 };
 
-export function MultipleSelectionVue(props: MultipleSelectionProps): JSX.Element {
+export function MultipleSelectionVue(props: MultipleSelectionProps): JsxComponent {
   let groupId = getUniqueId("checkbox-group");
 
-  const selectedSet = createMemo(() => {
+  const selectedSet = computed({}, () => {
     return new Set<string>(props.selectedKeys)
-  })
+  });
 
   function toggleSelection(key: string, elt: HTMLInputElement) {
     // we make sure to keep the original order

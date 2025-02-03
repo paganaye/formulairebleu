@@ -1,4 +1,4 @@
-import { Component, For, Show, formulaireBleuJSXFragmentFactory, formulaireBleuJSXFactory } from "../../core/jsx";
+import { JsxComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 export interface PagerProps {
@@ -11,7 +11,7 @@ Styles.add(".buttons.btn:focus", {
   border: '1px solid #ccc',
 });
 
-export const Pager: Component<PagerProps> = (props) => {
+export const Pager: JsxComponent<PagerProps> = (props) => {
   const generatePages = () => {
     const { pageCount, selectedPage } = props;
     const pages: (number | string)[] = [];
@@ -59,7 +59,7 @@ export const Pager: Component<PagerProps> = (props) => {
       <For each={generatePages()}>
         {(page) => (
           <Show
-            when={typeof page === "number"}
+            when={() => typeof page === "number"}
             fallback={<li class="page-item disabled"><span class="page-link">…</span></li>}
           >
             <li class={`page-item ${props.selectedPage === page ? 'active' : ''}`}>
@@ -81,7 +81,7 @@ export const Pager: Component<PagerProps> = (props) => {
           class="page-link"
           href="#"
           aria-label="Next"
-          onClick={() =>
+          onchange={() =>
             props.selectedPage < props.pageCount && props.onPageSelected(props.selectedPage + 1)
           }
         >

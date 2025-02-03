@@ -1,20 +1,18 @@
-import { Component, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { JsxComponent, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
-import { OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
 //import { InputBottom, InputTop } from './BootstrapInputRenderer';
 
 export type JSONInputProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   engine: BootstrapEngine;
 };
 
 // unfinished
 
-export const BootstrapJSONView: Component<JSONInputProps> = (props) => {
+export const BootstrapJSONView: JsxComponent<JSONInputProps> = (props) => {
   let id = getUniqueId(`json_${props.label}`);
   return (
     <>
@@ -30,7 +28,6 @@ export const BootstrapJSONView: Component<JSONInputProps> = (props) => {
           onInput={(e) => {
             let newValue = String(e.currentTarget.value);
             props.box.setValue(newValue);
-            props.onValueChanged({});
           }} />
         <label for={id} class="form-label">{props.label}</label>
       </div>

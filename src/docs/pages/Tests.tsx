@@ -1,6 +1,6 @@
-import { A, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
+import { formulaireBleuJSX, formulaireBleuJSXFragment, Value } from "../../core/tiny-jsx";
 import Nav from "../components/Nav";
-import { formulairebleu } from "../../core/IForm"
+import { IForm } from "../../core/IForm"
 import "../../extensions/bootstrap/BootstrapExtension"
 import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine"
 
@@ -16,7 +16,7 @@ export default function Tests() {
         }
     })();
 
-    let form: formulairebleu.IForm = {
+    let form: IForm = {
         name: 'Form1',
         'dataType': { type: 'string' },
         version: "1",

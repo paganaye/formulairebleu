@@ -1,4 +1,4 @@
-import { A, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import Nav from "../components/Nav";
 
 export default function About() {

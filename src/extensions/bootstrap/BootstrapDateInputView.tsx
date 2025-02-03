@@ -1,12 +1,10 @@
-import { Component, createMemo, Show, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
+import { Show, formulaireBleuJSX, formulaireBleuJSXFragment, Value, computed } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
-import { OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
 
 export type DateInputProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   engine: BootstrapEngine;
 };
@@ -16,7 +14,7 @@ export interface IJSONDate {
   value: string;
 }
 
-export const DateInputView: Component<DateInputProps> = (props) => {
+export const DateInputView = (props: DateInputProps) => {
   let id = getUniqueId(`num_${props.label}`);
   const isFocused = new Value(false);
   const suffix = (props.box.getType().view as any)?.suffix;
@@ -25,7 +23,7 @@ export const DateInputView: Component<DateInputProps> = (props) => {
   const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: 'short' }).format(new Date());
   console.log(`Votre format : ${dateFormat}`); // Exemple : "dd/mm/yyyy hh:mm"
 
-  const inputType = createMemo(() => {
+  const inputType = computed({}, () => {
     let result: string;
     if (!isFocused.getValue()) result = "string";
     else switch (props.box.getType().type as any) {
@@ -42,14 +40,14 @@ export const DateInputView: Component<DateInputProps> = (props) => {
     }
     console.log("inputType", result)
     return result;
-  })
+  });
 
   function isValidDate(dt: Date | undefined) {
     const maxDate = new Date("9999-12-31T23:59:59"); // Limite maximale
     return (dt instanceof Date && !isNaN(dt.getTime()) && dt <= maxDate)
   }
 
-  const inputValue = createMemo(() => {
+  const inputValue = computed({}, () => {
     let value = props.box.getJSONValue() as any as (IJSONDate | null)
     let result: string;
     // 🇫🇷
@@ -70,7 +68,7 @@ export const DateInputView: Component<DateInputProps> = (props) => {
       }
     }
     return result;
-  })
+  });
 
 
   return (
@@ -100,7 +98,6 @@ export const DateInputView: Component<DateInputProps> = (props) => {
                 let dateValue = e.currentTarget.valueAsDate;
                 if (isValidDate(dateValue)) {
                   props.box.setValue({ type: 'date', value: dateValue == null ? null : dateValue.toISOString() });
-                  props.onValueChanged({});
                 }
               }
             }}

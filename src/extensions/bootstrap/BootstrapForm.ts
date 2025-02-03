@@ -1,7 +1,4 @@
-import { formulairebleu } from "../../core/IForm";
-//type IConstType = formulairebleu.IConstType;
-type IView = formulairebleu.IView;
-
+import { IView } from "../../core/IForm";
 import { ConstValue } from "../../core/IQuery";
 
 export interface IBootstrapRadioButtonsView extends IView {

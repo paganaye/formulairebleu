@@ -1,11 +1,10 @@
-import { Component, createMemo, For, Show, JSX, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { For, JSONObject, JSONValue, JSXSource, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { keepFocus } from "../../core/Utils";
 import { getUniqueId } from "../../core/Utils";
-import { Value } from '../../core/jsx';
+import { Value } from '../../core/tiny-jsx';
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
 import { IBootstrapListView } from "./BootstrapForm";
-import { JSONObject, JSONValue } from "../../core/Utils";
 import { FormEngine } from "../../core/FormEngine";
 
 export type ArrayRendererProps<T = any> = {
@@ -15,12 +14,12 @@ export type ArrayRendererProps<T = any> = {
   // entryType: IDataType;
   entries: T[]
   selectionType?: 'single' | 'multiple';
-  renderEntry: (entry: T, index: () => number) => JSX.Element;
-  renderEntryField: (entry: T, index: () => number, column: IColumn) => JSX.Element;
-  deleteButton: (index: () => number) => JSX.Element;
-  inputTop: () => JSX.Element;
-  inputBottom: () => JSX.Element;
-  addButton: () => JSX.Element;
+  renderEntry: (entry: T, index: () => number) => JSXSource;
+  renderEntryField: (entry: T, index: () => number, column: IColumn) => JSXSource;
+  deleteButton: (index: () => number) => JSXSource;
+  inputTop: () => JSXSource;
+  inputBottom: () => JSXSource;
+  addButton: () => JSXSource;
   isSelected: (entry: T) => boolean;
   onSelectionChanged: (entry: T, value: boolean) => void;
   columns: IColumn[];
@@ -43,7 +42,7 @@ Styles.add("th.table-title", {
   cursor: "pointer "
 });
 
-export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Element {
+export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource {
   let viewAsType = new Value(props.viewAsType?.type ?? "table");
 
   function handleCheckBoxOrRadioInput(e: InputEvent, formMemberName: string, value: any) {
@@ -88,7 +87,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
       // });
     }
 
-    const filteredValues = createMemo(() => {
+    const filteredValues = computed({}, () => {
       const data = [...props.entries];
       const currentFilters = filters.getValue();
 
@@ -106,7 +105,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
     });
 
 
-    const sortedValues = createMemo(() => {
+    const sortedValues = computed({}, () => {
       const data = filteredValues.getValue(); // Appliquer le tri aux données filtrées
       const orderBy = sortOrder.getValue();
 
@@ -160,7 +159,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
       index: () => number;
     }
 
-    const TableRow: Component<TableRowProps> = (rowProps) => {
+    const TableRow = (rowProps: TableRowProps) => {
       //let memberTypes = (props.entryType as IObjectType).membersTypes;
       //let isObject = (props.entryType.type === 'object');
       let columns = rowProps.columns;
@@ -184,7 +183,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
       {props.inputTop()}
       <table>
         <thead>
-          <Show when={props.columns[0]?.key != "#value"}>
+          {/* <Show when={props.columns[0]?.key != "#value"}>
             <tr>
               <For each={props.columns}>
                 {(entry, index) => (
@@ -195,7 +194,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
               </For>
               <th>&nbsp;</th>
             </tr>
-          </Show>
+          </Show> */}
           <tr>
             <For each={props.columns}>
               {(entry, index) => (
@@ -229,7 +228,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
     let values = props.entries;
     return <>
       {props.inputTop()}
-      <Show when={values} fallback={(<p>No entries</p>)}>
+      {/* <Show when={values} fallback={(<p>No entries</p>)}>
         <For each={values}>
           {(entry, index) => (
             <>
@@ -238,7 +237,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
             </>
           )}
         </For>
-      </Show>
+      </Show> */}
       {props.inputBottom()}
       {props.addButton?.()}
     </>;
@@ -401,7 +400,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
     </>);
   }
 
-  const render = createMemo(() => {
+  const render = computed({}, () => {
     const renderFunctions = {
       table: renderAsTable,
       tabs: renderAsTabs,

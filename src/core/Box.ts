@@ -1,27 +1,25 @@
-import { formulairebleu } from './IForm';
-type IArrayType = formulairebleu.IArrayType;
-type IObjectType = formulairebleu.IObjectType;
-type IFormType = formulairebleu.IFormType;
-type IVariantType = formulairebleu.IVariantType;
-type IVariantMemberType = formulairebleu.IVariantMemberType;
-type IObjectMemberType = formulairebleu.IObjectMemberType;
-// type IBooleanType = formulairebleu.IBooleanType;
-// type IConstType = formulairebleu.IConstType;
-// type IDateType = formulairebleu.IDateType;
-// type INumberType = formulairebleu.INumberType;
-// type IStringType = formulairebleu.IStringType;
-// type IVoidType = formulairebleu.IVoidType;
-// type IKeyedMemberType = formulairebleu.IKeyedMemberType;
-
-import { JSONObject, JSONValue } from './Utils';
-import { Value } from './jsx';
+import { IArrayType, IObjectType, IFormType, IVariantType, IVariantMemberType, IObjectMemberType, } from './IForm';
+import { JSONObject, JSONValue, Observer, Value } from './tiny-jsx';
 
 export class Box {
   readonly uniqueId: number;
   public pageNo = new Value<IPageNo>(undefined as any);
   private _innerValue: Value<BoxInnerValue>;
-  private _type: Value<IFormType>;
+  private _type: IFormType;
   private _errors: Value<ErrorString[]>;
+
+  #observers?: Set<Observer<JSONValue>>;
+
+  addObserver(observer: Observer<any>) {
+    (this.#observers || (this.#observers = new Set())).add(observer);
+  }
+
+  // removeObserver(observer: Observer<T>) {
+  //     this.#observers?.delete(observer);
+  //     // observer.observedValues.delete(this);
+  // }
+
+
 
   constructor(
     readonly parent: Box | null,
@@ -30,7 +28,7 @@ export class Box {
     value: JSONValue | Value<BoxInnerValue>
   ) {
     this.uniqueId = Box.getUniqueId();
-    this._type = new Value(type);
+    this._type = type;
     this._errors = new Value<ErrorString[]>([]);
     if (value instanceof Value) {
       this._innerValue = value;
@@ -53,11 +51,7 @@ export class Box {
 
 
   getType(): IFormType {
-    return this._type.getValue()
-  }
-
-  setType(type: IFormType) {
-    this._type.setValue(type);
+    return this._type
   }
 
   setValue(value: JSONValue) {
@@ -65,7 +59,7 @@ export class Box {
   }
 
   setJSONValue(value: JSONValue | undefined, validate: boolean): void {
-    const type = this._type.getValue();
+    const type = this._type;
     let innerValue: BoxInnerValue;
     if (value === undefined && "defaultValue" in type) {
       value = type.defaultValue;
@@ -139,29 +133,39 @@ export class Box {
     }
 
     this._innerValue.setValue(innerValue);
+    let parent = this.parent;
+    while (parent) {
+      parent.notifyChildChanged()
+      parent = parent.parent;
+    }
     if (validate) this.validate();
+  }
 
-
+  notifyChildChanged() {
+    if (this.#observers) {
+      let jsonValue = this.getJSONValue()
+      this.#observers?.forEach(observer => observer.onValueChanged(jsonValue));
+    }
   }
 
   getMembers(): Box[] {
     let value = this._innerValue.getValue();
     //let result: JSONValue;
-    if (value && typeof value === 'object' && value.type.type === 'object') {
+    if (value && typeof value === 'object' && value.type && value.type.type === 'object') {
       return (value as BoxInnerObject).members;
     }
     return [];
   }
 
   getVariants(): IVariantMemberType[] {
-    let type = this._type.getValue() as unknown as IVariantType;
+    let type = this._type as IVariantType;
     if (type.type === "variant") {
       return type.variants;
     } else return [];
   }
 
   setVariantKey(key: string) {
-    let type = this._type.getValue() as unknown as IVariantType;
+    let type = this._type as IVariantType;
     if (type.type === "variant") {
       let variantType = type.variants.find(t => t.key == key);
       if (variantType) {
@@ -175,14 +179,14 @@ export class Box {
   }
 
   getInnerVariant(): BoxInnerVariant | undefined {
-    if (this._type.getValue().type === "variant") {
+    if (this._type.type === "variant") {
       let value = this._innerValue.getValue();
       return (value as any as BoxInnerVariant);
     } else return undefined;
   }
 
   validate(): void {
-    const type = this._type.getValue();
+    const type = this._type;
     const errors: ErrorString[] = [];
     const value = this.getJSONValue();
 
@@ -204,8 +208,17 @@ export class Box {
 
   getJSONValue(): JSONValue {
     const innerValue = this._innerValue.getValue();
-    if (typeof innerValue === 'object' && innerValue?.type.type === 'array') {
-      return (innerValue as BoxInnerArray).entries.map(entry => entry.getJSONValue());
+    if (typeof innerValue === 'object') {
+      if (this._type.type === 'array') {
+        return (innerValue as BoxInnerArray).entries.map(entry => entry.getJSONValue());
+      } else if (this._type.type === 'object') {
+        let result = {}
+        this._type.membersTypes.forEach((t, i) => result[t.key] = (innerValue as BoxInnerObject).members[i].getJSONValue());
+        return result;
+      } else if (this._type.type === 'variant') {
+        let result = { type: this._type.type }
+        // TODO
+      }
     }
     return innerValue as JSONValue;
   }

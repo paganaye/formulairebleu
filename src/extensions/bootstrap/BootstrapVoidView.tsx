@@ -1,4 +1,4 @@
-import { Component } from "../../core/jsx";
+import { JsxComponent } from "../../core/tiny-jsx";
 import { Box } from "../../core/Box";
 import { ConstView } from './BootstrapConstView';
 
@@ -7,7 +7,7 @@ export type VoidVueProps = {
 };
 
 
-export const VoidView: Component<VoidVueProps> = (props) => {
+export const VoidView: JsxComponent<VoidVueProps> = (props) => {
   // switch (props.view) {
   //   case "html":
   //     return <div innerHTML={props.data} />;

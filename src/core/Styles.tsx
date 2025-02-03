@@ -1,7 +1,4 @@
-// Styles.js
-
-import { JSONObject } from "./Utils";
-
+import { JSONObject } from "./tiny-jsx";
 
 export class Styles {
   static styleSheet = (() => {

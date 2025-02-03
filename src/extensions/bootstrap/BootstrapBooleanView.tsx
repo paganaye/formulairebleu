@@ -1,11 +1,10 @@
 
-import { Component, createMemo, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
-import { formulairebleu } from '../../core/IForm';
-import { OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
+import { IFormType } from "../../core/IForm";
 
 export interface IBootstapSwitchType {
   type: 'switch'
@@ -13,7 +12,6 @@ export interface IBootstapSwitchType {
 
 export type BooleanInputProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   engine: BootstrapEngine;
 };
@@ -38,10 +36,10 @@ Styles.add(".form-check-input:indeterminate", {
 });
 
 
-export const BootstrapBooleanView: Component<BooleanInputProps> = (props) => {
-  let typeView: formulairebleu.IFormType = props.box.getType();
+export const BootstrapBooleanView = (props: BooleanInputProps) => {
+  let typeView: IFormType = props.box.getType();
   // je suis obligé de mettre as any ici
-  const isSwitch = createMemo(() => ((typeView as any)?.view?.type === "switch"));
+  const isSwitch = (() => ((typeView as any)?.view?.type === "switch"));
   let id = getUniqueId(`bool_${props.label}`);
   let inputRef: HTMLInputElement;
   function setInputRef(ref: HTMLInputElement) {
@@ -69,7 +67,6 @@ export const BootstrapBooleanView: Component<BooleanInputProps> = (props) => {
             // Bascule entre true et false (l’état indeterminate est géré séparément)
             const newValue = e.currentTarget.checked;
             props.box.setValue(newValue);
-            props.onValueChanged({});
           }} />
         <label class="form-check-label ms-2 flex-grow-1" x-onMouseDown={(e: any) => {
           e.preventDefault();
@@ -79,5 +76,5 @@ export const BootstrapBooleanView: Component<BooleanInputProps> = (props) => {
       </div>
       {/* <InputBottom {...props} /> */}
     </div>
-  </>);
+  </>) as any;
 };

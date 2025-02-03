@@ -1,10 +1,8 @@
-import { For, JSX } from "../../core/jsx";
-import { getUniqueId, JSONValue } from "../../core/Utils";
-import { formulairebleu } from "../../core/IForm";
-type ISelectionEntry = formulairebleu.ISelectionEntry;
-type IView = formulairebleu.IView;
+import { For, JSONValue, JsxComponent } from "../../core/tiny-jsx";
+import { getUniqueId, } from "../../core/Utils";
+import { ISelectionEntry, IView } from "../../core/IForm";
 import { IBootstrapRadioButtonsView } from './BootstrapForm';
-import { Bootstrap } from "./ensureBootstrapLoaded";
+import { Bootstrap } from "./BootstrapEngine";
 
 
 export type SingleSelectionProps = {
@@ -25,7 +23,7 @@ export type SingleSelectionProps = {
 //   backgroundColor: 'red',
 // });
 
-export function SingleSelectionVue(props: SingleSelectionProps): JSX.Element {
+export function SingleSelectionVue(props: SingleSelectionProps): JsxComponent {
   let id = getUniqueId("single_selection");
   let dropDown: bootstrap.Dropdown;
 

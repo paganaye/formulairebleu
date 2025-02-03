@@ -1,15 +1,11 @@
-import { Component, createEffect, createMemo, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
+import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, Value } from "../../core/tiny-jsx";
 import { Box, getDefaultValue } from "../../core/Box";
 import { ArrayRenderer, IColumn, SortOrder } from './BootstrapArrayRenderer';
-import { formulairebleu } from "../../core/IForm";
-import { OnValueChanged } from '../../core/FormEngine';
+import { IArrayType, ISelectionList } from "../../core/IForm";
 import { BootstrapEngine } from './BootstrapEngine';
-type IArrayType = formulairebleu.IArrayType;
-type ISelectionList = formulairebleu.ISelectionList;
 
-export type ArrayInputProps = {
+export type BootstrapArrayProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   level: number;
   engine: BootstrapEngine;
@@ -18,7 +14,7 @@ export type ArrayInputProps = {
   onSelectionChanged?: (item: any, newValue: boolean) => void;
 };
 
-export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
+export const BootstrapArrayView = (props: BootstrapArrayProps) => {
   let entries = new Value<any[]>(props.box.getEntries())
 
   // createEffect(() => {
@@ -39,7 +35,7 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
           entriesValue.push(newArrayEntry());
           entries.setValue(entriesValue);
           (props.box as any).setEntries(props.box.getType(), entries);
-          props.onValueChanged({ pagesChanged: false });
+          //props.onValueChanged({ pagesChanged: false });
         }}
       >Add</button>;
   }
@@ -53,7 +49,7 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
           entriesValue.splice(index(), 1);
           entries.setValue(entriesValue);
           (props.box as any).setEntries(props.box.getType(), entries);
-          props.onValueChanged({ pagesChanged: false });
+          //props.onValueChanged({ pagesChanged: false });
         }
         }
       > Delete</button >;
@@ -71,7 +67,7 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
     //   engine={props.engine} />;
   }
 
-  const columns = createMemo(() => {
+  const columns = computed({}, () => {
     let result: IColumn[] = [];
     let entryType = (props.box.getType() as IArrayType).entryType;
     if (!entryType) return [];
@@ -82,7 +78,7 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
       { key: "#value", label: "Value" }
     ]
     return result;
-  })
+  });
 
   function renderEntryField(entry2: Box, index: () => number, column: IColumn) {
     return <>todo</>

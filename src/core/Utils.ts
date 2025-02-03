@@ -1,7 +1,4 @@
-export type JSONPrimitive = number | string | null | boolean;
-export type JSONArray = JSONValue[];
-export type JSONObject = { [key: string]: JSONValue };
-export type JSONValue = JSONPrimitive | JSONArray | JSONObject;
+import { JSONValue } from "./tiny-jsx";
 
 export function callAppsScript<T = string>(
     method: string,

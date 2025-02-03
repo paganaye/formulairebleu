@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxFactory": "formulaireBleuJSXFactory",
-    "jsxFragmentFactory": "formulaireBleuJSXFragmentFactory",
+    "jsxFactory": "formulaireBleuJSX",
+    "jsxFragmentFactory": "formulaireBleuJSXFragment",
     "lib": [
       "DOM",
       "ES2020"

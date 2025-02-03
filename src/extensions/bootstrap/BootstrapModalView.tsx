@@ -1,4 +1,4 @@
-import { Component, JSX, Show, Value, createEffect } from "../../core/jsx";
+import { JsxComponent, Show, Value } from "../../core/tiny-jsx";
 //import { Portal } from "solid-js/web";
 import { Buttons, DialogButton } from "./BootstrapButtonsView";
 
@@ -10,7 +10,6 @@ interface InnerModalProps {
   isOpen: boolean;
   onClose?: () => void;
   title?: string;
-  children: JSX.Element;
   buttons?: DialogButton[]
   backDropClickClosesModal: boolean
 }
@@ -22,7 +21,7 @@ export function closeTopModal() {
   }
 }
 
-export const InnerModalView: Component<InnerModalProps> = (props) => {
+export const InnerModalView: JsxComponent<InnerModalProps> = (props, children) => {
   let animationTimeout: number | undefined;
   const showBackdrop = new Value(false);
   const showModal = new Value(false);
@@ -100,7 +99,7 @@ export const InnerModalView: Component<InnerModalProps> = (props) => {
               </div>
             </Show>
             <div class="modal-body">
-              {props.children}
+              {children}
             </div>
             <Show when={props.buttons}>
               <div class="modal-footer">
@@ -119,10 +118,9 @@ export const InnerModalView: Component<InnerModalProps> = (props) => {
 interface IPopupProps {
   isOpen: boolean;
   onClose?: () => void;
-  children: JSX.Element;
   title?: string;
 }
-export const PopupView: Component<IPopupProps> = (props) => {
+export const PopupView: JsxComponent<IPopupProps> = (props) => {
   return <InnerModalView {...props} backDropClickClosesModal={true} />
 }
 
@@ -130,11 +128,10 @@ interface IModalProps {
   isOpen: boolean;
   onClose?: () => void;
   title: string;
-  children: JSX.Element;
   buttons?: DialogButton[]
 }
 
-export const ModalView: Component<IModalProps> = (props) => {
+export const ModalView: JsxComponent<IModalProps> = (props) => {
   return <InnerModalView {...props} backDropClickClosesModal={false} />
 }
 

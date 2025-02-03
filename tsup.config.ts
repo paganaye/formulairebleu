@@ -32,6 +32,19 @@ import { defineConfig } from 'tsup'
 //     return result;
 // })
 
-export default defineConfig({
-    entry: ['src/index.ts']
-})
+
+export default defineConfig([
+    {
+        entry: ['src/index.ts'],
+        format: ['esm', 'cjs'],
+        minify: false,
+        sourcemap: true,
+        outExtension: ({ format }) => ({ js: `.${format}.js` })
+    },
+    {
+        entry: ['src/index.ts'],
+        format: ['esm', 'cjs'],
+        minify: true, // Version minifiée
+        outExtension: ({ format }) => ({ js: `.${format}.min.js` })
+    }
+]);

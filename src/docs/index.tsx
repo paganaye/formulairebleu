@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { render, formulaireBleuJSXFactory } from '../core/jsx'
+import { render, formulaireBleuJSX } from '../core/tiny-jsx'
 import App from './App'
 
 const root = document.getElementById('root')

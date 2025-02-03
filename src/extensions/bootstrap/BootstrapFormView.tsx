@@ -1,10 +1,7 @@
-import { Component, createEffect, JSX, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
+import { formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, JSXSource, Observer, Value } from "../../core/tiny-jsx";
 import ModalView, { PopupView } from './BootstrapModalView';
-import { formulairebleu } from "../../core/IForm";
-type IForm = formulairebleu.IForm;
-type IFormType = formulairebleu.IFormType;
+import { IForm } from "../../core/IForm";
 import { Box } from "../../core/Box";
-import { JSONValue } from "../../core/Utils";
 import { Pager } from './BootstrapPagerView';
 import { FormEngine, IFormProps, OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
@@ -14,15 +11,17 @@ import { BootstrapEngine } from './BootstrapEngine';
 interface FormBodyProps {
   engine: BootstrapEngine;
   form: IForm,
-  value: JSONValue,
-  setValue: (v: JSONValue) => void,
-  header?: JSX.Element;
-  footer?: JSX.Element;
+  value: Value<JSONValue>,
+  onValueChanged: (v) => void,
+  header?: JSXSource;
+  footer?: JSXSource;
 }
 
-const FormBody: Component<FormBodyProps> = (props) => {
-  const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.value);
-
+const FormBody = (props: FormBodyProps) => {
+  const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.value.getValue());
+  rootBox.addObserver(new Observer((v) => {
+    console.log("here", v)
+  }))
   // createEffect(() => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
   // })
@@ -40,15 +39,15 @@ const FormBody: Component<FormBodyProps> = (props) => {
 
   // });
 
-  function onValueChanged(onValueChanged: OnValueChanged) {
-    if (!rootBox) return;
-    const jsonValue = Box.unBox(rootBox);
-    currentJSONString = JSON.stringify(jsonValue)
-    props.setValue(jsonValue);
-    if (onValueChanged?.pagesChanged) {
-      props.engine.paginate(rootBox);
-    }
-  }
+  // function onValueChanged(onValueChanged: OnValueChanged) {
+  //   if (!rootBox) return;
+  //   const jsonValue = Box.unBox(rootBox);
+  //   currentJSONString = JSON.stringify(jsonValue)
+  //   props.value.setValue(jsonValue);
+  //   if (onValueChanged?.pagesChanged) {
+  //     props.engine.paginate(rootBox);
+  //   }
+  // }
 
 
   return (
@@ -59,7 +58,6 @@ const FormBody: Component<FormBodyProps> = (props) => {
         label: props.form.dataType.label ?? props.form.name,
         level: 1,
         box: rootBox,
-        onValueChanged: onValueChanged
       })}
       {props.footer}
     </div >
@@ -71,7 +69,7 @@ interface IModalFormProps extends IFormProps {
   setIsOpen: (value: boolean) => void;
 }
 
-export const ModalFormView: Component<IModalFormProps> = (props) => {
+export const ModalFormView = (props: IModalFormProps) => {
 
   const context = new BootstrapEngine(props.form.templates);
   const pageNo = context.pageNo;
@@ -85,10 +83,10 @@ export const ModalFormView: Component<IModalFormProps> = (props) => {
         { text: String(pageNo.getValue()), action: () => { }, class: "" },
         { text: ">", action: () => { pageNo.setValue(pageNo.getValue() + 1) }, class: "" },
         { text: "Close", action: () => onClose(), class: "btn-primary" }]}>
-      <FormBody
+      {/* <FormBody
         {...props}
         engine={context}
-      />
+      /> */}
     </ModalView>);
 
 }
@@ -99,16 +97,16 @@ interface IPopupFormProps extends IFormProps {
   setIsOpen: (value: boolean) => void;
 }
 
-export const PopupFormView: Component<IPopupFormProps> = (props) => {
+export const PopupFormView = (props: IPopupFormProps) => {
   const context = new BootstrapEngine(props.form.templates);
   let onClose = () => { props.setIsOpen(false) }
 
   return (
     <PopupView isOpen={props.isOpen} onClose={onClose} title={props.title}>
-      <FormBody
+      {/* <FormBody
         {...props}
         engine={context}
-      />
+      /> */}
     </PopupView>);
 
 }
@@ -134,21 +132,20 @@ export function formatTemplateString(templateString: string, data: Record<string
   }
 }
 
-export const BootstrapFormView: Component<{ engine: FormEngine } & IFormProps> = (props) => {
+export const BootstrapFormView = (props: ({ engine: FormEngine } & IFormProps)) => {
   let pageNo = props.engine.pageNo;
 
   return (
     <main>
       <FormBody
-        engine={props.engine}
+        engine={props.engine as any}
         form={props.form}
         value={props.value}
-        setValue={props.setValue}
+        onValueChanged={props.onValueChanged}
         header=<h1>{props.form.name}</h1>
-        footer={<>
+        footer=<>
           <Pager pageCount={props.engine.pageCount.getValue()} onPageSelected={p => pageNo.setValue(p)} selectedPage={pageNo.getValue()} />
         </>
-        }
       />
     </main >
   );

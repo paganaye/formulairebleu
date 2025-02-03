@@ -1,12 +1,10 @@
-import { Component, createEffect, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
-import { OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
 
 export type StringInputProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   engine: BootstrapEngine;
 };
@@ -46,12 +44,11 @@ const applyMask = (value: string, mask: string, pos: number): { newValue: string
   return { newValue: maskedValue, newPos: pos + (incrementPos ? 1 : 0) };
 };
 
-
-export const BootstrapStringView: Component<StringInputProps> = (props) => {
+export const BootstrapStringView = (props: StringInputProps) => {
   let id = getUniqueId(`txt_${props.label}`);
   let mask: string | undefined;
 
-  createEffect(() => {
+  (() => {
     // let view = props.box.getType().view ?? { type: 'textbox' };
     // mask = view.type == 'masked-textbox' ? view.mask : undefined;
   })
@@ -66,10 +63,11 @@ export const BootstrapStringView: Component<StringInputProps> = (props) => {
           id={id}
           class="form-control"
           value={(props.box.getJSONValue() || "") as any}
-          readOnly={props.engine.isReadonly}
+          readOnly={props.engine.isReadonly ? "" : undefined}
           placeholder={"" /*placeholder is required for form-floating to work*/}
           required={props.box.getType().mandatory}
-          onInput={(e) => {
+          oninput={(e) => {
+            console.log("oninput");
             let inputElt = e.currentTarget;
             let previousValue = props.box.getJSONValue() as string;
             let newValue = inputElt.value;
@@ -88,7 +86,6 @@ export const BootstrapStringView: Component<StringInputProps> = (props) => {
               }
             }
             props.box.setValue(newValue);
-            props.onValueChanged({});
           }}
           onBlur={(_) => {
             props.box.validate();

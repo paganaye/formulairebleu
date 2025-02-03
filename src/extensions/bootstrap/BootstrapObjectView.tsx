@@ -1,19 +1,17 @@
-import { Component, For, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { JsxComponent, For, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { ConstView } from './BootstrapConstView';
 import { Box } from "../../core/Box";
-import { OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
 
 
 export type ObjectInputProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   level: number;
   engine: BootstrapEngine;
 };
 
-export const BootstrapObjectView: Component<ObjectInputProps> = (props) => {
+export const BootstrapObjectView: JsxComponent<ObjectInputProps> = (props) => {
   return (
     <>
       {props.engine.InputTop({ ...props })}
@@ -30,7 +28,6 @@ export const BootstrapObjectView: Component<ObjectInputProps> = (props) => {
                   label: sub.getType().label ?? sub.name,
                   box: sub,
                   level: props.level + 1,
-                  onValueChanged: props.onValueChanged
                 })
               }
             </div>

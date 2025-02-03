@@ -1,20 +1,18 @@
-import { Component, createEffect, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
+import { formulaireBleuJSXFragment, formulaireBleuJSX } from "../../core/tiny-jsx";
 import { Box } from "../../core/Box";
-import { Value } from '../../core/jsx';
+import { Value } from '../../core/tiny-jsx';
 import { SingleSelectionVue } from './BootstrapSingleSelectionView';
-import { OnValueChanged } from '../../core/FormEngine';
 import { BootstrapEngine } from './BootstrapEngine';
 
 export type VariantInputProps = {
   box: Box;
-  onValueChanged: (onValueChanged: OnValueChanged) => void;
   label: string;
   level: number;
   engine: BootstrapEngine;
 };
 
 
-export const BootstrapVariantView: Component<VariantInputProps> = (props) => {
+export const BootstrapVariantView = (props: VariantInputProps) => {
   //let id = getUniqueId(`txt_${props.label}`);
   let innerVariant = props.box.getInnerVariant();
   let variantKeyString = new Value<string>((innerVariant?.value.getType() as any).key);

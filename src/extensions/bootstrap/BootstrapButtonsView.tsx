@@ -1,4 +1,4 @@
-import { Component, For } from "../../core/jsx";
+import { JsxComponent, For } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 
@@ -17,15 +17,15 @@ Styles.add(".buttons.btn:focus", {
   border: '1px solid #ccc'
 })
 
-export const Buttons: Component<DialogButtonsProps> = (props) => {
-  return <For each={props.buttons}>
-      {(button) => {
+export const Buttons: JsxComponent<DialogButtonsProps> = (props) => {
+  return <For each={props.buttons as DialogButton[]}>
+    {(button) => {
       return (
         <button tabIndex={0}
-            type="button"
-            class={"buttons btn " + button.class}
-            onClick={() => button.action()}
+          type="button"
+          class={"buttons btn " + button.class}
+          onClick={() => button.action()}
         > {button.text}</button>);
-      }}
+    }}
   </For>;
 };

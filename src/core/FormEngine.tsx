@@ -1,25 +1,22 @@
-import { Component, createEffect, JSXElement, createMemo, Show, JSX, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Dynamic } from "./jsx";
-import { JSONValue } from "./Utils";
-import { formulairebleu } from "./IForm";
+import { JsxComponent, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
+import { IForm, IFormType, IKeyedMemberType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
 import { Box } from "./Box";
-import { Value } from './jsx';
-type IForm = formulairebleu.IForm;
-type IFormType = formulairebleu.IFormType;
-type IKeyedMemberType = formulairebleu.IKeyedMemberType;
+import { Value } from './tiny-jsx';
 
 export type OnValueChanged = { pagesChanged?: boolean };
 
 export interface IFormProps {
     form: IForm,
     value: Value
+    onValueChanged: (v: any) => void
 }
 
 export interface FormBodyProps extends IFormProps {
     engine: FormEngine;
-    header?: JSX.Element;
-    footer?: JSX.Element;
+    header?: HTMLElement;
+    footer?: HTMLElement;
 }
 
 export interface InputRenderProps {
@@ -27,7 +24,6 @@ export interface InputRenderProps {
     label: string | undefined;
     level: number;
     box?: Box;
-    onValueChanged: (onValueChanged: OnValueChanged) => void;
 }
 
 type InputTopProps = {
@@ -127,7 +123,7 @@ export abstract class FormEngine {
     }
 
 
-    FormBody(props: FormBodyProps): JSXElement {
+    FormBody(props: FormBodyProps) {
         const rootBox = new Value(undefined);
 
         // createEffect(() => {
@@ -147,17 +143,17 @@ export abstract class FormEngine {
 
         // });
 
-        function onValueChanged(onValueChanged: OnValueChanged) {
-            const rootBoxValue = rootBox.getValue();
-            if (!rootBoxValue) return;
-            const jsonValue = Box.unBox(rootBoxValue);
-            currentJSONString = JSON.stringify(jsonValue)
-            props.value.setValue(jsonValue);
+        // function onValueChanged(onValueChanged: OnValueChanged) {
+        //     const rootBoxValue = rootBox.getValue();
+        //     if (!rootBoxValue) return;
+        //     const jsonValue = Box.unBox(rootBoxValue);
+        //     currentJSONString = JSON.stringify(jsonValue)
+        //     props.value.setValue(jsonValue);
 
-            if (onValueChanged?.pagesChanged) {
-                this.paginate(rootBox);
-            }
-        }
+        //     if (onValueChanged?.pagesChanged) {
+        //         this.paginate(rootBox);
+        //     }
+        // }
 
 
         return (
@@ -176,36 +172,43 @@ export abstract class FormEngine {
     };
 
 
-    InputRenderer(props: InputRenderProps): JSXElement {
-        let inputComponent = new Value<Component<any> | undefined>(undefined);
+    InputRenderer(props: InputRenderProps) {
 
+        let inputComponent = computed({}, (p) => {
+            let result: JsxComponent<InputRenderProps>;
+            result = this.getRenderer(props.box?.getType());
+            return result;
+        }); // new Value<Component<any> | undefined>(undefined);
 
+        const isVisible = computed({}, (p) => {
+            return true
+        });
+
+        // return this.isBoxVisible(props.box);
         // createEffect(() => {
         //     inputComponent.setValue(() => this.getRenderer(props.box?.getType()));
         // })
 
-        const isVisible = createMemo(() => {
-            return this.isBoxVisible(props.box);
-        })
+        // isBoxVisible(box: Box): boolean {
+        //     if (!box) return true;
+        //     let currentPage = this.pageNo.getValue();
+        //     if (currentPage == 0) return true;
+        //     let boxPage = box.pageNo.getValue();
+        //     if (!boxPage) return true;
+        //     return boxPage.startPage <= currentPage && currentPage <= boxPage.endPage
+        // }
 
-        return <>
-            <Show when={isVisible.getValue()}>
-                <Dynamic component={inputComponent.getValue()} {...props} />
+
+        return (<>
+            <Show when={isVisible}>
+                {inputComponent.getValue()?.(props)}
             </Show>
-        </>;
+        </>);
 
     }
 
-    isBoxVisible(box: Box): boolean {
-        if (!box) return true;
-        let currentPage = this.pageNo.getValue();
-        if (currentPage == 0) return true;
-        let boxPage = box.pageNo.getValue();
-        if (!boxPage) return true;
-        return boxPage.startPage <= currentPage && currentPage <= boxPage.endPage
-    }
 
-    abstract getRenderer(type: IFormType): Component<any> | undefined;
+    abstract getRenderer(type: IFormType): JsxComponent<InputRenderProps>;
 
     InputTop(props: InputTopProps) {
         return <>
@@ -219,13 +222,13 @@ export abstract class FormEngine {
     InputBottom(props: InputBottomProps) {
         // let errors = createMemo(() => props.box.errors());
         return <>
-            <ErrorsView errors={/*rrors()*/1} />
+            <ErrorsView errors={['']} />
             {/* <Show when={props.options.filter?.(props as any)}>
-              <Show fallback={<pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}...{props.box.getEndPageNo()}:{props.box.getEndLineNo()} </pre>} when={props.box.getStartPageNo() == props.box.getEndPageNo() && props.box.getStartLineNo() == props.box.getEndLineNo()}>
-              <pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}</pre>
-              <pre>filter:{JSON.stringify(props.options.filter?.(props as any))}</pre>
-            </Show>
-          </Show > */}
+                <Show fallback={<pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}...{props.box.getEndPageNo()}:{props.box.getEndLineNo()} </pre>} when={props.box.getStartPageNo() == props.box.getEndPageNo() && props.box.getStartLineNo() == props.box.getEndLineNo()}>
+                    <pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}</pre>
+                    <pre>filter:{JSON.stringify(props.options.filter?.(props as any))}</pre>
+                </Show>
+            </Show > */}
         </>
     }
 
