@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import { Component, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { ConstValue } from "../../core/IQuery";
 
 export type ConstVueProps = Omit<ConstValue, 'type'> & {

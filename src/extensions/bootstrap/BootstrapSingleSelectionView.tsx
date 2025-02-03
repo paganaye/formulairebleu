@@ -1,4 +1,4 @@
-import { For, JSX } from "solid-js";
+import { For, JSX } from "../../core/jsx";
 import { getUniqueId, JSONValue } from "../../core/Utils";
 import { formulairebleu } from "../../core/IForm";
 type ISelectionEntry = formulairebleu.ISelectionEntry;

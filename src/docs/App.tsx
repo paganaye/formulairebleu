@@ -1,48 +1,50 @@
-import { Route, HashRouter } from "@solidjs/router";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import FormEditor from "./pages/FormEditor";
-import NotFound from "./pages/NotFound";
-import Tests from "./pages/Tests";
-import { ensureBootstrapLoaded } from "../extensions/bootstrap/ensureBootstrapLoaded";
+import { Value } from '../core/jsx'
+import { formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../core/jsx"
+// import { Route, HashRouter } from "@solidjs/router";
+// import Home from "./pages/Home";
+// import About from "./pages/About";
+// import FormEditor from "./pages/FormEditor";
+// import NotFound from "./pages/NotFound";
+// import Tests from "./pages/Tests";
+// import { ensureBootstrapLoaded } from "../extensions/bootstrap/ensureBootstrapLoaded";
 
-ensureBootstrapLoaded()
+// ensureBootstrapLoaded()
 
-export default function App() {
-    return (<>
-        <HashRouter>
-            <Route path="/" component={Home} />
-            <Route path="/about" component={About} />
-            <Route path="/form-editor" component={FormEditor} />
-            <Route path="/tests" component={Tests} />
-            <Route path="*404" component={NotFound} />
-        </HashRouter>
-    </>);
-}
+// export default function App() {
+//     return (<>
+//         <HashRouter>
+//             <Route path="/" component={Home} />
+//             <Route path="/about" component={About} />
+//             <Route path="/form-editor" component={FormEditor} />
+//             <Route path="/tests" component={Tests} />
+//             <Route path="*404" component={NotFound} />
+//         </HashRouter>
+//     </>);
+// }
 
 
-/*
-import { createSignal } from 'solid-js'
-import { ensureBootstrapLoaded } from '../extensions/bootstrap/ensureBootstrapLoaded'
-import '../extensions/plain-html/PlainHTMLExtension';
-import { ConstValue } from "../core/IQuery";
-import { PlainFormView } from '../extensions/plain-html/PlainFormView';
+// /*
+// import { createSignal } from "../../core/jsx"
+// import { ensureBootstrapLoaded } from '../extensions/bootstrap/ensureBootstrapLoaded'
+// import '../extensions/plain-html/PlainHTMLExtension';
+// import { ConstValue } from "../core/IQuery";
+// import { PlainFormView } from '../extensions/plain-html/PlainFormView';
 import { BootstrapEngine } from '../extensions/bootstrap/BootstrapEngine';
 import { formulairebleu } from '../core/IForm';
 
 
-// IBooleanViews
-ensureBootstrapLoaded();
+// // IBooleanViews
+// ensureBootstrapLoaded();
 
 let bootstrapEngine = new BootstrapEngine({})
 
 
-//let x: formulairebleu.IViews['number'];
-let x: formulairebleu.INumberType = {} as any;
-x.type = 'number';
+// //let x: formulairebleu.IViews['number'];
+// let x: formulairebleu.INumberType = {} as any;
+// x.type = 'number';
 
 
-let htmlView: ConstValue = { type: "const", data: "<p>this is <b>HTML</b></p>", view: "html" };
+// let htmlView: ConstValue = { type: "const", data: "<p>this is <b>HTML</b></p>", view: "html" };
 
 let form1 = {
     name: 'form1',
@@ -159,23 +161,23 @@ let form1 = {
     }
 } as const satisfies formulairebleu.IForm;
 
-let n: formulairebleu.InferDataType<{ type: 'number' }> = 5
-let b: formulairebleu.InferDataType<{ type: 'boolean' }> = false
-let s: formulairebleu.InferDataType<{ type: 'string' }> = "abc"
-let c1: formulairebleu.InferDataType<{ type: 'const', value: 5 }> = 5
-let c2: formulairebleu.InferDataType<{ type: 'const', value: "abc" }> = "abc"
-let c3: formulairebleu.InferDataType<{ type: 'const', value: true }> = true
-let c4: formulairebleu.InferDataType<{ type: 'const', value: { a: 1 } }> = { a: 1 }
-let d1: formulairebleu.InferDataType<{ type: 'date' }> = "2001-02-03"
-let a1: formulairebleu.InferDataType<{ type: 'array', entryType: { type: 'number' } }> = [1, 2, 3]
-let a2: formulairebleu.InferDataType<{ type: 'array', entryType: { type: 'string' } }> = ["A", "B"]
-let a3: formulairebleu.InferDataType<{ type: 'array', entryType: { type: 'array', entryType: { type: 'number' } } }> = [[1], [2, 3]]
-let o1: formulairebleu.InferDataType<{ type: 'object', membersTypes: [{ key: 'm', type: 'string' }] }> = { m: "abc" }
-let o2: formulairebleu.InferDataType<{ type: 'object', membersTypes: [{ key: 'm1', type: 'string' }, { key: 'm2', type: 'boolean' }] }> = { m1: "abc", m2: true }
-let v1: formulairebleu.InferDataType<{ type: 'variant', variants: [{ key: "str", type: 'string' }, { key: "num", type: 'number' }] }>[] = [{ key: "num", data: 5 }, { key: "str", data: 'ABC' }]
-let f1: formulairebleu.InferFormType<{ name: 'form1', version: '1', dataType: { type: 'number' } }> = 123
-let f1v = { name: 'form1', version: '1', dataType: { type: 'number' } } as const satisfies formulairebleu.IForm;
-let f2: formulairebleu.InferFormType<typeof f1v> = 123
+// let n: formulairebleu.InferDataType<{ type: 'number' }> = 5
+// let b: formulairebleu.InferDataType<{ type: 'boolean' }> = false
+// let s: formulairebleu.InferDataType<{ type: 'string' }> = "abc"
+// let c1: formulairebleu.InferDataType<{ type: 'const', value: 5 }> = 5
+// let c2: formulairebleu.InferDataType<{ type: 'const', value: "abc" }> = "abc"
+// let c3: formulairebleu.InferDataType<{ type: 'const', value: true }> = true
+// let c4: formulairebleu.InferDataType<{ type: 'const', value: { a: 1 } }> = { a: 1 }
+// let d1: formulairebleu.InferDataType<{ type: 'date' }> = "2001-02-03"
+// let a1: formulairebleu.InferDataType<{ type: 'array', entryType: { type: 'number' } }> = [1, 2, 3]
+// let a2: formulairebleu.InferDataType<{ type: 'array', entryType: { type: 'string' } }> = ["A", "B"]
+// let a3: formulairebleu.InferDataType<{ type: 'array', entryType: { type: 'array', entryType: { type: 'number' } } }> = [[1], [2, 3]]
+// let o1: formulairebleu.InferDataType<{ type: 'object', membersTypes: [{ key: 'm', type: 'string' }] }> = { m: "abc" }
+// let o2: formulairebleu.InferDataType<{ type: 'object', membersTypes: [{ key: 'm1', type: 'string' }, { key: 'm2', type: 'boolean' }] }> = { m1: "abc", m2: true }
+// let v1: formulairebleu.InferDataType<{ type: 'variant', variants: [{ key: "str", type: 'string' }, { key: "num", type: 'number' }] }>[] = [{ key: "num", data: 5 }, { key: "str", data: 'ABC' }]
+// let f1: formulairebleu.InferFormType<{ name: 'form1', version: '1', dataType: { type: 'number' } }> = 123
+// let f1v = { name: 'form1', version: '1', dataType: { type: 'number' } } as const satisfies formulairebleu.IForm;
+// let f2: formulairebleu.InferFormType<typeof f1v> = 123
 
 function randomize<T extends formulairebleu.IForm>(form: T): formulairebleu.InferFormType<T> {
     const randomValue = (type: formulairebleu.IFormType): any => {
@@ -199,22 +201,21 @@ function randomize<T extends formulairebleu.IForm>(form: T): formulairebleu.Infe
     };
     return randomValue(form.dataType);
 }
-let value = randomize(form1);
-//value.tel4 = "TEL4";
 
-let [getValue, setValue] = createSignal<any>(value)
+let formValue = randomize(form1);
+// //value.tel4 = "TEL4";
 
-function App() {
-    let formView = bootstrapEngine.FormView({ form: form1, value: getValue(), setValue });
+let value = new Value(formValue)
 
-    return (
-        <>
-            <PlainFormView form={form1} value={getValue()} setValue={setValue} />
-            <hr />
-            {formView}
-        </>
-    )
+export default function App() {
+    //let formView = bootstrapEngine.FormView({ form: form1, value });
+    let intValue = new Value(5)
+    setInterval(() => {
+        intValue.setValue(intValue.getValue() + 1);
+    }, 1);
+
+    return (<>
+        <p>Hi {intValue}</p>
+    </>)
 }
 
-export default App
-*/

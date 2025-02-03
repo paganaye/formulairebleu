@@ -1,4 +1,4 @@
-import { Component, createEffect } from 'solid-js';
+import { Component, createEffect, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
 import { OnValueChanged } from '../../core/FormEngine';

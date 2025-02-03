@@ -1,18 +1,18 @@
-import { createSignal } from "solid-js";
+import { A, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
 import Nav from "../components/Nav";
 import { formulairebleu } from "../../core/IForm"
 import "../../extensions/bootstrap/BootstrapExtension"
 import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine"
 
 export default function Tests() {
-    let [getVersion, setVersion] = createSignal("...");
-    let [getError, setError] = createSignal("");
+    let version = new Value("...");
+    let error = new Value("");
     (async () => {
         try {
-            let pkg = await import('../../../package.json');
-            setVersion(pkg.version);
+            // let pkg = await import('../../../package.json');
+            // setVersion(pkg.version);
         } catch (e) {
-            setVersion((e as Error).message)
+            version.setValue((e as Error).message)
         }
     })();
 
@@ -23,19 +23,17 @@ export default function Tests() {
         templates: {}
     }
     let engine = new BootstrapEngine();
-    let [value, _setValue] = createSignal("a")
-    function setValue(v: string) {
-        _setValue(v);
-    }
+    let value = new Value("a")
+
     return (<>
         <div class="container">
             <Nav />
             <h1>Tests</h1>
             <div>
-                <p class="error">{getError()}</p>
-                <p>Cette page utilise la toute dernière version {getVersion()} de la librairie Formulaire Bleu.</p>
+                <p class="error">{error.getValue()}</p>
+                <p>Cette page utilise la toute dernière version {version.getValue()} de la librairie Formulaire Bleu.</p>
 
-                {engine.FormView({ value: value(), setValue, form })}
+                {engine.FormView({ value, form })}
             </div>
         </div>
     </>);

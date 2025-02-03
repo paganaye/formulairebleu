@@ -1,7 +1,5 @@
-import { Component, createEffect, JSX } from 'solid-js';
-import { createSignal } from "solid-js";
+import { Component, createEffect, JSX, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
 import ModalView, { PopupView } from './BootstrapModalView';
-import * as Handlebars from 'handlebars';
 import { formulairebleu } from "../../core/IForm";
 type IForm = formulairebleu.IForm;
 type IFormType = formulairebleu.IFormType;
@@ -23,27 +21,26 @@ interface FormBodyProps {
 }
 
 const FormBody: Component<FormBodyProps> = (props) => {
-  const [getRootBox, setRootBox] = createSignal<Box>();
+  const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.value);
 
-  createEffect(() => {
-    setRootBox(Box.enBox(null, props.form.name, props.form.dataType, null));
-  })
+  // createEffect(() => {
+  //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
+  // })
 
   let currentJSONString: string = "";
 
-  createEffect(() => {
-    const propJSONString = JSON.stringify(props.value);
-    if (propJSONString === currentJSONString) return;
+  // createEffect(() => {
+  //   const propJSONString = JSON.stringify(props.value);
+  //   if (propJSONString === currentJSONString) return;
 
-    currentJSONString = propJSONString;
-    const newBox = Box.enBox(null, props.form.name, props.form.dataType, props.value);
-    setRootBox(newBox);
-    props.engine.paginate(newBox);
+  //   currentJSONString = propJSONString;
+  //   const newBox = Box.enBox(null, props.form.name, props.form.dataType, props.value);
+  //   rootBox.setValue(newBox);
+  //   props.engine.paginate(newBox);
 
-  });
+  // });
 
   function onValueChanged(onValueChanged: OnValueChanged) {
-    const rootBox = getRootBox();
     if (!rootBox) return;
     const jsonValue = Box.unBox(rootBox);
     currentJSONString = JSON.stringify(jsonValue)
@@ -61,7 +58,7 @@ const FormBody: Component<FormBodyProps> = (props) => {
         engine: props.engine,
         label: props.form.dataType.label ?? props.form.name,
         level: 1,
-        box: getRootBox(),
+        box: rootBox,
         onValueChanged: onValueChanged
       })}
       {props.footer}
@@ -118,17 +115,17 @@ export const PopupFormView: Component<IPopupFormProps> = (props) => {
 
 export function formatTemplateString(templateString: string, data: Record<string, any>): HTMLElement {
   try {
-    const compiledTemplate = Handlebars.compile(templateString);
-    const result = compiledTemplate(data);
+    // const compiledTemplate = Handlebars.compile(templateString);
+    // const result = compiledTemplate(data);
 
-    const tempSpan = document.createElement('span');
-    tempSpan.innerHTML = result;
+    // const tempSpan = document.createElement('span');
+    // tempSpan.innerHTML = result;
 
-    if (templateString.startsWith('<') && tempSpan.childElementCount == 1) {
-      return tempSpan.firstElementChild as HTMLElement;
-    } else {
-      return tempSpan
-    }
+    // if (templateString.startsWith('<') && tempSpan.childElementCount == 1) {
+    //   return tempSpan.firstElementChild as HTMLElement;
+    // } else {
+    //   return tempSpan
+    // }
   }
   catch (e: unknown) {
     const errorSpan = document.createElement('span');

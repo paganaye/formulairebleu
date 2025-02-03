@@ -1,4 +1,4 @@
-import { A } from "@solidjs/router";
+import { A, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { Styles } from "../../core/Styles";
 import { LANG } from '../Lang'
 
@@ -21,7 +21,7 @@ export default function App() {
 
 
 /*
-import { createSignal } from 'solid-js'
+import { createSignal } from "../../core/jsx"
 import { ensureBootstrapLoaded } from '../extensions/bootstrap/ensureBootstrapLoaded'
 import '../extensions/plain-html/PlainHTMLExtension';
 import { ConstValue } from "../core/IQuery";

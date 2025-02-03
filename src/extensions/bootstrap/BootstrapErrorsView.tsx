@@ -1,4 +1,4 @@
-import { Component, For, Show } from 'solid-js';
+import { Component, For, Show } from "../../core/jsx";
 import { Styles } from "../../core/Styles";
 
 Styles.add(".error", {

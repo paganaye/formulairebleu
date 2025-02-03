@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal, Show } from 'solid-js';
+import { Component, createMemo, Show, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
 import { OnValueChanged } from '../../core/FormEngine';
@@ -18,7 +18,7 @@ export interface IJSONDate {
 
 export const DateInputView: Component<DateInputProps> = (props) => {
   let id = getUniqueId(`num_${props.label}`);
-  const [isFocused, setIsFocused] = createSignal(false);
+  const isFocused = new Value(false);
   const suffix = (props.box.getType().view as any)?.suffix;
 
   const locale = Intl.DateTimeFormat().resolvedOptions().locale; // Détecte la locale
@@ -27,7 +27,7 @@ export const DateInputView: Component<DateInputProps> = (props) => {
 
   const inputType = createMemo(() => {
     let result: string;
-    if (!isFocused()) result = "string";
+    if (!isFocused.getValue()) result = "string";
     else switch (props.box.getType().type as any) {
       case "time":
         result = "time";
@@ -79,24 +79,24 @@ export const DateInputView: Component<DateInputProps> = (props) => {
       <div class="input-group mb-3">
         <div class="form-floating">
           <input
-            type={inputType()}
+            type={inputType.getValue()}
             id={id}
             class="form-control number-input"
-            value={inputValue()}
-            readOnly={props.engine.isReadonly || !isFocused()}
+            value={inputValue.getValue()}
+            readOnly={props.engine.isReadonly || !isFocused.getValue()}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
-              if (!isFocused()) {
-                setIsFocused(true);
+              if (!isFocused.getValue()) {
+                isFocused.setValue(true);
                 //   setTimeout(() => { (e.target as HTMLInputElement)?.select?.() });
               }
             }}
             onBlur={(e) => {
-              setIsFocused(false);
+              isFocused.setValue(false);
               props.box.validate();
             }}
             onInput={(e) => {
-              if (isFocused()) {
+              if (isFocused.getValue()) {
                 let dateValue = e.currentTarget.valueAsDate;
                 if (isValidDate(dateValue)) {
                   props.box.setValue({ type: 'date', value: dateValue == null ? null : dateValue.toISOString() });

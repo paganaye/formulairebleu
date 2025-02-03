@@ -1,11 +1,10 @@
-import { Component, createSignal, createEffect, JSXElement, createMemo, Show } from "solid-js";
-import { JSX } from "solid-js/jsx-runtime";
+import { Component, createEffect, JSXElement, createMemo, Show, JSX, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Dynamic } from "./jsx";
 import { JSONValue } from "./Utils";
 import { formulairebleu } from "./IForm";
-import { Dynamic } from "solid-js/web";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
-import { Box, Value } from "./Box";
+import { Box } from "./Box";
+import { Value } from './jsx';
 type IForm = formulairebleu.IForm;
 type IFormType = formulairebleu.IFormType;
 type IKeyedMemberType = formulairebleu.IKeyedMemberType;
@@ -14,8 +13,7 @@ export type OnValueChanged = { pagesChanged?: boolean };
 
 export interface IFormProps {
     form: IForm,
-    value: JSONValue,
-    setValue: (v: JSONValue) => void,
+    value: Value
 }
 
 export interface FormBodyProps extends IFormProps {
@@ -130,31 +128,31 @@ export abstract class FormEngine {
 
 
     FormBody(props: FormBodyProps): JSXElement {
-        const [getRootBox, setRootBox] = createSignal<Box>();
+        const rootBox = new Value(undefined);
 
-        createEffect(() => {
-            setRootBox(Box.enBox(null, props.form.name, props.form.dataType, null));
-        })
+        // createEffect(() => {
+        //     rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
+        // })
 
         let currentJSONString: string = "";
 
-        createEffect(() => {
-            const propJSONString = JSON.stringify(props.value);
-            if (propJSONString === currentJSONString) return;
+        // createEffect(() => {
+        //     const propJSONString = JSON.stringify(props.value);
+        //     if (propJSONString === currentJSONString) return;
 
-            currentJSONString = propJSONString;
-            const newBox = Box.enBox(null, props.form.name, props.form.dataType, props.value);
-            setRootBox(newBox);
-            this.paginate(newBox);
+        //     currentJSONString = propJSONString;
+        //     const newBox = Box.enBox(null, props.form.name, props.form.dataType, props.value);
+        //     rootBox.setValue(newBox);
+        //     this.paginate(newBox);
 
-        });
+        // });
 
         function onValueChanged(onValueChanged: OnValueChanged) {
-            const rootBox = getRootBox();
-            if (!rootBox) return;
-            const jsonValue = Box.unBox(rootBox);
+            const rootBoxValue = rootBox.getValue();
+            if (!rootBoxValue) return;
+            const jsonValue = Box.unBox(rootBoxValue);
             currentJSONString = JSON.stringify(jsonValue)
-            props.setValue(jsonValue);
+            props.value.setValue(jsonValue);
 
             if (onValueChanged?.pagesChanged) {
                 this.paginate(rootBox);
@@ -179,20 +177,20 @@ export abstract class FormEngine {
 
 
     InputRenderer(props: InputRenderProps): JSXElement {
-        let [inputComponent, setInputComponent] = createSignal<Component<any>>();
+        let inputComponent = new Value<Component<any> | undefined>(undefined);
 
 
-        createEffect(() => {
-            setInputComponent(() => this.getRenderer(props.box?.getType()));
-        })
+        // createEffect(() => {
+        //     inputComponent.setValue(() => this.getRenderer(props.box?.getType()));
+        // })
 
         const isVisible = createMemo(() => {
             return this.isBoxVisible(props.box);
         })
 
         return <>
-            <Show when={isVisible()}>
-                <Dynamic component={inputComponent()} {...props} />
+            <Show when={isVisible.getValue()}>
+                <Dynamic component={inputComponent.getValue()} {...props} />
             </Show>
         </>;
 
@@ -219,9 +217,9 @@ export abstract class FormEngine {
 
 
     InputBottom(props: InputBottomProps) {
-        let errors = createMemo(() => props.box.errors());
+        // let errors = createMemo(() => props.box.errors());
         return <>
-            <ErrorsView errors={errors()} />
+            <ErrorsView errors={/*rrors()*/1} />
             {/* <Show when={props.options.filter?.(props as any)}>
               <Show fallback={<pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}...{props.box.getEndPageNo()}:{props.box.getEndLineNo()} </pre>} when={props.box.getStartPageNo() == props.box.getEndPageNo() && props.box.getStartLineNo() == props.box.getEndLineNo()}>
               <pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}</pre>

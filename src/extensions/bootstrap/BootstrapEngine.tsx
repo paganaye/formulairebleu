@@ -1,4 +1,5 @@
-import { Component } from "solid-js";
+import { formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx"
+import { Component } from "../../core/jsx";
 import { Box } from "../../core/Box";
 import { FormEngine, IFormProps } from "../../core/FormEngine";
 import { BootstrapArrayView } from "./BootstrapArrayView";

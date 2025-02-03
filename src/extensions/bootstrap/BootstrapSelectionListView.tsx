@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal } from 'solid-js';
+import { Component, createMemo, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { Box } from "../../core/Box";
 import { ErrorView } from './BootstrapErrorsView';
 import { SingleSelectionVue } from './BootstrapSingleSelectionView';
@@ -57,7 +57,7 @@ export const BootstrapSelectionListView: Component<SelectionListInputProps> = (p
     }
   });
   return <>
-    {comp()}
+    {comp.getValue()}
   </>;
 }
 

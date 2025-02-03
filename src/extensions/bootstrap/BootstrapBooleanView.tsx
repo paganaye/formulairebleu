@@ -1,5 +1,5 @@
 
-import { Component, createMemo } from 'solid-js';
+import { Component, createMemo, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";

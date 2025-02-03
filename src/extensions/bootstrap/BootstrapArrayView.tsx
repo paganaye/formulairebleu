@@ -1,4 +1,4 @@
-import { Component, createEffect, createMemo, createSignal } from 'solid-js';
+import { Component, createEffect, createMemo, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory, Value } from "../../core/jsx";
 import { Box, getDefaultValue } from "../../core/Box";
 import { ArrayRenderer, IColumn, SortOrder } from './BootstrapArrayRenderer';
 import { formulairebleu } from "../../core/IForm";
@@ -19,11 +19,11 @@ export type ArrayInputProps = {
 };
 
 export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
-  let [getEntries, setEntries] = createSignal<any[]>(props.box.getEntries())
+  let entries = new Value<any[]>(props.box.getEntries())
 
-  createEffect(() => {
-    setEntries(props.box.getEntries());
-  })
+  // createEffect(() => {
+  //   entries.setValue(props.box.getEntries());
+  // })
   //  return <ArrayInput0 {...props} />
   function newArrayEntry(): Box {
     let entryType = (props.box.getType() as IArrayType).entryType;
@@ -35,9 +35,9 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
       : <button
         class="btn btn-sm btn-secondary mt-2"
         onClick={() => {
-          let entries = [...getEntries()];
-          entries.push(newArrayEntry());
-          setEntries(entries);
+          let entriesValue = [...entries.getValue()];
+          entriesValue.push(newArrayEntry());
+          entries.setValue(entriesValue);
           (props.box as any).setEntries(props.box.getType(), entries);
           props.onValueChanged({ pagesChanged: false });
         }}
@@ -49,9 +49,9 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
       : <button
         class="btn btn-sm btn-secondary mt-2"
         onClick={() => {
-          let entries = [...getEntries()];
-          entries.splice(index(), 1);
-          setEntries(entries);
+          let entriesValue = [...entries.getValue()];
+          entriesValue.splice(index(), 1);
+          entries.setValue(entriesValue);
           (props.box as any).setEntries(props.box.getType(), entries);
           props.onValueChanged({ pagesChanged: false });
         }
@@ -99,7 +99,7 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
 
   return <>
     <ArrayRenderer
-      entries={getEntries()}
+      entries={entries.getValue()}
       viewAsType={props.box.getType().view as any}
       engine={props.engine}
       label={props.label}
@@ -111,7 +111,7 @@ export const BootstrapArrayView: Component<ArrayInputProps> = (props) => {
       inputBottom={() => <p>todo</p>/*<InputTop{...props as any} />*/}
       isSelected={() => false}
       onSelectionChanged={() => undefined}
-      columns={columns()}
+      columns={columns.getValue()}
     />
   </>;
 

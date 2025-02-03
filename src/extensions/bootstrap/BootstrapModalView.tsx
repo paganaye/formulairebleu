@@ -1,8 +1,8 @@
-import { Component, JSX, onCleanup, Show, createSignal, createEffect } from "solid-js";
-import { Portal } from "solid-js/web";
+import { Component, JSX, Show, Value, createEffect } from "../../core/jsx";
+//import { Portal } from "solid-js/web";
 import { Buttons, DialogButton } from "./BootstrapButtonsView";
 
-const [currentModals, setCurrentModals] = createSignal<InnerModalPropsPlus[]>([]);
+const currentModals = new Value<InnerModalPropsPlus[]>([]);
 
 type InnerModalPropsPlus = InnerModalProps & { handleClose: () => void }
 
@@ -16,7 +16,7 @@ interface InnerModalProps {
 }
 
 export function closeTopModal() {
-  let topModal = (currentModals() as any).at(-1);
+  let topModal = (currentModals.getValue() as any).at(-1);
   if (topModal) {
     topModal.handleClose()
   }
@@ -24,42 +24,42 @@ export function closeTopModal() {
 
 export const InnerModalView: Component<InnerModalProps> = (props) => {
   let animationTimeout: number | undefined;
-  const [showBackdrop, setShowBackdrop] = createSignal(false);
-  const [showModal, setShowModal] = createSignal(false);
-  const [isAnimating, setAnimating] = createSignal(false);
+  const showBackdrop = new Value(false);
+  const showModal = new Value(false);
+  const isAnimating = new Value(false);
 
-  createEffect(() => {
-    if (props.isOpen) {
-      handleOpen();
-    } else {
-      handleClose();
-    }
-  });
+  // createEffect(() => {
+  //   if (props.isOpen) {
+  //     handleOpen();
+  //   } else {
+  //     handleClose();
+  //   }
+  // });
 
-  onCleanup(() => {
-    if (animationTimeout) clearTimeout(animationTimeout);
-  });
+  // onCleanup(() => {
+  //   if (animationTimeout) clearTimeout(animationTimeout);
+  // });
 
   function handleClose() {
-    setAnimating(true);
-    setShowModal(false);
+    isAnimating.setValue(true);
+    showModal.setValue(false);
     setTimeout(() => {
-      setShowBackdrop(false);
-      setAnimating(false);
-      setCurrentModals((modals) => modals.filter((modal) => modal !== props));
+      showBackdrop.setValue(false);
+      isAnimating.setValue(false);
+      //setCurrentModals((modals) => modals.filter((modal) => modal !== props));
       props.onClose?.();
     }, 100); // Match Bootstrap's fade-out duration
   };
 
   function handleOpen() {
-    setCurrentModals((modals) => [...modals, { ...props, handleClose }]);
-    setAnimating(true);
+    //setCurrentModals((modals) => [...modals, { ...props, handleClose }]);
+    isAnimating.setValue(true);
     setTimeout(() => {
-      setShowBackdrop(true);
-      setShowModal(true);
+      showBackdrop.setValue(true);
+      isAnimating.setValue(true);
     }, 10); // Trigger animations
 
-    setTimeout(() => setAnimating(false), 300); // Match Bootstrap's fade-in duration
+    setTimeout(() => isAnimating.setValue(false), 300); // Match Bootstrap's fade-in duration
   };
 
   function onModalBackgroundClicked(e: MouseEvent) {
@@ -70,48 +70,47 @@ export const InnerModalView: Component<InnerModalProps> = (props) => {
   }
 
   return (
-    <Show when={props.isOpen || isAnimating() || showBackdrop()}>
-      <Portal>
-        <div
-          class="x-modal-backdrop"
-          style={{ "z-index": "unset", "background-color": "black", opacity: "0.5", position: "fixed", width: "100vw", height: "100vh", top: "0", left: "0", "pointer-events": "all" }}
-          classList={{ fade: true, show: showBackdrop() }}
-          tabIndex="0"
-        ></div>
-        <div
-          class="modal fade"
-          tabindex="-1"
-          style={{ display: "block", "z-index": "unset" }}
-          classList={{ show: showModal(), isModalBackground: true }}
-          aria-labelledby="modalLabel"
-          aria-hidden="true"
-          onmousedown={(e) => onModalBackgroundClicked(e)}
-        >
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <Show when={props.title}>
-                <div class="modal-header">
-                  <h5 class="modal-title" id="modalLabel">{props.title}</h5>
-                  <button
-                    type="button"
-                    class="btn-close"
-                    aria-label="Close"
-                    onClick={handleClose}
-                  ></button>
-                </div>
-              </Show>
-              <div class="modal-body">
-                {props.children}
+    <Show when={props.isOpen || isAnimating.getValue() || showBackdrop.getValue()}>
+      {/* <Portal> */}
+      <div
+        class="x-modal-backdrop"
+        style={{ "z-index": "unset", "background-color": "black", opacity: "0.5", position: "fixed", width: "100vw", height: "100vh", top: "0", left: "0", "pointer-events": "all" }}
+        classList={{ fade: true, show: showBackdrop.getValue() }}
+        tabIndex="0"
+      ></div>
+      <div
+        class="modal fade"
+        tabindex="-1"
+        style={{ display: "block", "z-index": "unset" }}
+        classList={{ show: showModal.getValue(), isModalBackground: true }}
+        aria-labelledby="modalLabel"
+        aria-hidden="true"
+        onmousedown={(e) => onModalBackgroundClicked(e)}>
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <Show when={props.title}>
+              <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">{props.title}</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  aria-label="Close"
+                  onClick={handleClose}
+                ></button>
               </div>
-              <Show when={props.buttons}>
-                <div class="modal-footer">
-                  <Buttons buttons={props.buttons!} />
-                </div>
-              </Show>
+            </Show>
+            <div class="modal-body">
+              {props.children}
             </div>
+            <Show when={props.buttons}>
+              <div class="modal-footer">
+                <Buttons buttons={props.buttons!} />
+              </div>
+            </Show>
           </div>
         </div>
-      </Portal>
+      </div>
+      {/* </Portal> */}
     </Show >
   );
 };

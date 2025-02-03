@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import { Component } from "../../core/jsx";
 import { Box } from "../../core/Box";
 import { ConstView } from './BootstrapConstView';
 

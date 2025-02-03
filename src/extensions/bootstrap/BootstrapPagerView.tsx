@@ -1,4 +1,4 @@
-import { Component, For, Show } from "solid-js";
+import { Component, For, Show, formulaireBleuJSXFragmentFactory, formulaireBleuJSXFactory } from "../../core/jsx";
 import { Styles } from "../../core/Styles";
 
 export interface PagerProps {

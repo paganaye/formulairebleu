@@ -1,4 +1,4 @@
-import { createMemo, For, JSX } from "solid-js";
+import { createMemo, For, JSX } from "../../core/jsx";
 import { formulairebleu } from "../../core/IForm";
 type ISelectionEntry = formulairebleu.ISelectionEntry;
 
@@ -22,7 +22,7 @@ export function MultipleSelectionVue(props: MultipleSelectionProps): JSX.Element
 
   function toggleSelection(key: string, elt: HTMLInputElement) {
     // we make sure to keep the original order
-    let newSelection: string[] = props.entries.map(e => String(e.value)).filter(k => k === key ? elt.checked : selectedSet().has(String(k)));
+    let newSelection: string[] = props.entries.map(e => String(e.value)).filter(k => k === key ? elt.checked : selectedSet.getValue().has(String(k)));
     props.setSelectedKeys(newSelection);
   }
 
@@ -37,7 +37,7 @@ export function MultipleSelectionVue(props: MultipleSelectionProps): JSX.Element
               type="checkbox"
               id={`${groupId}-${entry.value}`}
               value={String(entry.value)}
-              checked={(selectedSet()).has(String(entry.value))}
+              checked={(selectedSet.getValue()).has(String(entry.value))}
               onInput={(e) => toggleSelection(String(entry.value), e.target)}
             />
             <label class="form-check-label" for={`${groupId}-${entry.value}`}>

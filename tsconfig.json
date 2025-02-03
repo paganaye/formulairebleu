@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
+    "jsxFactory": "formulaireBleuJSXFactory",
+    "jsxFragmentFactory": "formulaireBleuJSXFragmentFactory",
     "lib": [
       "DOM",
       "ES2020"

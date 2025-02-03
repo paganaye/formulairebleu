@@ -13,21 +13,8 @@ type IObjectMemberType = formulairebleu.IObjectMemberType;
 // type IVoidType = formulairebleu.IVoidType;
 // type IKeyedMemberType = formulairebleu.IKeyedMemberType;
 
-import { Accessor, Setter, createSignal } from 'solid-js';
 import { JSONObject, JSONValue } from './Utils';
-
-export class Value<T = any> {
-  readonly getValue: Accessor<T>;
-  private readonly _setValue: Setter<T>;
-
-  constructor(value: T) {
-    [this.getValue, this._setValue] = createSignal<T>(value);
-  }
-
-  setValue(value: T) {
-    this._setValue(value as any);
-  }
-}
+import { Value } from './jsx';
 
 export class Box {
   readonly uniqueId: number;

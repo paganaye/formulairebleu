@@ -1,4 +1,4 @@
-import { Component, createSignal, Show } from 'solid-js';
+import { Component, Show, Value, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
@@ -23,7 +23,7 @@ Styles.add('input.number-input[type="string"]', {
 
 export const BootstrapNumberView: Component<NumberInputProps> = (props) => {
   let id = getUniqueId(`num_${props.label}`);
-  const [isFocused, setIsFocused] = createSignal(false);
+  const isFocused = new Value(false);
   const suffix = (props.box.getType().view as any)?.suffix;
   const formatNumber = (value: JSONValue): string => {
     let num: number | null;
@@ -50,28 +50,28 @@ export const BootstrapNumberView: Component<NumberInputProps> = (props) => {
       <div class="input-group mb-3">
         <div class="form-floating">
           <input
-            type={isFocused() ? "number" : "string"}
+            type={isFocused.getValue() ? "number" : "string"}
             id={id}
             class="form-control number-input"
             value={
-              isFocused()
+              isFocused.getValue()
                 ? (props.box.getJSONValue() ?? '') as any
                 : formatNumber(props.box.getJSONValue())
             }
-            readOnly={props.engine.isReadonly || !isFocused()}
+            readOnly={props.engine.isReadonly || !isFocused.getValue()}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
-              if (!isFocused()) {
-                setIsFocused(true);
+              if (!isFocused.getValue()) {
+                isFocused.setValue(true);
                 setTimeout(() => { (e.target as HTMLInputElement)?.select?.() });
               }
             }}
             onBlur={(e) => {
-              setIsFocused(false);
+              isFocused.setValue(false);
               props.box.validate();
             }}
             onInput={(e) => {
-              if (isFocused()) {
+              if (isFocused.getValue()) {
                 let rawValue = e.currentTarget.value;
                 let parsedValue = parseNumber(rawValue);
                 props.box.setValue(parsedValue);

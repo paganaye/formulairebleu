@@ -1,4 +1,4 @@
-import { Component, For } from 'solid-js';
+import { Component, For, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { ConstView } from './BootstrapConstView';
 import { Box } from "../../core/Box";
 import { OnValueChanged } from '../../core/FormEngine';

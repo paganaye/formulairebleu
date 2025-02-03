@@ -1,7 +1,7 @@
-import { Component, createSignal, createMemo, For, Show, JSX, onCleanup } from "solid-js";
+import { Component, createMemo, For, Show, JSX, formulaireBleuJSXFactory, formulaireBleuJSXFragmentFactory } from "../../core/jsx";
 import { keepFocus } from "../../core/Utils";
 import { getUniqueId } from "../../core/Utils";
-import { Value } from "../../core/Box";
+import { Value } from '../../core/jsx';
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
 import { IBootstrapListView } from "./BootstrapForm";
@@ -58,39 +58,39 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
     // var memberTypes: IObjectMemberType[] = entryType.type == 'object' ? entryType.membersTypes
     //    : [{ key: "", ...entryType }];
 
-    const [sortOrder, setSortOrder] = createSignal<SortOrder[]>([]);
-    const [filters, setFilters] = createSignal<string[]>([]);
+    const sortOrder = new Value<SortOrder[]>([]);
+    const filters = new Value<string[]>([]);
 
     function toggleSort(key: string, fieldNo: number, event: MouseEvent) {
       keepFocus(event);
-      setSortOrder((prev) => {
-        const existing = prev.find((s) => s.column.key === key);
-        if (!existing) {
-          return event.ctrlKey
-            ? [...prev, { column: props.columns[fieldNo], direction: "asc" }]
-            : [{ column: props.columns[fieldNo], direction: "asc" }];
-        }
-        if (existing.direction === "asc") {
-          return prev.map((s) =>
-            s.column.key === key ? { ...s, direction: "desc" } : s
-          );
-        }
-        const newList = prev.filter((s) => s.column.key !== key);
-        return event.ctrlKey ? newList : [];
-      });
+      // sortOrder.setValue((prev) => {
+      //   const existing = prev.find((s) => s.column.key === key);
+      //   if (!existing) {
+      //     return event.ctrlKey
+      //       ? [...prev, { column: props.columns[fieldNo], direction: "asc" }]
+      //       : [{ column: props.columns[fieldNo], direction: "asc" }];
+      //   }
+      //   if (existing.direction === "asc") {
+      //     return prev.map((s) =>
+      //       s.column.key === key ? { ...s, direction: "desc" } : s
+      //     );
+      //   }
+      //   const newList = prev.filter((s) => s.column.key !== key);
+      //   return event.ctrlKey ? newList : [];
+      // });
     }
 
     function updateFilter(index: number, value: string) {
-      setFilters((prev) => {
-        const newFilters = [...prev];
-        newFilters[index] = value.toLowerCase(); // Normalisation en minuscules
-        return newFilters;
-      });
+      // setFilters((prev) => {
+      //   const newFilters = [...prev];
+      //   newFilters[index] = value.toLowerCase(); // Normalisation en minuscules
+      //   return newFilters;
+      // });
     }
 
     const filteredValues = createMemo(() => {
       const data = [...props.entries];
-      const currentFilters = filters();
+      const currentFilters = filters.getValue();
 
       return data.filter((entry) => {
         if (entry instanceof Box) entry = Box.unBox(entry) as any;
@@ -107,8 +107,8 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
 
 
     const sortedValues = createMemo(() => {
-      const data = filteredValues(); // Appliquer le tri aux données filtrées
-      const orderBy = sortOrder();
+      const data = filteredValues.getValue(); // Appliquer le tri aux données filtrées
+      const orderBy = sortOrder.getValue();
 
       data.sort((boxA: T, boxB: T) => {
         let a: JSONValue = (boxA instanceof Box) ? Box.unBox(boxA) : boxA as JSONValue;
@@ -147,7 +147,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
 
     function sortSuffix(key: string | undefined) {
       if (!key) return "";
-      let sortOrderValue = sortOrder();
+      let sortOrderValue = sortOrder.getValue();
       const index = sortOrderValue.findIndex(s => s.column.key === key);
       if (index >= 0) {
         return (sortOrderValue[index].direction === "asc" ? "▲" : "▼") + (index > 0 ? String(index + 1) : "");
@@ -213,7 +213,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
           </tr>
         </thead>
         <tbody>
-          <For each={sortedValues()}>
+          <For each={sortedValues.getValue()}>
             {(entry, index) => (
               <TableRow {...props} entry={entry} index={index} />
             )}
@@ -246,7 +246,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
   }
 
   function renderAsTabs() {
-    const [activeTab, setActiveTab] = createSignal(0);
+    const activeTab = new Value(0);
 
     return (
       <>
@@ -257,8 +257,8 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
               {(entry, index) => (
                 <li class="nav-item">
                   <button
-                    class={`nav-link ${index() === activeTab() ? 'active' : ''}`}
-                    onClick={() => setActiveTab(index())}
+                    class={`nav-link ${index() === activeTab.getValue() ? 'active' : ''}`}
+                    onClick={() => activeTab.setValue(index())}
                   >
                     Tab {index() + 1}
                   </button>
@@ -271,7 +271,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
             <For each={props.entries}>
               {(entry, index) => (
                 <div
-                  class={`tab-pane fade ${index() === activeTab() ? 'show active' : ''}`}
+                  class={`tab-pane fade ${index() === activeTab.getValue() ? 'show active' : ''}`}
                 >
                   {props.renderEntry?.(entry, index)}
                 </div>
@@ -418,7 +418,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSX.Elemen
   return (
     <>
       {/* <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={viewAsType.getValue()} entries={entries} setSelectedKey={(k) => onViewChanged(k)} label={"View as:"} /> */}
-      {render()}
+      {render.getValue()}
     </>
   );
 };
