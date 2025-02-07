@@ -12,11 +12,11 @@ export type ArrayRendererProps<T = any> = {
   viewAsType: any | undefined;
   label: string;
   // entryType: IDataType;
-  entries: T[]
+  entryBoxes: Value<Box[]>
   selectionType?: 'single' | 'multiple';
-  renderEntry: (entry: T, index: () => number) => JSXSource;
-  renderEntryField: (entry: T, index: () => number, column: IColumn) => JSXSource;
-  deleteButton: (index: () => number) => JSXSource;
+  renderEntry: (entry: T, index: number) => JSXSource;
+  renderEntryField: (entry: T, rowIndex: number, column: IColumn, columnIndex: number) => JSXSource;
+  deleteButton: (index: number) => JSXSource;
   inputTop: () => JSXSource;
   inputBottom: () => JSXSource;
   addButton: () => JSXSource;
@@ -28,7 +28,6 @@ export type ArrayRendererProps<T = any> = {
 
 export interface IColumn {
   key: string;
-  memberIndex?: number;
   label?: string;
   width?: number;
 }
@@ -87,16 +86,16 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
       // });
     }
 
-    const filteredValues = computed({}, () => {
-      const data = [...props.entries];
+    const filteredValues = computed({ entries: props.entryBoxes }, (p) => {
+      const data = [...p.entries];
       const currentFilters = filters.getValue();
 
       return data.filter((entry) => {
-        if (entry instanceof Box) entry = Box.unBox(entry) as any;
+        if (entry instanceof Box) entry = Box.unBox(entry as any) as any;
         return props.columns.every((column, index) => {
           const filterValue = currentFilters[index];
           if (!filterValue) return true; // Pas de filtre appliqué pour cette colonne
-          const entryValue = (column.memberIndex !== undefined) ? (entry as JSONObject)[column.key] : entry;
+          const entryValue = column.key ? (entry as JSONObject)[column.key] : entry;
           if (entryValue == null) return filterValue == 'null';
           const normalizedCellValue = String(entryValue).toLowerCase();
           return normalizedCellValue.includes(filterValue);
@@ -105,13 +104,13 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
     });
 
 
-    const sortedValues = computed({}, () => {
-      const data = filteredValues.getValue(); // Appliquer le tri aux données filtrées
+    const sortedValues = computed({ filteredValues }, (p) => {
+      const data = p.filteredValues; // Appliquer le tri aux données filtrées
       const orderBy = sortOrder.getValue();
 
       data.sort((boxA: T, boxB: T) => {
-        let a: JSONValue = (boxA instanceof Box) ? Box.unBox(boxA) : boxA as JSONValue;
-        let b: JSONValue = (boxB instanceof Box) ? Box.unBox(boxB) : boxB as JSONValue;
+        let a: JSONValue = (boxA instanceof Box) ? Box.unBox(boxA as any) : boxA as JSONValue;
+        let b: JSONValue = (boxB instanceof Box) ? Box.unBox(boxB as any) : boxB as JSONValue;
         for (const order of orderBy) {
           const columnKey = order.column.key;
 
@@ -156,7 +155,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
 
     interface TableRowProps extends ArrayRendererProps {
       entry: any;
-      index: () => number;
+      index: number;
     }
 
     const TableRow = (rowProps: TableRowProps) => {
@@ -167,8 +166,8 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
 
       return (<tr>
         <For each={columns}>
-          {(column) => (<td>
-            {rowProps.renderEntryField?.(rowProps.entry, rowProps.index, column)}
+          {(column, columnIndex) => (<td>
+            {rowProps.renderEntryField?.(rowProps.entry, rowProps.index, column, columnIndex)}
           </td>)}
         </For>
         <td>
@@ -203,7 +202,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
                     type="text"
                     placeholder={`Filter`}
                     style={{ width: '100%' }}
-                    onInput={(e) => updateFilter(index(), (e.target as HTMLInputElement).value)} />
+                    onInput={(e) => updateFilter(index, (e.target as HTMLInputElement).value)} />
 
                 </th>
               )}
@@ -212,7 +211,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
           </tr>
         </thead>
         <tbody>
-          <For each={sortedValues.getValue()}>
+          <For each={sortedValues}>
             {(entry, index) => (
               <TableRow {...props} entry={entry} index={index} />
             )}
@@ -225,24 +224,22 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
   }
 
   function renderAsFlow() {
-    let values = props.entries;
-    return <>
-      {props.inputTop()}
-      {/* <Show when={values} fallback={(<p>No entries</p>)}>
-        <For each={values}>
+    return (
+      <>
+        {props.inputTop()}
+        <For each={props.entryBoxes}>
           {(entry, index) => (
-            <>
+            <div class="flow-item">
               {props.renderEntry?.(entry, index)}
-              {props.deleteButton?.(index)}
-            </>
+            </div>
           )}
         </For>
-      </Show> */}
-      {props.inputBottom()}
-      {props.addButton?.()}
-    </>;
-
+        {props.inputBottom()}
+        {props.addButton?.()}
+      </>
+    );
   }
+
 
   function renderAsTabs() {
     const activeTab = new Value(0);
@@ -250,28 +247,24 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
     return (
       <>
         <div class="tabs-container">
-          {/* Onglets de navigation */}
           <ul class="nav nav-tabs">
-            <For each={props.entries}>
+            <For each={props.entryBoxes}>
               {(entry, index) => (
                 <li class="nav-item">
                   <button
                     class={`nav-link ${index() === activeTab.getValue() ? 'active' : ''}`}
                     onClick={() => activeTab.setValue(index())}
                   >
-                    Tab {index() + 1}
+                    {index() + 1}
                   </button>
                 </li>
               )}
             </For>
           </ul>
-          {/* Contenu des onglets */}
           <div class="tab-content mt-3">
-            <For each={props.entries}>
+            <For each={props.entryBoxes}>
               {(entry, index) => (
-                <div
-                  class={`tab-pane fade ${index() === activeTab.getValue() ? 'show active' : ''}`}
-                >
+                <div class={`tab-pane fade ${index() === activeTab.getValue() ? 'show active' : ''}`}>
                   {props.renderEntry?.(entry, index)}
                 </div>
               )}
@@ -375,7 +368,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
 
     return (<>
       <ul class="list-group">
-        <For each={props.entries}>
+        <For each={props.entryBoxes}>
           {(entry) => {
             const title = "TODO"; //formatTemplateString(view?.templateString, entry as any);
             const inputType = props.selectionType === "multiple" ? "checkbox" : "radio";

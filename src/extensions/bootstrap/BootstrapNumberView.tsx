@@ -1,4 +1,4 @@
-import { JSONValue, JsxComponent, Show, Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
+import { JsxComponent, Show, Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
@@ -21,8 +21,9 @@ Styles.add('input.number-input[type="string"]', {
 export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
   let id = getUniqueId(`num_${props.label}`);
   const isFocused = new Value(false);
-  const suffix = (props.box.getType().view as any)?.suffix;
-  const formatNumber = (value: JSONValue): string => {
+  const suffix = (props.box.type.view as any)?.suffix;
+  function formatNumber() {
+    let value = props.box.getValue()
     let num: number | null;
     switch (typeof value) {
       case 'number':
@@ -33,7 +34,7 @@ export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
         break;
     }
     if (num == null) return ''
-    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (props.box.getType() as any).decimals ?? 0 }).format(num);
+    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (props.box.type as any).decimals ?? 0 }).format(num);
   };
 
   const parseNumber = (value: string): number | null => {
@@ -43,7 +44,7 @@ export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
 
   return (
     <>
-      {/* <InputTop {...props} /> */}
+      <props.engine.InputTop {...props} />
       <div class="input-group mb-3">
         <div class="form-floating">
 
@@ -52,30 +53,22 @@ export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
             type={computed({ isFocused }, (p) => p.isFocused ? "number" : "string")}
             id={id}
             class="form-control number-input"
-            value={
-              isFocused.getValue()
-                ? (props.box.getJSONValue() ?? '') as any
-                : formatNumber(props.box.getJSONValue())
-            }
+            value={formatNumber()}
             readOnly={computed({ isFocused }, (p) => (props.engine.isReadonly || !isFocused.getValue()))}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
               if (!isFocused.getValue()) {
                 isFocused.setValue(true);
-                setTimeout(() => { (e.target as HTMLInputElement)?.select?.() });
+                setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) { inp.value = String(props.box.getValue()); inp.select(); } });
               }
             }}
             onBlur={(e) => {
               isFocused.setValue(false);
+              setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) inp.value = formatNumber() });
               props.box.validate();
             }}
             onInput={(e) => {
-              if (isFocused.getValue()) {
-                let rawValue = e.currentTarget.value;
-                let parsedValue = parseNumber(rawValue);
-                props.box.setValue(parsedValue);
-
-              }
+              if (isFocused.getValue()) props.box.setValue(parseNumber(e.currentTarget.value), true);
             }}
           />
           <label for={id} class="form-label">{props.label}</label>
@@ -84,7 +77,7 @@ export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
           <span class="input-group-text" id="basic-addon2">{suffix}</span>
         </Show>
       </div>
-      {/* <InputBottom {...props} /> */}
+      <props.engine.InputBottom {...props} />
     </>
   );
 };

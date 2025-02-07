@@ -16,7 +16,7 @@ export type SelectionListInputProps = {
 export const BootstrapSelectionListView = (props: SelectionListInputProps) => {
 
   let comp = computed({}, () => {
-    let selectionList: ISelectionList | undefined = (props.box.getType() as any).selectionList ?? props.box.getType().selectionList;
+    let selectionList: ISelectionList | undefined = (props.box.type as any).selectionList ?? props.box.type.selectionList;
     if (!selectionList) {
       return <ErrorView error="Internal Error, no selection list set." />
     }
@@ -29,7 +29,7 @@ export const BootstrapSelectionListView = (props: SelectionListInputProps) => {
     } else if (entries.length == 0) {
       return <ErrorView error="Empty selection list." />
     }
-    let view: IView = (props.box.getType() as any).selectionList ?? props.box.getType().view;
+    let view: IView = (props.box.type as any).selectionList ?? props.box.type.view;
     if (selectionList.multiple) {
       if (!view) view = { type: 'checkboxes' }
       function setSelectedKeys(newArr: any[]) {
@@ -38,13 +38,13 @@ export const BootstrapSelectionListView = (props: SelectionListInputProps) => {
       }
 
       return <MultipleSelectionVue label={props.label} entries={entries}
-        selectedKeys={props.box.getJSONValue() as string[]} setSelectedKeys={setSelectedKeys}
+        selectedKeys={props.box.getValue() as string[]} setSelectedKeys={setSelectedKeys}
         view={view as IBootstrapMultipleSelectionView} />
 
     } else {
       if (!view) view = { type: 'dropdown' }
       return <SingleSelectionVue label={props.label} entries={entries}
-        selectedKey={String(props.box.getJSONValue())} setSelectedKey={(v) => {
+        selectedKey={String(props.box.getValue())} setSelectedKey={(v) => {
           props.box.setValue(v);
           //props.onValueChanged({ pagesChanged: false });
         }}

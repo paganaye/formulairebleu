@@ -2,7 +2,6 @@
 // import { Box } from '../../core/Box';
 // // import { BootstrapEngine, OnValueChanged } from './BootstrapFormVue';
 // // import { getUniqueId } from "../../core/Utils";
-// // import { InputBottom, InputTop } from './InputRenderer';
 // // import { Styles } from "../../core/Styles";
 // // import { Box } from "../../core/Box";
 // // import { JSONValue } from "../../core/Utils";
@@ -25,7 +24,7 @@
 // export const PlainCheckboxView: Component<PlainCheckboxProps> = (props) => {
 //     //   let id = getUniqueId(`num_${props.label}`);
 //     //   const [isFocused, setIsFocused] = createSignal(false);
-//     //   const suffix = (props.box.getType().view as any)?.suffix;
+//     //   const suffix = (props.box.type.view as any)?.suffix;
 //     //   const formatNumber = (value: JSONValue): string => {
 //     //     let num: number | null;
 //     //     switch (typeof value) {
@@ -37,7 +36,7 @@
 //     //         break;
 //     //     }
 //     //     if (num == null) return ''
-//     //     return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (props.box.getType() as any).decimals ?? 0 }).format(num);
+//     //     return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (props.box.type as any).decimals ?? 0 }).format(num);
 //     //   };
 
 //     //   const parseNumber = (value: string): number | null => {
@@ -56,8 +55,8 @@
 //             class="form-control number-input"
 //             value={
 //               isFocused.getValue()
-//                 ? (props.box.getJSONValue() ?? '') as any
-//                 : formatNumber(props.box.getJSONValue())
+//                 ? (props.box.getValue() ?? '') as any
+//                 : formatNumber(props.box.getValue())
 //             }
 //             readOnly={props.engine.isReadonly || !isFocused.getValue()}
 //             placeholder="" // bootstrap won't show it when form-floating is set.  

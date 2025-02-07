@@ -11,12 +11,16 @@ export class Observer<T = any> {
     constructor(readonly onValueChanged: (newValue: T) => void) { }
 }
 
+
 export class Value<T = any> {
     #observers?: Set<Observer<T>>;
     #value: T;
     constructor(value: T) { this.#value = value; }
-    getValue() { return this.#value; }
-    setValue(value: T) { this.#value = value; this.notifyObservers(); }
+    getValue(): T { return this.#value; }
+    setValue(value: T): void {
+        this.#value = value;
+        this.notifyObservers();
+    }
 
     addObserver(observer: Observer<T>) {
         (this.#observers || (this.#observers = new Set())).add(observer);
@@ -35,6 +39,8 @@ export class Value<T = any> {
         this.#observers?.forEach(observer => observer.onValueChanged(this.#value));
     }
 }
+
+
 
 function observe<T>(source: T | Value<T>, update: (value: T) => void): void {
     if (source instanceof Value) {
@@ -128,15 +134,16 @@ export function For<T>(
     props: { each: T[] | Value<T[]> },
     children: (entry: any, index: number) => JSXSource
 ) {
-    const renderItem = children[0];
-    if (typeof renderItem !== 'function')
+    const childZero = children[0];
+    if (typeof childZero !== 'function')
         throw new Error("For expects its child to be a function");
     const result = new Value<Node[]>([]);
     const update = (eachArray: T[]) => {
         const nodes: Node[] = [];
         eachArray.forEach((item, index) =>
-            nodes.push(...createElements(renderItem(item, index)))
+            nodes.push(...createElements(childZero(item, index)))
         );
+        if (nodes.length == 0) nodes.push(document.createComment('placeholder'));
         result.setValue(nodes);
     };
     observe(props.each, update);

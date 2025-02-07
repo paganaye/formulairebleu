@@ -38,7 +38,7 @@ import { BootstrapEngine } from '../extensions/bootstrap/BootstrapEngine';
 // // // IBooleanViews
 // // ensureBootstrapLoaded();
 
-// let bootstrapEngine = new BootstrapEngine({})
+// let bootstrapEngine = new BoosetEntryBoxeststrapEngine({})
 
 
 // // //let x: formulairebleu.IViews['number'];
@@ -59,7 +59,12 @@ let form1Type = {
         help: "Parent object help",
         label: "Parent Object Label",
         membersTypes: [
-            { key: 'tel3', type: 'number' as any, pageBreak: true },
+            // { key: 'num1', type: 'number' as any, pageBreak: true },
+            { key: 'str1', type: 'string' as any, pageBreak: false },
+            // { key: 'dat1', type: 'date' as any, pageBreak: false },
+            // { key: 'tim1', type: 'time' as any, pageBreak: false },
+            //{ key: 'arr1', type: 'array' as any, entryType: { type: 'string' }, pageBreak: false },
+            { key: 'arr2', type: 'array' as any, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false },
             // {
             //     key: "p1", type: "object", membersTypes: [
             //         { key: 'a', type: "number", view: { type: 'mynumber1', min: 1 } },
@@ -190,7 +195,7 @@ function randomize<T extends IForm>(form: T): InferFormType<T> {
             case 'date': return new Date().toISOString().split('T')[0];
             case 'datetime': return new Date().toISOString();
             case 'time': return new Date().toISOString().split('T')[1].substring(0, 8);
-            case 'array': return [randomValue(actualType.entryType)];
+            case 'array': return [randomValue(actualType.entryType), randomValue(actualType.entryType)];
             case 'object': return Object.fromEntries(actualType.membersTypes.map(m => [m.key, randomValue(m)]));
             case 'variant': return { key: actualType.variants[0].key, data: randomValue(actualType.variants[0]) };
             case 'void': return undefined;
@@ -210,11 +215,11 @@ export default function App() {
     value.addObserver(new Observer((v) => {
         console.log("value", v)
     }));
-    value.setValue({ tel3: 1234 } as any);
+    value.setValue(formValue);
     let onValueChanged = (v: any) => {
         console.log("v", v);
     }
-    let formView1 = engine.FormView({ form: form1Type, value, onValueChanged })
+    let formView1 = engine.FormView({ form: form1Type, $value: value, onValueChanged })
 
     return (<div>
         {formView1}

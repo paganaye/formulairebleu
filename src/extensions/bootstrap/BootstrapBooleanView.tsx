@@ -37,14 +37,14 @@ Styles.add(".form-check-input:indeterminate", {
 
 
 export const BootstrapBooleanView = (props: BooleanInputProps) => {
-  let typeView: IFormType = props.box.getType();
+  let typeView: IFormType = props.box.type;
   // je suis obligé de mettre as any ici
   const isSwitch = (() => ((typeView as any)?.view?.type === "switch"));
   let id = getUniqueId(`bool_${props.label}`);
   let inputRef: HTMLInputElement;
   function setInputRef(ref: HTMLInputElement) {
     inputRef = ref;
-    inputRef.indeterminate = props.box.getJSONValue() === null;
+    inputRef.indeterminate = props.box.getValue() === null;
   }
   return (<>
     {/* <InputTop {...props} /> */}
@@ -60,7 +60,7 @@ export const BootstrapBooleanView = (props: BooleanInputProps) => {
           ref={setInputRef}
           class="form-check-input"
           id={id}
-          checked={props.box.getJSONValue() === true} // Assurez que seules les valeurs `true` cochent le champ
+          checked={props.box.getValue() === true} // Assurez que seules les valeurs `true` cochent le champ
           readOnly={props.engine.isReadonly}
           onBlur={(e) => props.box.validate()}
           onChange={(e) => {

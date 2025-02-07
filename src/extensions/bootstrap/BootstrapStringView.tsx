@@ -1,7 +1,7 @@
-import { formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
+import { Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
-import { BootstrapEngine } from './BootstrapEngine';
+import { BootstrapEngine } from "./BootstrapEngine";
 
 export type StringInputProps = {
   box: Box;
@@ -12,25 +12,26 @@ export type StringInputProps = {
 let masks: Record<string, RegExp> = {
   "9": /[0-9]/,
   "a": /[a-zA-Z]/,
-  '*': /./
-}
+  "*": /./,
+};
 
-const applyMask = (value: string, mask: string, pos: number): { newValue: string, newPos: number } => {
+const applyMask = (value: string, mask: string, pos: number): { newValue: string; newPos: number } => {
   let maskedValue = "";
   let maskIndex = 0;
   let valueIndex = 0;
-  let incrementPos: boolean = false;
+  let incrementPos = false;
+
   while (maskIndex < mask.length) {
     let maskChar = mask[maskIndex];
     let valueChar = value[valueIndex];
     let regex = masks[maskChar];
+
     if (regex) {
       if (valueChar && regex.test(valueChar)) {
         maskedValue += valueChar;
         maskIndex += 1;
         valueIndex += 1;
       } else {
-        // discard invalid character
         valueIndex += 1;
       }
     } else {
@@ -39,61 +40,69 @@ const applyMask = (value: string, mask: string, pos: number): { newValue: string
       if (valueChar == maskChar) valueIndex += 1;
       else if (maskIndex <= pos + 1) incrementPos = true;
     }
-    if (valueChar == undefined) break;
+
+    if (valueChar === undefined) break;
   }
+
   return { newValue: maskedValue, newPos: pos + (incrementPos ? 1 : 0) };
 };
 
 export const BootstrapStringView = (props: StringInputProps) => {
   let id = getUniqueId(`txt_${props.label}`);
-  let mask: string | undefined;
-
-  (() => {
-    // let view = props.box.getType().view ?? { type: 'textbox' };
-    // mask = view.type == 'masked-textbox' ? view.mask : undefined;
-  })
-
+  const isFocused = new Value(false);
+  let mask: string | undefined = (props.box.type.view as any)?.mask;
 
   return (
     <>
-      {/* <InputTop {...props as any} /> */}
       <div class="form-floating">
         <input
-          type="text"
+          type={computed({ isFocused }, (p) => (p.isFocused ? "text" : "string"))}
           id={id}
           class="form-control"
-          value={(props.box.getJSONValue() || "") as any}
-          readOnly={props.engine.isReadonly ? "" : undefined}
-          placeholder={"" /*placeholder is required for form-floating to work*/}
-          required={props.box.getType().mandatory}
-          oninput={(e) => {
-            console.log("oninput");
-            let inputElt = e.currentTarget;
-            let previousValue = props.box.getJSONValue() as string;
-            let newValue = inputElt.value;
-            let pos = inputElt.selectionStart ?? newValue.length;
-            let maskResult = mask ? applyMask(newValue, mask, pos) : undefined;
-            if (maskResult) {
-              let maskResultValue = maskResult.newValue;
-              if (maskResultValue != newValue) {
-                if (maskResultValue == previousValue && newValue.length < previousValue.length) {
-                  // the mask is preventing us from backspacing or deleting. So we ignore it
-                } else {
-                  inputElt.value = maskResultValue;
-                  setTimeout(() => inputElt.selectionStart = inputElt.selectionEnd = maskResult.newPos)
-                  newValue = maskResultValue;
-                }
-              }
+          value={isFocused.getValue() ? (props.box.getValue() || "") : props.box.getValue()}
+          readOnly={computed({ isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
+          placeholder={""}
+          required={props.box.type.mandatory}
+          onFocus={(e) => {
+            if (!isFocused.getValue()) {
+              isFocused.setValue(true);
+              setTimeout(() => {
+                (e.target as HTMLInputElement)?.select?.();
+              });
             }
-            props.box.setValue(newValue);
           }}
-          onBlur={(_) => {
+          onBlur={(e) => {
+            isFocused.setValue(false);
             props.box.validate();
           }}
+          onInput={(e) => {
+            if (isFocused.getValue()) {
+              let inputElt = e.currentTarget;
+              let previousValue = props.box.getValue() as string;
+              let newValue = inputElt.value;
+              let pos = inputElt.selectionStart ?? newValue.length;
+              let maskResult = mask ? applyMask(newValue, mask, pos) : undefined;
+
+              if (maskResult) {
+                let maskResultValue = maskResult.newValue;
+                if (maskResultValue !== newValue) {
+                  if (maskResultValue === previousValue && newValue.length < previousValue.length) {
+                  } else {
+                    inputElt.value = maskResultValue;
+                    setTimeout(() => (inputElt.selectionStart = inputElt.selectionEnd = maskResult.newPos));
+                    newValue = maskResultValue;
+                  }
+                }
+              }
+
+              props.box.setValue(newValue, true);
+            }
+          }}
         />
-        <label for={id} class="form-label">{props.label}</label>
+        <label for={id} class="form-label">
+          {props.label}
+        </label>
       </div>
-      {/* <InputBottom {...props as any} /> */}
     </>
   );
 };

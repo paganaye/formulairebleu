@@ -18,7 +18,7 @@ export const BootstrapVariantView = (props: VariantInputProps) => {
   let variantKeyString = new Value<string>((innerVariant?.value.getType() as any).key);
 
   // createEffect(() => {
-  //   //let view = props.box.getType().view ?? { type: 'textbox' };
+  //   //let view = props.box.type.view ?? { type: 'textbox' };
   //   //mask = view.type == 'masked-textbox' ? view.mask : undefined;
   // })
 

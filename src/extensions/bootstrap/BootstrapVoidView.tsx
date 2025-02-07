@@ -23,7 +23,7 @@ export const VoidView: JsxComponent<VoidVueProps> = (props) => {
   //     return <p>Todo</p>;
   // }
 
-  //props.box.getType().view.content
+  //props.box.type.view.content
   //{type: 'const', data: '', view: 'html'}
-  return <ConstView {...props.box.getType().view as any} />
+  return <ConstView {...props.box.type.view as any} />
 };

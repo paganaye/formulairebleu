@@ -22,7 +22,7 @@ export const BootstrapJSONView: JsxComponent<JSONInputProps> = (props) => {
           type="text"
           id={id}
           class="form-control"
-          value={(props.box.getJSONValue() || "") as any}
+          value={(props.box.getValue() || "") as any}
           readOnly={props.engine.isReadonly}
           placeholder=""
           onInput={(e) => {

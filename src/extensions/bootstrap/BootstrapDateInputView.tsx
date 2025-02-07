@@ -10,94 +10,70 @@ export type DateInputProps = {
 };
 
 export interface IJSONDate {
-  type: 'date' | 'time' | 'datetime',
+  type: 'date' | 'time' | 'datetime';
   value: string;
 }
 
 export const DateInputView = (props: DateInputProps) => {
-  let id = getUniqueId(`num_${props.label}`);
+  let id = getUniqueId(`date_${props.label}`);
   const isFocused = new Value(false);
-  const suffix = (props.box.getType().view as any)?.suffix;
+  const suffix = (props.box.type.view as any)?.suffix;
 
-  const locale = Intl.DateTimeFormat().resolvedOptions().locale; // Détecte la locale
-  const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: 'short' }).format(new Date());
-  console.log(`Votre format : ${dateFormat}`); // Exemple : "dd/mm/yyyy hh:mm"
 
-  const inputType = computed({}, () => {
-    let result: string;
-    if (!isFocused.getValue()) result = "string";
-    else switch (props.box.getType().type as any) {
-      case "time":
-        result = "time";
-        break;
-      case "datetime":
-        result = "datetime-local"
-        break;
+  const inputType = computed({ isFocused }, (p) => {
+    if (!p.isFocused) return "string";
+    switch (props.box.type.type as string) {
+      case "time": return "time";
+      case "datetime": return "datetime-local";
       case "date":
-      default:
-        result = "date";
-        break;
+      default: return "date";
     }
-    console.log("inputType", result)
-    return result;
   });
 
-  function isValidDate(dt: Date | undefined) {
+  function isValidDate(dt: Date | undefined): boolean {
     const maxDate = new Date("9999-12-31T23:59:59"); // Limite maximale
-    return (dt instanceof Date && !isNaN(dt.getTime()) && dt <= maxDate)
+    return dt instanceof Date && !isNaN(dt.getTime()) && dt <= maxDate;
   }
 
-  const inputValue = computed({}, () => {
-    let value = props.box.getJSONValue() as any as (IJSONDate | null)
-    let result: string;
-    // 🇫🇷
-    let dt: Date | null = (!value || typeof value.value != "string") ? null : new Date(Date.parse(value.value))
-    if (!(dt instanceof Date) || isNaN(dt.getTime())) {
-      result = ""
-    } else {
-      switch (props.box.getType().type as string) {
-        case "time":
-          result = dt.toISOString().split("T")[1].substring(0, 8); // we keep hh:mm:ss
-          break;
-        case "datetime":
-          result = dt.toISOString();
-          break;
-        case "date":
-        default:
-          result = dt.toISOString().split("T")[0]; // we keep yyyy/mm/dd
-      }
+  function formatDate() {
+    let value = props.box.getValue() as any;
+    let dt = new Date(Date.parse(value));
+    if (!isValidDate(dt)) return "";
+
+    switch (value.type) {
+      case "time": return dt.toISOString().split("T")[1].substring(0, 8); // hh:mm:ss
+      case "datetime": return dt.toISOString().slice(0, 16); // yyyy-MM-ddThh:mm
+      case "date":
+      default: return dt.toISOString().split("T")[0]; // yyyy-MM-dd
     }
-    return result;
-  });
+  };
 
 
   return (
     <>
-      {/* <InputTop {...props} /> */}
       <div class="input-group mb-3">
         <div class="form-floating">
           <input
-            type={inputType.getValue()}
+            type={inputType}
             id={id}
-            class="form-control number-input"
-            value={inputValue.getValue()}
-            readOnly={props.engine.isReadonly || !isFocused.getValue()}
-            placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
-            onFocus={(e) => {
-              if (!isFocused.getValue()) {
-                isFocused.setValue(true);
-                //   setTimeout(() => { (e.target as HTMLInputElement)?.select?.() });
-              }
+            class="form-control"
+            value={formatDate()}
+            readOnly={computed({ isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
+            placeholder=""
+            onFocus={(e: Event) => {
+              isFocused.setValue(true)
+              setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) { inp.value = props.box.getValue().toString(); inp.select(); } });
             }}
-            onBlur={(e) => {
+            onBlur={(e: Event) => {
               isFocused.setValue(false);
+              setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) inp.value = formatDate() });
               props.box.validate();
             }}
             onInput={(e) => {
               if (isFocused.getValue()) {
                 let dateValue = e.currentTarget.valueAsDate;
                 if (isValidDate(dateValue)) {
-                  props.box.setValue({ type: 'date', value: dateValue == null ? null : dateValue.toISOString() });
+                  props.box.setValue({ type: props.box.type.type, value: dateValue?.toISOString() || "" });
                 }
               }
             }}
@@ -108,7 +84,6 @@ export const DateInputView = (props: DateInputProps) => {
           <span class="input-group-text" id="basic-addon2">{suffix}</span>
         </Show>
       </div>
-      {/* <InputBottom {...props} /> */}
     </>
   );
 };

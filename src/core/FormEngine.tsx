@@ -2,14 +2,14 @@ import { JsxComponent, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragm
 import { IForm, IFormType, IKeyedMemberType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
-import { Box } from "./Box";
+import { ArrayBox, Box, ObjectBox, VariantBox } from "./Box";
 import { Value } from './tiny-jsx';
 
 export type OnValueChanged = { pagesChanged?: boolean };
 
 export interface IFormProps {
     form: IForm,
-    value: Value
+    $value: Value
     onValueChanged: (v: any) => void
 }
 
@@ -70,7 +70,7 @@ export abstract class FormEngine {
         let firstNonObjectSeen: boolean = false;
 
         let recurse = (box: Box) => {
-            let originalType = box.getType();
+            let originalType = box.type;
             let actualType = this.getActualType(originalType)
             if ((originalType.pageBreak || actualType.pageBreak) && lineNo > 0) {
                 pageNo += 1;
@@ -83,20 +83,20 @@ export abstract class FormEngine {
             switch (typeType) {
                 case 'array':
                     firstNonObjectSeen = true;
-                    let entries = box.getEntries()
-                    for (let e of entries) {
+                    let entries = (box as ArrayBox).$entryBoxes
+                    for (let e of entries.getValue()) {
                         recurse(e)
                     }
                     break;
                 case 'object':
-                    let members = box.getMembers()
+                    let members = (box as ObjectBox).getMembers()
                     for (let m of members) {
                         recurse(m)
                     }
                     break;
                 case 'variant':
-                    let variant = box.getInnerVariant();
-                    recurse(variant.value)
+                    let variant = (box as VariantBox).getInnerVariant();
+                    recurse(variant)
                     break;
                 case 'boolean':
                 case 'const':
@@ -176,7 +176,7 @@ export abstract class FormEngine {
 
         let inputComponent = computed({}, (p) => {
             let result: JsxComponent<InputRenderProps>;
-            result = this.getRenderer(props.box?.getType());
+            result = this.getRenderer(props.box?.type);
             return result;
         }); // new Value<Component<any> | undefined>(undefined);
 
@@ -212,8 +212,8 @@ export abstract class FormEngine {
 
     InputTop(props: InputTopProps) {
         return <>
-            <Show when={props.box.getType().help}>
-                <div class="form-label text-body-tertiary"><small>{props.box.getType().help}</small></div>
+            <Show when={props.box.type.help}>
+                <div class="form-label text-body-tertiary"><small>{props.box.type.help}</small></div>
             </Show>
         </>
     }

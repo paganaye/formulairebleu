@@ -11,16 +11,16 @@ import { BootstrapEngine } from './BootstrapEngine';
 interface FormBodyProps {
   engine: BootstrapEngine;
   form: IForm,
-  value: Value<JSONValue>,
+  $value: Value<JSONValue>,
   onValueChanged: (v) => void,
   header?: JSXSource;
   footer?: JSXSource;
 }
 
 const FormBody = (props: FormBodyProps) => {
-  const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.value.getValue());
+  const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.$value.getValue());
   rootBox.addObserver(new Observer((v) => {
-    console.log("here", v)
+    props.$value.setValue(v);
   }))
   // createEffect(() => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
@@ -140,7 +140,7 @@ export const BootstrapFormView = (props: ({ engine: FormEngine } & IFormProps)) 
       <FormBody
         engine={props.engine as any}
         form={props.form}
-        value={props.value}
+        $value={props.$value}
         onValueChanged={props.onValueChanged}
         header=<h1>{props.form.name}</h1>
         footer=<>

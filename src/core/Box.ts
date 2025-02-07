@@ -1,254 +1,233 @@
-import { IArrayType, IObjectType, IFormType, IVariantType, IVariantMemberType, IObjectMemberType, } from './IForm';
-import { JSONObject, JSONValue, Observer, Value } from './tiny-jsx';
+import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, IVariantMemberType, IVariantType } from "./IForm";
+import { JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 
-export class Box {
-  readonly uniqueId: number;
-  public pageNo = new Value<IPageNo>(undefined as any);
-  private _innerValue: Value<BoxInnerValue>;
-  private _type: IFormType;
-  private _errors: Value<ErrorString[]>;
-
+export abstract class Box<TFormType extends IFormType = IFormType> {
+  readonly uniqueId: number = Box.getUniqueId();
+  readonly errors = new Value<ErrorString[]>([]);
+  readonly pageNo = new Value<IPageNo>(undefined as any);
   #observers?: Set<Observer<JSONValue>>;
+  value: Value<TFormType> = new Value<TFormType>(undefined)
+
+  constructor(readonly parent: Box | null, readonly name: string, readonly type: TFormType) { }
+
+  static lastBoxId: number = 0;
+  static getUniqueId(): number {
+    return ++(Box.lastBoxId);
+  }
+
+  abstract getValue(): InferDataType<TFormType>;
+  abstract setValue(value: JSONValue | undefined, validate: boolean): void;
+  abstract getDefaultValue(): InferDataType<TFormType>;
 
   addObserver(observer: Observer<any>) {
     (this.#observers || (this.#observers = new Set())).add(observer);
   }
 
-  // removeObserver(observer: Observer<T>) {
-  //     this.#observers?.delete(observer);
-  //     // observer.observedValues.delete(this);
-  // }
-
-
-
-  constructor(
-    readonly parent: Box | null,
-    readonly name: string,
-    type: IFormType,
-    value: JSONValue | Value<BoxInnerValue>
-  ) {
-    this.uniqueId = Box.getUniqueId();
-    this._type = type;
-    this._errors = new Value<ErrorString[]>([]);
-    if (value instanceof Value) {
-      this._innerValue = value;
-    } else {
-      this._innerValue = new Value<BoxInnerValue>(null);
-      this.setJSONValue(value, false);
-    }
-  }
-
-  errors() {
-    return this._errors.getValue();
-  }
-
-  static lastBoxId: number = 0;
-
-  static getUniqueId(): number {
-    Box.lastBoxId += 1;
-    return Box.lastBoxId;
-  }
-
-
-  getType(): IFormType {
-    return this._type
-  }
-
-  setValue(value: JSONValue) {
-    this.setJSONValue(value as JSONValue, true);
-  }
-
-  setJSONValue(value: JSONValue | undefined, validate: boolean): void {
-    const type = this._type;
-    let innerValue: BoxInnerValue;
-    if (value === undefined && "defaultValue" in type) {
-      value = type.defaultValue;
-    }
-
-    let newBoxes = (membersTypes: IObjectMemberType[]) => {
-      let members: Box[] = [];
-      const valueObj = value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
-      for (const memberType of membersTypes) {
-        //if ('key' in memberType) {
-        const memberValue = valueObj?.[memberType.key as any];
-        members.push(Box.enBox(this as any, memberType.key as any, memberType, memberValue) as any);
-        //}
-      }
-      return members;
-    }
-
-    switch (type.type) {
-      case 'number':
-        innerValue = value == null ? null : Number(value);
-        if (typeof innerValue === 'number' && isNaN(innerValue)) innerValue = null;
-        break;
-      case 'boolean':
-        innerValue = value == null ? null : Boolean(value);
-        break;
-      case 'string':
-        innerValue = value == null ? '' : String(value);
-        break;
-      case 'array': {
-        const entries = Array.isArray(value)
-          ? value.map((v, i) => Box.enBox(this, `${this.name}#${i + 1}`, type.entryType, v))
-          : [];
-        innerValue = { type, entries };
-        break;
-      }
-      case 'const':
-        innerValue = null;
-        break;
-      case 'object':
-        {
-          const members = newBoxes(type.membersTypes);
-          innerValue = { type, members };
-          break;
-        }
-
-      case 'variant':
-        {
-          const variants = type.variants;
-          let variantKey = (value && typeof value === 'object' && "key" in value) ? value.key : undefined;
-          let variantType = variants.find(v => v.key === variantKey);
-          if (!variantType) {
-            value = null;
-            variantType = variants[0] ?? { key: 'empty', type: 'void' };
-          }
-          innerValue = {
-            type: type,
-            key: String(variantKey),
-            value: Box.enBox(this, this.name, variantType!, value)
-          }
-          break;
-        }
-      case 'void':
-        return
-
-      default:
-        // case 'date':
-        {
-          innerValue = value as any;
-          break;
-        }
-    }
-
-    this._innerValue.setValue(innerValue);
-    let parent = this.parent;
-    while (parent) {
-      parent.notifyChildChanged()
-      parent = parent.parent;
-    }
-    if (validate) this.validate();
-  }
-
   notifyChildChanged() {
     if (this.#observers) {
-      let jsonValue = this.getJSONValue()
-      this.#observers?.forEach(observer => observer.onValueChanged(jsonValue));
+      const jsonValue = this.getValue();
+      this.#observers.forEach(observer => observer.onValueChanged(jsonValue));
     }
-  }
-
-  getMembers(): Box[] {
-    let value = this._innerValue.getValue();
-    //let result: JSONValue;
-    if (value && typeof value === 'object' && value.type && value.type.type === 'object') {
-      return (value as BoxInnerObject).members;
-    }
-    return [];
-  }
-
-  getVariants(): IVariantMemberType[] {
-    let type = this._type as IVariantType;
-    if (type.type === "variant") {
-      return type.variants;
-    } else return [];
-  }
-
-  setVariantKey(key: string) {
-    let type = this._type as IVariantType;
-    if (type.type === "variant") {
-      let variantType = type.variants.find(t => t.key == key);
-      if (variantType) {
-        this._innerValue.setValue({
-          type: type,
-          key,
-          value: Box.enBox(this, this.name, variantType, undefined)
-        });
-      }
-    }
-  }
-
-  getInnerVariant(): BoxInnerVariant | undefined {
-    if (this._type.type === "variant") {
-      let value = this._innerValue.getValue();
-      return (value as any as BoxInnerVariant);
-    } else return undefined;
+    this.parent?.notifyChildChanged();
   }
 
   validate(): void {
-    const type = this._type;
     const errors: ErrorString[] = [];
-    const value = this.getJSONValue();
+    const value = this.getValue();
 
-    // Add mandatory validation if not explicitly defined
-    if (type.mandatory && !type.validations?.find(v => v.type === 'mandatory')) {
-      type.validations?.push({ type: 'mandatory', message: `${this.name} is mandatory`, arg1: undefined } as any);
+    if (this.type.mandatory && !this.type.validations?.some(v => v.type === 'mandatory')) {
+      this.type.validations?.push({ type: 'mandatory', message: `${this.name} is mandatory` } as any);
     }
 
-    // Run all validations
-    for (const validation of type.validations || []) {
-      // Example validation logic
+    for (const validation of this.type.validations || []) {
       if (validation.type === 'mandatory' && (value == null || value === '')) {
         errors.push(validation.message || `${this.name} is required.`);
       }
     }
 
-    this._errors.setValue(errors);
+    this.errors.setValue(errors);
   }
 
-  getJSONValue(): JSONValue {
-    const innerValue = this._innerValue.getValue();
-    if (typeof innerValue === 'object') {
-      if (this._type.type === 'array') {
-        return (innerValue as BoxInnerArray).entries.map(entry => entry.getJSONValue());
-      } else if (this._type.type === 'object') {
-        let result = {}
-        this._type.membersTypes.forEach((t, i) => result[t.key] = (innerValue as BoxInnerObject).members[i].getJSONValue());
-        return result;
-      } else if (this._type.type === 'variant') {
-        let result = { type: this._type.type }
-        // TODO
-      }
+  static enBox<TFormType extends IFormType = IFormType>(parent: Box | null, name: string, type: TFormType, value: JSONValue) {
+    switch (type.type) {
+      case 'number':
+        return new NumberBox(parent, name, type, value);
+      case 'boolean':
+        return new BooleanBox(parent, name, type, value);
+      case 'object':
+        return new ObjectBox(parent, name, type as IObjectType, value as JSONObject);
+      case 'array':
+        return new ArrayBox(parent, name, type as IArrayType, value as JSONValue[]);
+      case 'variant':
+        return new VariantBox(parent, name, type as IVariantType, value);
+      case 'string':
+      default:
+        return new StringBox(parent, name, type as any, value);
     }
-    return innerValue as JSONValue;
   }
 
-  getEntries(): any[] {
-    let value = this._innerValue.getValue();
-    if (value && typeof value === 'object' && value.type.type === 'array') {
-      return (value as BoxInnerArray).entries;
+  static unBox<Q extends IFormType = IFormType>(box: Box<Q>): InferDataType<Q> {
+    return box.getValue();
+  }
+}
+
+export class StringBox extends Box<IStringType> {
+  private $innerValue: Value<string>;
+
+  constructor(parent: Box | null, name: string, type: IStringType, value?: JSONValue) {
+    super(parent, name, type);
+    this.$innerValue = new Value<string>(value == null ? this.getDefaultValue() : String(value));
+  }
+
+  getValue(): string {
+    return this.$innerValue.getValue();
+  }
+
+  setValue(value: JSONValue | undefined, validate: boolean): void {
+    this.$innerValue.setValue(value == null ? this.getDefaultValue() : String(value));
+    if (validate) this.validate();
+    this.notifyChildChanged()
+  }
+
+  getDefaultValue() {
+    return this.type.defaultValue ?? "";
+  }
+}
+
+export class NumberBox extends Box<INumberType> {
+  private $innerValue: Value<number | null>;
+
+  constructor(parent: Box | null, name: string, type: INumberType, value?: JSONValue) {
+    super(parent, name, type);
+    this.$innerValue = new Value<number | null>(value == null ? this.getDefaultValue() : Number(value));
+  }
+
+  getValue(): number | null {
+    return this.$innerValue.getValue();
+  }
+
+  setValue(value: JSONValue | undefined, validate: boolean): void {
+    this.$innerValue.setValue(value == null ? this.getDefaultValue() : Number(value));
+    if (validate) this.validate();
+    this.notifyChildChanged();
+  }
+
+  getDefaultValue() {
+    return this.type.defaultValue ?? null;
+  }
+}
+
+export class BooleanBox extends Box<IBooleanType> {
+  private $innerValue: Value<boolean>;
+
+  constructor(parent: Box | null, name: string, type: IBooleanType, value?: JSONValue) {
+    super(parent, name, type);
+    this.$innerValue = new Value<boolean>(value == null ? this.getDefaultValue() : Boolean(value));
+  }
+
+  getValue(): boolean {
+    return this.$innerValue.getValue();
+  }
+
+  setValue(value: JSONValue | undefined, validate: boolean): void {
+    this.$innerValue.setValue(value == null ? this.getDefaultValue() : Boolean(value));
+    if (validate) this.validate();
+  }
+
+  getDefaultValue() {
+    return this.type.defaultValue ?? false;
+  }
+}
+
+export class ObjectBox extends Box<IObjectType> {
+  readonly members: Box[];
+
+  constructor(parent: Box | null, name: string, type: IObjectType, value?: JSONObject) {
+    super(parent, name, type);
+    this.members = type.membersTypes.map(t => Box.enBox(this, t.key, t, value?.[t.key] ?? this.getDefaultValue()[t.key]));
+  }
+
+  getValue(): JSONObject {
+    return Object.fromEntries(this.members.map(member => [member.name, member.getValue()]));
+  }
+
+  setValue(value: JSONValue | undefined, validate: boolean): void {
+    if (typeof value === 'object' && value !== null) {
+      this.members.forEach(member => member.setValue(value[member.name], validate));
+      this.notifyChildChanged();
     }
+    if (validate) this.validate();
+  }
+
+  getDefaultValue() {
+    const defaultValues: JSONObject = {};
+    this.type.membersTypes.forEach((t) => {
+      if (t.type !== 'const') defaultValues[t.key] = Box.enBox(null, t.key, t, undefined).getDefaultValue();
+    });
+    return defaultValues;
+  }
+
+  getMembers() { return this.members; }
+
+}
+
+export class ArrayBox extends Box<IArrayType> {
+  readonly $entryBoxes: Value<Box<IArrayType['entryType']>[]> = new Value<Box[]>(this.getDefaultValue());
+
+  constructor(parent: Box | null, name: string, type: IArrayType, value?: JSONValue[]) {
+    super(parent, name, type);
+    if (value !== undefined) this.setValue(value, false)
+  }
+
+  getValue(): JSONValue[] {
+    return this.$entryBoxes.getValue().map(entry => entry.getValue());
+  }
+
+  setValue(value: JSONValue | undefined, validate: boolean): void {
+    if (Array.isArray(value)) {
+      this.$entryBoxes.setValue(value.map((v, i) => Box.enBox(this, `${this.name}#${i}`, this.type.entryType, v)));
+    }
+    if (validate) this.validate();
+    this.notifyChildChanged();
+  }
+
+  getDefaultValue() {
     return [];
   }
 
-  setEntries(type: IArrayType, boxes: Box[]): void {
-    this._innerValue.setValue({ type, entries: boxes } as any);
+}
+
+export class VariantBox extends Box<IVariantType> {
+  private _innerValue: Box;
+  private _key: string;
+
+  constructor(parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
+    super(parent, name, type);
+    this._key = value && typeof value === 'object' && "key" in value ? String(value.key) : this.getDefaultValue().key;
+    this._innerValue = Box.enBox(this, name, type.variants.find(v => v.key === this._key)!, value ?? this.getDefaultValue().value);
   }
 
-  static enBox(
-    parent: Box | null,
-    name: string,
-    type: IFormType,
-    value: any
-  ): Box {
-    return new Box(parent, name, type, value);
+  getValue() {
+    return { key: this._key, value: this._innerValue.getValue() } as any;
   }
-  public static unBox(value: Box): JSONValue {
-    let val = value.getJSONValue();
-    return val;
+
+  setValue(value: JSONValue | undefined, validate: boolean): void {
+    if (value && typeof value === 'object' && "key" in value) {
+      this._key = String(value.key);
+      this._innerValue = Box.enBox(this, this.name, (this.type as IVariantType).variants.find(v => v.key === this._key)!, value.value);
+    }
+    if (validate) this.validate();
+    this.notifyChildChanged();
   }
+
+  getDefaultValue() {
+    return { key: this.type.variants[0].key, value: Box.enBox(null, this.name, this.type.variants[0], undefined).getDefaultValue() } as any;
+  }
+
+  getInnerVariant() { return this._innerValue; }
 
 }
+
 
 // Supporting types
 export interface IPageNo {
@@ -258,16 +237,16 @@ export interface IPageNo {
   endLine: number;
 }
 
-export type BoxInnerArray = { type: IArrayType; entries: Box[] };
-export type BoxInnerObject = { type: IObjectType; members: Box[] };
-export type BoxInnerVariant = { type: IVariantType, key: string, value: Box; };
-export type BoxInnerValue = null
-  | number
-  | string
-  | boolean
-  | BoxInnerArray
-  | BoxInnerObject
-  | BoxInnerVariant;
+// export type BoxInnerArray = { type: IArrayType; entries: Box[] };
+// export type BoxInnerObject = { type: IObjectType; members: Box[] };
+// export type BoxInnerVariant = { type: IVariantType, key: string, value: Box; };
+// export type BoxInnerValue = null
+//   | number
+//   | string
+//   | boolean
+//   | BoxInnerArray
+//   | BoxInnerObject
+//   | BoxInnerVariant;
 
 type ErrorString = string;
 

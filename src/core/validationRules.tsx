@@ -2,7 +2,6 @@ import { countDecimals } from "./Utils";
 import { IValidationRule } from "./Validation";
 
 
-
 export const validationRules: Record<string, (v: any, validation: IValidationRule<any>, arg1: any, addError: (msg: string) => void) => void> = {
   minValue: (v, validation, arg1, addError) => {
     if (v !== null && Number(v) < arg1) addError(validation.message ?? "$name should be at least $arg1.");
