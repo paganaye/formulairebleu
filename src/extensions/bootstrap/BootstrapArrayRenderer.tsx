@@ -6,6 +6,7 @@ import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
 import { IBootstrapListView } from "./BootstrapForm";
 import { FormEngine } from "../../core/FormEngine";
+import { IFormType } from "../../core/IForm";
 
 export type ArrayRendererProps<T = any> = {
   engine: FormEngine;
@@ -41,7 +42,7 @@ Styles.add("th.table-title", {
   cursor: "pointer "
 });
 
-export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource {
+export function ArrayRenderer<T extends IFormType = IFormType>(props: ArrayRendererProps<T>): JSXSource {
   let viewAsType = new Value(props.viewAsType?.type ?? "table");
 
   function handleCheckBoxOrRadioInput(e: InputEvent, formMemberName: string, value: any) {
@@ -58,35 +59,36 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
 
     const sortOrder = new Value<SortOrder[]>([]);
     const filters = new Value<string[]>([]);
-
     function toggleSort(key: string, fieldNo: number, event: MouseEvent) {
       keepFocus(event);
-      // sortOrder.setValue((prev) => {
-      //   const existing = prev.find((s) => s.column.key === key);
-      //   if (!existing) {
-      //     return event.ctrlKey
-      //       ? [...prev, { column: props.columns[fieldNo], direction: "asc" }]
-      //       : [{ column: props.columns[fieldNo], direction: "asc" }];
-      //   }
-      //   if (existing.direction === "asc") {
-      //     return prev.map((s) =>
-      //       s.column.key === key ? { ...s, direction: "desc" } : s
-      //     );
-      //   }
-      //   const newList = prev.filter((s) => s.column.key !== key);
-      //   return event.ctrlKey ? newList : [];
-      // });
+      let prev = sortOrder.getValue();
+      const existing = prev.find((s) => s.column.key === key);
+
+      let newList;
+      if (!existing) {
+        newList = event.ctrlKey
+          ? [...prev, { column: props.columns[fieldNo], direction: "asc" }]
+          : [{ column: props.columns[fieldNo], direction: "asc" }];
+      } else if (existing.direction === "asc") {
+        newList = prev.map((s) =>
+          s.column.key === key ? { ...s, direction: "desc" } : s
+        );
+      } else {
+        newList = event.ctrlKey
+          ? prev.filter((s) => s.column.key !== key)
+          : [];
+      }
+      console.log(JSON.stringify(newList));
+      sortOrder.setValue(newList);
     }
 
     function updateFilter(index: number, value: string) {
-      // setFilters((prev) => {
-      //   const newFilters = [...prev];
-      //   newFilters[index] = value.toLowerCase(); // Normalisation en minuscules
-      //   return newFilters;
-      // });
+      const newFilters = [...filters.getValue()];
+      newFilters[index] = value.toLowerCase();
+      filters.setValue(newFilters);
     }
 
-    const filteredValues = computed({ entries: props.entryBoxes }, (p) => {
+    const filteredValues = computed({ entries: props.entryBoxes, filters }, (p) => {
       const data = [...p.entries];
       const currentFilters = filters.getValue();
 
@@ -94,8 +96,8 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
         if (entry instanceof Box) entry = Box.unBox(entry as any) as any;
         return props.columns.every((column, index) => {
           const filterValue = currentFilters[index];
-          if (!filterValue) return true; // Pas de filtre appliqué pour cette colonne
-          const entryValue = column.key ? (entry as JSONObject)[column.key] : entry;
+          if (!filterValue) return true;
+          const entryValue = column.key ? entry[column.key] : entry;
           if (entryValue == null) return filterValue == 'null';
           const normalizedCellValue = String(entryValue).toLowerCase();
           return normalizedCellValue.includes(filterValue);
@@ -104,11 +106,11 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
     });
 
 
-    const sortedValues = computed({ filteredValues }, (p) => {
-      const data = p.filteredValues; // Appliquer le tri aux données filtrées
-      const orderBy = sortOrder.getValue();
+    const sortedValues = computed({ sortOrder, filteredValues }, (p) => {
+      const data = p.filteredValues;
+      const orderBy = p.sortOrder;
 
-      data.sort((boxA: T, boxB: T) => {
+      data.sort((boxA: Box<T>, boxB: Box<T>) => {
         let a: JSONValue = (boxA instanceof Box) ? Box.unBox(boxA as any) : boxA as JSONValue;
         let b: JSONValue = (boxB instanceof Box) ? Box.unBox(boxB as any) : boxB as JSONValue;
         for (const order of orderBy) {
@@ -159,10 +161,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
     }
 
     const TableRow = (rowProps: TableRowProps) => {
-      //let memberTypes = (props.entryType as IObjectType).membersTypes;
-      //let isObject = (props.entryType.type === 'object');
       let columns = rowProps.columns;
-
 
       return (<tr>
         <For each={columns}>
@@ -182,18 +181,19 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
       {props.inputTop()}
       <table>
         <thead>
-          {/* <Show when={props.columns[0]?.key != "#value"}>
-            <tr>
+
+          <Show when={props.columns[0]?.key != "#value"}>
+            {computed({ sortOrder }, (p) => (<tr>
               <For each={props.columns}>
                 {(entry, index) => (
-                  <th class="table-title" onMouseDown={(e) => toggleSort(entry.key!!, index(), e)}>
+                  <th class="table-title" onMouseDown={(e) => toggleSort(entry.key, index, e)}>
                     {entry.key}{sortSuffix(entry.key)}
                   </th>
                 )}
               </For>
               <th>&nbsp;</th>
-            </tr>
-          </Show> */}
+            </tr>))}
+          </Show>
           <tr>
             <For each={props.columns}>
               {(entry, index) => (
@@ -205,6 +205,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
                     onInput={(e) => updateFilter(index, (e.target as HTMLInputElement).value)} />
 
                 </th>
+
               )}
             </For>
             <th>&nbsp;</th>
@@ -216,6 +217,7 @@ export function ArrayRenderer<T = any>(props: ArrayRendererProps<T>): JSXSource 
               <TableRow {...props} entry={entry} index={index} />
             )}
           </For>
+
         </tbody>
       </table>
       {props.addButton?.()}
