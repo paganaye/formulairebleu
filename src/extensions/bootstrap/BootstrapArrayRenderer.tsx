@@ -8,15 +8,15 @@ import { IBootstrapListView } from "./BootstrapForm";
 import { FormEngine } from "../../core/FormEngine";
 import { IFormType } from "../../core/IForm";
 
-export type ArrayRendererProps<T = any> = {
+export type ArrayRendererProps<T extends IFormType = IFormType> = {
   engine: FormEngine;
   viewAsType: any | undefined;
   label: string;
   // entryType: IDataType;
   entryBoxes: Value<Box[]>
   selectionType?: 'single' | 'multiple';
-  renderEntry: (entry: T, index: number) => JSXSource;
-  renderEntryField: (entry: T, rowIndex: number, column: IColumn, columnIndex: number) => JSXSource;
+  renderEntry: (entry: Box<T>, index: number) => JSXSource;
+  renderEntryField: (entry: Box<T>, rowIndex: number, column: IColumn, columnIndex: number) => JSXSource;
   deleteButton: (index: number) => JSXSource;
   inputTop: () => JSXSource;
   inputBottom: () => JSXSource;

@@ -1,4 +1,4 @@
-import { For, JSONValue, JsxComponent } from "../../core/tiny-jsx";
+import { formulaireBleuJSXFragment, formulaireBleuJSX, For, JSONValue, JsxComponent, Value, computed } from "../../core/tiny-jsx";
 import { getUniqueId, } from "../../core/Utils";
 import { ISelectionEntry, IView } from "../../core/IForm";
 import { IBootstrapRadioButtonsView } from './BootstrapForm';
@@ -8,8 +8,7 @@ import { Bootstrap } from "./BootstrapEngine";
 export type SingleSelectionProps = {
   label: string;
   entries: ISelectionEntry[];
-  selectedKey: string;
-  setSelectedKey: (key: JSONValue) => void;
+  selectedKey: Value<string>;
   view: IView;
 };
 
@@ -48,7 +47,7 @@ export function SingleSelectionVue(props: SingleSelectionProps): JsxComponent {
                     id={`${id}-${entry.value}`}
                     value={String(entry.value)}
                     checked={entry.value === props.selectedKey}
-                    onInput={() => props.setSelectedKey(entry.value)}
+                    onInput={() => props.selectedKey.setValue(entry.value)}
                   />
                   <label class="form-check-label" for={`${id}-${entry.value}`}>
                     {entry.label || String(entry.value)}
@@ -71,8 +70,7 @@ export function SingleSelectionVue(props: SingleSelectionProps): JsxComponent {
           aria-expanded="false"
           onClick={onDropdownClick}
         >
-          {
-            (props.entries ?? []).find((entry) => entry.value === props.selectedKey)?.label || props.selectedKey
+          {computed({ selectedKey: props.selectedKey }, (p) => (props.entries ?? []).find((entry) => entry.value === p.selectedKey)?.label || props.selectedKey)
           }
         </button>
         <ul class="dropdown-menu" aria-labelledby={id}>
@@ -84,7 +82,7 @@ export function SingleSelectionVue(props: SingleSelectionProps): JsxComponent {
                   type="button"
                   onClick={() => {
                     dropDown?.hide();
-                    props.setSelectedKey(entry.value)
+                    props.selectedKey.setValue(entry.value)
                   }}
                 >
                   {entry.label || String(entry.value)}

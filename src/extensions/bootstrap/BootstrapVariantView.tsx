@@ -1,11 +1,11 @@
-import { formulaireBleuJSXFragment, formulaireBleuJSX } from "../../core/tiny-jsx";
-import { Box } from "../../core/Box";
+import { formulaireBleuJSXFragment, formulaireBleuJSX, computed } from "../../core/tiny-jsx";
+import { Box, VariantBox } from "../../core/Box";
 import { Value } from '../../core/tiny-jsx';
 import { SingleSelectionVue } from './BootstrapSingleSelectionView';
 import { BootstrapEngine } from './BootstrapEngine';
 
 export type VariantInputProps = {
-  box: Box;
+  box: VariantBox;
   label: string;
   level: number;
   engine: BootstrapEngine;
@@ -15,7 +15,6 @@ export type VariantInputProps = {
 export const BootstrapVariantView = (props: VariantInputProps) => {
   //let id = getUniqueId(`txt_${props.label}`);
   let innerVariant = props.box.getInnerVariant();
-  let variantKeyString = new Value<string>((innerVariant?.value.getType() as any).key);
 
   // createEffect(() => {
   //   //let view = props.box.type.view ?? { type: 'textbox' };
@@ -23,18 +22,21 @@ export const BootstrapVariantView = (props: VariantInputProps) => {
   // })
 
   function onViewChanged(value: string) {
-    variantKeyString.setValue(value);
-    props.box.setVariantKey(value)
+    props.box.key.setValue(value)
   }
 
   let entries = props.box.getVariants().map(v => ({ value: v.key, label: v.label ?? "" }));
   return (
     <>
-      todo
-      {/* <InputTop {...props} />
-      <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={variantKeyString.getValue()} entries={entries} setSelectedKey={(k) => onViewChanged(String(k))} label={"View as:"} />
-      <InputRenderer box={props.box.getInnerVariant()?.value} label={props.label} onValueChanged={props.onValueChanged} context={props.context} level={props.level} />
-      <InputBottom {...props} /> */}
+      {props.engine.InputTop(props)}
+      <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.key} entries={entries} label={"View as:"} />
+      {computed({ variantValue: props.box.variantValue }, p => props.engine.InputRenderer({
+        engine: props.engine,
+        label: props.label,
+        level: props.level,
+        box: p.variantValue
+      }))}
+      {props.engine.InputBottom(props)}
     </>
   );
 };

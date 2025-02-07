@@ -96,7 +96,7 @@ export abstract class FormEngine {
                     break;
                 case 'variant':
                     let variant = (box as VariantBox).getInnerVariant();
-                    recurse(variant)
+                    recurse(variant.getValue())
                     break;
                 case 'boolean':
                 case 'const':

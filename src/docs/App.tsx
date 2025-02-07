@@ -63,8 +63,23 @@ let form1Type = {
             { key: 'str1', type: 'string' as any, pageBreak: false },
             // { key: 'dat1', type: 'date' as any, pageBreak: false },
             // { key: 'tim1', type: 'time' as any, pageBreak: false },
-            //{ key: 'arr1', type: 'array' as any, entryType: { type: 'string' }, pageBreak: false },
+            { key: 'arr1', type: 'array' as any, entryType: { type: 'string' }, pageBreak: false },
             { key: 'arr2', type: 'array' as any, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false },
+            {
+                key: 'o3',
+                type: 'variant',
+                help: "This is an object wit str2, num2, date2 and bool2 members.",
+                label: "Object2 label here",
+                pageBreak: true,
+                variants: [
+                    { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
+                    { key: 'num1', type: 'number', label: 'A simple number', defaultValue: 123, help: 'Here you can enter an unconstrained number with default view.' },
+                    { key: 'bool1', type: 'boolean', label: 'A simple boolean', defaultValue: false, help: 'Here you can enter an unconstrained boolean with default view.' },
+                    { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
+                ]
+            }
+
+
             // {
             //     key: "p1", type: "object", membersTypes: [
             //         { key: 'a', type: "number", view: { type: 'mynumber1', min: 1 } },
@@ -149,19 +164,6 @@ let form1Type = {
             //         ]
             //     }
             // },
-            // {
-            //     key: 'o3',
-            //     type: 'variant',
-            //     help: "This is an object wit str2, num2, date2 and bool2 members.",
-            //     label: "Object2 label here",
-            //     pageBreak: true,
-            //     variants: [
-            //         { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
-            //         { key: 'num1', type: 'number', label: 'A simple number', defaultValue: 123, help: 'Here you can enter an unconstrained number with default view.' },
-            //         { key: 'bool1', type: 'boolean', label: 'A simple boolean', defaultValue: false, help: 'Here you can enter an unconstrained boolean with default view.' },
-            //         { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
-            //     ]
-            // }
         ]
     }
 } as const satisfies IForm;

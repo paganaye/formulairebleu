@@ -27,7 +27,7 @@ export class Value<T = any> {
     }
 
     toString() {
-        return this.#value.toString()
+        return String(this.#value)
     }
 
     // removeObserver(observer: Observer<T>) {

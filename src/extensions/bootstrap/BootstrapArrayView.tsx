@@ -1,7 +1,7 @@
 import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, Value } from "../../core/tiny-jsx";
-import { Box, ArrayBox, ObjectBox, getDefaultValue } from "../../core/Box";
+import { Box, ArrayBox, ObjectBox } from "../../core/Box";
 import { ArrayRenderer, IColumn, SortOrder } from './BootstrapArrayRenderer';
-import { IArrayType, ISelectionList } from "../../core/IForm";
+import { IArrayType, IFormType, ISelectionList } from "../../core/IForm";
 import { BootstrapEngine } from './BootstrapEngine';
 
 export type BootstrapArrayProps = {
@@ -22,7 +22,7 @@ export const BootstrapArrayView = (props: BootstrapArrayProps) => {
   //  return <ArrayInput0 {...props} />
   function newArrayEntry(): JSONValue {
     let entryType = (props.box.type).entryType;
-    return getDefaultValue(entryType);
+    return props.box.getDefaultValue();
   }
 
   function addButton() {
@@ -84,7 +84,7 @@ export const BootstrapArrayView = (props: BootstrapArrayProps) => {
         engine: props.engine,
         label: column.label,
         level: props.level,
-        box: (entry as ObjectBox).members[columnIndex]
+        box: (entry instanceof ObjectBox) ? entry.members[columnIndex] : entry
       })
     );
   }

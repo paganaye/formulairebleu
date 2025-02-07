@@ -1,5 +1,5 @@
 import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, IVariantMemberType, IVariantType } from "./IForm";
-import { JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
+import { computed, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 
 export abstract class Box<TFormType extends IFormType = IFormType> {
   readonly uniqueId: number = Box.getUniqueId();
@@ -48,7 +48,7 @@ export abstract class Box<TFormType extends IFormType = IFormType> {
     this.errors.setValue(errors);
   }
 
-  static enBox<TFormType extends IFormType = IFormType>(parent: Box | null, name: string, type: TFormType, value: JSONValue) {
+  static enBox<TFormType extends IFormType = IFormType>(parent: Box | null, name: string, type: TFormType, value: JSONValue): Box {
     switch (type.type) {
       case 'number':
         return new NumberBox(parent, name, type, value);
@@ -198,23 +198,26 @@ export class ArrayBox extends Box<IArrayType> {
 }
 
 export class VariantBox extends Box<IVariantType> {
-  private _innerValue: Box;
-  private _key: string;
+  readonly key = new Value<string>(undefined);
+  variantValue: Value<Box> = computed({ key: this.key }, p => {
+    let found = this.type.variants.find(v => v.key === this.key.getValue());
+    if (!found) found = this.type.variants[0];
+    return Box.enBox(this, this.name, found, this.value ?? this.getDefaultValue().value);
+  });
 
   constructor(parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
     super(parent, name, type);
-    this._key = value && typeof value === 'object' && "key" in value ? String(value.key) : this.getDefaultValue().key;
-    this._innerValue = Box.enBox(this, name, type.variants.find(v => v.key === this._key)!, value ?? this.getDefaultValue().value);
+    this.key.setValue(value && typeof value === 'object' && "key" in value ? String(value.key) : this.getDefaultValue().key);
   }
 
   getValue() {
-    return { key: this._key, value: this._innerValue.getValue() } as any;
+    return { key: this.key.getValue(), value: this.variantValue.getValue() } as any;
   }
 
   setValue(value: JSONValue | undefined, validate: boolean): void {
     if (value && typeof value === 'object' && "key" in value) {
-      this._key = String(value.key);
-      this._innerValue = Box.enBox(this, this.name, (this.type as IVariantType).variants.find(v => v.key === this._key)!, value.value);
+      this.key.setValue(String(value.key));
+      // this.variantValue.setValueBox.enBox(this, this.name, (this.type as IVariantType).variants.find(v => v.key === this.key.getValue())!, value.value);
     }
     if (validate) this.validate();
     this.notifyChildChanged();
@@ -224,7 +227,11 @@ export class VariantBox extends Box<IVariantType> {
     return { key: this.type.variants[0].key, value: Box.enBox(null, this.name, this.type.variants[0], undefined).getDefaultValue() } as any;
   }
 
-  getInnerVariant() { return this._innerValue; }
+  getInnerVariant() { return this.variantValue; }
+
+  getVariants() {
+    return this.type.variants;
+  }
 
 }
 
@@ -250,22 +257,22 @@ export interface IPageNo {
 
 type ErrorString = string;
 
-export function getDefaultValue(type: IFormType): JSONValue {
-  switch (type.type) {
-    case 'boolean':
-      return type.defaultValue ?? null;
-    case 'string':
-      return type.defaultValue ?? "";
-    case 'number':
-      return type.defaultValue ?? null;
-    case 'array':
-      return [];
-    case 'object':
-      const memberValues: JSONObject = {};
-      type.membersTypes.forEach((t) => {
-        if (t.type != 'const') memberValues[t.key] = getDefaultValue(t);
-      });
-      return memberValues;
-  }
-  return null;
-}
+// export function getDefaultValue(type: IFormType): JSONValue {
+//   switch (type.type) {
+//     case 'boolean':
+//       return type.defaultValue ?? null;
+//     case 'string':
+//       return type.defaultValue ?? "";
+//     case 'number':
+//       return type.defaultValue ?? null;
+//     case 'array':
+//       return [];
+//     case 'object':
+//       const memberValues: JSONObject = {};
+//       type.membersTypes.forEach((t) => {
+//         if (t.type != 'const') memberValues[t.key] = getDefaultValue(t);
+//       });
+//       return memberValues;
+//   }
+//   return null;
+// }
