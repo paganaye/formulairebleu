@@ -1,13 +1,13 @@
 import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, IVariantMemberType, IVariantType } from "./IForm";
 import { computed, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 
-type BoxChanged = { repaginate?: boolean };
+type PageChanged = { repaginate?: boolean };
 
 export abstract class Box<TFormType extends IFormType = IFormType> {
   readonly uniqueId: number = Box.getUniqueId();
   readonly errors = new Value<ErrorString[]>([]);
   readonly pageNo = new Value<IPageNo>(undefined as any);
-  #observers?: Set<Observer<BoxChanged>>;
+  #observers?: Set<Observer<any>>;
   // value: Value<TFormType> = new Value<TFormType>(undefined)
 
   constructor(readonly parent: Box | null, readonly name: string, readonly type: TFormType) { }
@@ -21,13 +21,14 @@ export abstract class Box<TFormType extends IFormType = IFormType> {
   abstract setValue(value: JSONValue | undefined, validate: boolean): void;
   abstract getDefaultValue(): InferDataType<TFormType>;
 
-  addObserver(observer: Observer<BoxChanged>) {
+  addObserver(observer: Observer<PageChanged>) {
     (this.#observers || (this.#observers = new Set())).add(observer);
   }
 
-  notifyChildChanged(options: BoxChanged = {}) {
+  notifyChildChanged(options: PageChanged = {}) {
     if (this.#observers) {
-      this.#observers.forEach(observer => observer(options));
+      let value = this.getValue();
+      this.#observers.forEach(observer => observer(value));
     }
     this.parent?.notifyChildChanged(options);
   }

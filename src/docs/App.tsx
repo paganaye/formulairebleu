@@ -18,8 +18,8 @@ let variant1 = {
 let str1 = { type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' } as const satisfies IFormType;
 let num1 = { type: 'number', label: 'A simple string', defaultValue: 55, help: 'Here you can enter an unconstrained string with default view.' } as const satisfies IFormType;
 let arr1 = { type: 'array' as any, entryType: { type: 'string' }, pageBreak: false } as const satisfies IFormType;
-let arr2 = { type: 'array' as any, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
-let arr3 = { type: 'array' as any, view: { type: 'mynumber1', min: 1 }, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
+let arr2 = { type: 'array' as any, view: { type: 'table' }, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
+let arr3 = { type: 'array' as any, view: { type: 'flow' }, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
 
 let obj1 = {
     type: 'object',
@@ -53,7 +53,7 @@ let form1Type = {
     name: 'form1',
     version: '1',
     templates: { telephone },
-    dataType: complex2
+    dataType: { ...arr3 }
 } as const satisfies IForm;
 
 // // let n: formulairebleu.InferDataType<{ type: 'number' }> = 5
@@ -110,7 +110,7 @@ export default function App() {
 
     return (<div>
         {formView1}
-        <pre>{computed({ value }, p => JSON.stringify(p.value))}</pre>
+        <pre>{computed({ value }, p => JSON.stringify(p.value, undefined, '   '))}</pre>
     </div>);
 }
 

@@ -33,7 +33,7 @@ export default function Tests() {
                 <p class="error">{error.getValue()}</p>
                 <p>Cette page utilise la toute dernière version {version.getValue()} de la librairie Formulaire Bleu.</p>
 
-                {engine.FormView({ $value: value, form })}
+                {engine.FormView({ $value: value, form, onValueChanged(v) { } })}
             </div>
         </div>
     </>);

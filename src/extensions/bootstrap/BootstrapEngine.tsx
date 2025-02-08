@@ -25,6 +25,14 @@ declare module "../../core/IForm" {
     export interface IBooleanViews {
         //   switch: IBootstapSwitchType;
     }
+    export interface IArrayViews {
+        table: { type: 'table' }
+        tabs: { type: 'tabs' }
+        flow: { type: 'flow' }
+        object: { type: 'modal' }
+        // carousel: { type: 'carousel', autoplay?: boolean, interval?: number }
+        // list: { type: 'list' }
+    }
 
 }
 
