@@ -66,9 +66,9 @@ export const BootstrapStringView = (props: StringInputProps) => {
           onFocus={(e) => {
             if (!isFocused.getValue()) {
               isFocused.setValue(true);
-              setTimeout(() => {
-                (e.target as HTMLInputElement)?.select?.();
-              });
+              // setTimeout(() => {
+              //   (e.target as HTMLInputElement)?.select?.();
+              // });
             }
           }}
           onBlur={(e) => {

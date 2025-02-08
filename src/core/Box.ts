@@ -6,7 +6,7 @@ export abstract class Box<TFormType extends IFormType = IFormType> {
   readonly errors = new Value<ErrorString[]>([]);
   readonly pageNo = new Value<IPageNo>(undefined as any);
   #observers?: Set<Observer<JSONValue>>;
-  value: Value<TFormType> = new Value<TFormType>(undefined)
+  // value: Value<TFormType> = new Value<TFormType>(undefined)
 
   constructor(readonly parent: Box | null, readonly name: string, readonly type: TFormType) { }
 
@@ -26,7 +26,7 @@ export abstract class Box<TFormType extends IFormType = IFormType> {
   notifyChildChanged() {
     if (this.#observers) {
       const jsonValue = this.getValue();
-      this.#observers.forEach(observer => observer.onValueChanged(jsonValue));
+      this.#observers.forEach(observer => observer(jsonValue));
     }
     this.parent?.notifyChildChanged();
   }
@@ -199,25 +199,33 @@ export class ArrayBox extends Box<IArrayType> {
 
 export class VariantBox extends Box<IVariantType> {
   readonly key = new Value<string>(undefined);
-  variantValue: Value<Box> = computed({ key: this.key }, p => {
-    let found = this.type.variants.find(v => v.key === this.key.getValue());
-    if (!found) found = this.type.variants[0];
-    return Box.enBox(this, this.name, found, this.value ?? this.getDefaultValue().value);
-  });
+
+  variantBox: Value<Box>;
 
   constructor(parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
     super(parent, name, type);
-    this.key.setValue(value && typeof value === 'object' && "key" in value ? String(value.key) : this.getDefaultValue().key);
+    this.setValue(value, false);
+    this.variantBox = computed({ key: this.key }, p => {
+      let found = this.type.variants.find(v => v.key === this.key.getValue());
+      if (!found) return undefined;
+      return Box.enBox(this, this.name, found, this.getDefaultValue().value);
+    });
+    this.key.addObserver((_) => this.notifyChildChanged())
   }
 
   getValue() {
-    return { key: this.key.getValue(), value: this.variantValue.getValue() } as any;
+    let variantBox = this.variantBox.getValue();
+    let result = { key: this.key.getValue(), value: variantBox?.getValue() as any };
+    return result;
   }
 
   setValue(value: JSONValue | undefined, validate: boolean): void {
     if (value && typeof value === 'object' && "key" in value) {
       this.key.setValue(String(value.key));
-      // this.variantValue.setValueBox.enBox(this, this.name, (this.type as IVariantType).variants.find(v => v.key === this.key.getValue())!, value.value);
+      let valueValue = (value as any).value;
+      // if (valueValue !== undefined) this.variantBox.setValue(valueValue);
+    } else {
+      this.key.setValue(this.getDefaultValue().key);
     }
     if (validate) this.validate();
     this.notifyChildChanged();
@@ -227,7 +235,7 @@ export class VariantBox extends Box<IVariantType> {
     return { key: this.type.variants[0].key, value: Box.enBox(null, this.name, this.type.variants[0], undefined).getDefaultValue() } as any;
   }
 
-  getInnerVariant() { return this.variantValue; }
+  getInnerVariant() { return this.variantBox; }
 
   getVariants() {
     return this.type.variants;

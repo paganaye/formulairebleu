@@ -227,7 +227,7 @@ type InferObjectMember<T extends IObjectMemberType[]> = {
 
 type InferVariantMember<V extends IVariantMemberType> =
   V extends IVariantMemberType<infer K, infer FT>
-  ? { key: K; data: InferDataType<FT> }
+  ? { key: K; value: InferDataType<FT> }
   : never;
 
 export type InferFormType<T extends IForm> = InferDataType<T['dataType']>

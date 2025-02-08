@@ -7,9 +7,8 @@ export class formulaireBleuJSXFragment { }
 
 export type JSXSource = JSONValue | Node | (() => JSXSource) | Value<JSXSource>;
 
-export class Observer<T = any> {
-    constructor(readonly onValueChanged: (newValue: T) => void) { }
-}
+export type Observer<T> = (newValue: T) => void
+
 
 
 export class Value<T = any> {
@@ -17,17 +16,14 @@ export class Value<T = any> {
     #value: T;
     constructor(value: T) { this.#value = value; }
     getValue(): T { return this.#value; }
-    setValue(value: T): void {
-        this.#value = value;
+    setValue(newValue: T): void {
+        if (newValue === this.#value) return
+        this.#value = newValue;
         this.notifyObservers();
     }
 
     addObserver(observer: Observer<T>) {
         (this.#observers || (this.#observers = new Set())).add(observer);
-    }
-
-    toString() {
-        return String(this.#value)
     }
 
     // removeObserver(observer: Observer<T>) {
@@ -36,16 +32,16 @@ export class Value<T = any> {
     // }
 
     notifyObservers() {
-        this.#observers?.forEach(observer => observer.onValueChanged(this.#value));
+        this.#observers?.forEach(observer => observer(this.#value));
     }
 }
 
 
 
-function observe<T>(source: T | Value<T>, update: (value: T) => void): void {
+function observe<T>(source: T | Value<T>, update: (value: T) => void, init: boolean): void {
     if (source instanceof Value) {
-        update(source.getValue());
-        source.addObserver(new Observer(update));
+        if (init) update(source.getValue());
+        source.addObserver(update);
     } else {
         update(source);
     }
@@ -70,14 +66,14 @@ function createElements(source: JSXSource): Node[] {
                 }
                 elts = newElts;
             };
-            observe(source, observer);
+            source.addObserver(observer);
             return elts;
         }
         if (Array.isArray(source))
             return source.flatMap(createElements);
         if (source instanceof Node)
             return [source];
-        return [document.createTextNode(JSON.stringify(source))];
+        return [document.createTextNode(String(source))];
     }
     if (type === 'function')
         return createElements((source as (() => JSXSource))());
@@ -106,7 +102,7 @@ export function formulaireBleuJSX(
                                 if (v === true) v = ""
                                 if (v === false) elt.removeAttribute(k)
                                 else elt.setAttribute(k, v as string)
-                            })
+                            }, true)
                         } else {
                             if (v == true) v = "";
                             if (v !== false) elt.setAttribute(k, v as any);
@@ -146,7 +142,7 @@ export function For<T>(
         if (nodes.length == 0) nodes.push(document.createComment('placeholder'));
         result.setValue(nodes);
     };
-    observe(props.each, update);
+    observe(props.each, update, true);
     return result;
 }
 
@@ -158,17 +154,22 @@ export function computed<T extends Record<string, any>, R>(
     values: { [K in keyof T]: Value<T[K]> },
     calculation: (props: T) => R
 ): Value<R> {
-    const calcResult = () => calculation(Object.fromEntries(
-        Object.entries(values).map(([key, v]) => [key, v.getValue()])
-    ) as T);
-    const result = new Value<R>(calcResult());
-    Object.values(values).forEach(v => observe(v, () => result.setValue(calcResult())));
+    const args = {} as T, result = new Value<R>(undefined!);
+    for (const key in values) {
+        const v = values[key];
+        args[key] = v.getValue();
+        v.addObserver(nv => {
+            args[key] = nv;
+            result.setValue(calculation(args));
+        });
+    }
+    result.setValue(calculation(args));
     return result;
 }
 
 export function Show(props: { when: Value<any> | any, fallback?: any }, children?: any[]) {
     const result = new Value(undefined);
-    observe(props.when, v => result.setValue(v ? children : props.fallback));
+    observe(props.when, v => result.setValue(v ? children : props.fallback), true);
     return result;
 }
 
@@ -182,7 +183,7 @@ export function Switch<T>(
         );
         result.setValue(matchedChild ? createElements(matchedChild.children) : []);
     };
-    observe(props.when, update);
+    observe(props.when, update, true);
     return result;
 }
 

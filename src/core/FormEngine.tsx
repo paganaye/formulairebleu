@@ -174,11 +174,8 @@ export abstract class FormEngine {
 
     InputRenderer(props: InputRenderProps) {
 
-        let inputComponent = computed({}, (p) => {
-            let result: JsxComponent<InputRenderProps>;
-            result = this.getRenderer(props.box?.type);
-            return result;
-        }); // new Value<Component<any> | undefined>(undefined);
+        let result: JsxComponent<InputRenderProps>;
+        let inputComponent = this.getRenderer(props.box.type);
 
         const isVisible = computed({}, (p) => {
             return true
@@ -201,7 +198,7 @@ export abstract class FormEngine {
 
         return (<>
             <Show when={isVisible}>
-                {inputComponent.getValue()?.(props)}
+                {inputComponent?.(props)}
             </Show>
         </>);
 

@@ -19,9 +19,9 @@ interface FormBodyProps {
 
 const FormBody = (props: FormBodyProps) => {
   const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.$value.getValue());
-  rootBox.addObserver(new Observer((v) => {
-    props.$value.setValue(v);
-  }))
+  rootBox.addObserver((v) => {
+    props.$value.setValue(v);    
+  })
   // createEffect(() => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
   // })

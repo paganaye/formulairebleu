@@ -39,7 +39,7 @@ export type MemberOperator = {
 
 export type ConstValue = {
     type: 'const';
-    data: string;
+    value: string;
     encoding?: 'utf8' | 'base64' | 'json';
     view?: 'text' | 'html' | 'image' | 'file' | 'object';
 };
