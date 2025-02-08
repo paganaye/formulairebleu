@@ -61,7 +61,7 @@ function createElements(source: JSXSource): Node[] {
                 const next = elts[elts.length - 1]?.nextSibling;
                 const newElts = createElements(val);
                 if (parent) {
-                    elts.forEach(n => parent.removeChild(n));
+                    elts.forEach(n => n.parentNode?.removeChild(n));
                     newElts.forEach(n => parent.insertBefore(n, next));
                 }
                 elts = newElts;

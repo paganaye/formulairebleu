@@ -1,5 +1,4 @@
-import { JsxComponent, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx"
-import { Box } from "../../core/Box";
+import { JsxComponent, formulaireBleuJSX } from "../../core/tiny-jsx"
 import { FormEngine, IFormProps } from "../../core/FormEngine";
 import { BootstrapArrayView } from "./BootstrapArrayView";
 import { BootstrapBooleanView } from "./BootstrapBooleanView";

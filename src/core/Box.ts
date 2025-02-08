@@ -1,11 +1,13 @@
 import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, IVariantMemberType, IVariantType } from "./IForm";
 import { computed, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 
+type BoxChanged = { repaginate?: boolean };
+
 export abstract class Box<TFormType extends IFormType = IFormType> {
   readonly uniqueId: number = Box.getUniqueId();
   readonly errors = new Value<ErrorString[]>([]);
   readonly pageNo = new Value<IPageNo>(undefined as any);
-  #observers?: Set<Observer<JSONValue>>;
+  #observers?: Set<Observer<BoxChanged>>;
   // value: Value<TFormType> = new Value<TFormType>(undefined)
 
   constructor(readonly parent: Box | null, readonly name: string, readonly type: TFormType) { }
@@ -19,16 +21,15 @@ export abstract class Box<TFormType extends IFormType = IFormType> {
   abstract setValue(value: JSONValue | undefined, validate: boolean): void;
   abstract getDefaultValue(): InferDataType<TFormType>;
 
-  addObserver(observer: Observer<any>) {
+  addObserver(observer: Observer<BoxChanged>) {
     (this.#observers || (this.#observers = new Set())).add(observer);
   }
 
-  notifyChildChanged() {
+  notifyChildChanged(options: BoxChanged = {}) {
     if (this.#observers) {
-      const jsonValue = this.getValue();
-      this.#observers.forEach(observer => observer(jsonValue));
+      this.#observers.forEach(observer => observer(options));
     }
-    this.parent?.notifyChildChanged();
+    this.parent?.notifyChildChanged(options);
   }
 
   validate(): void {
@@ -188,7 +189,7 @@ export class ArrayBox extends Box<IArrayType> {
       this.$entryBoxes.setValue(value.map((v, i) => Box.enBox(this, `${this.name}#${i}`, this.type.entryType, v)));
     }
     if (validate) this.validate();
-    this.notifyChildChanged();
+    this.notifyChildChanged({ repaginate: true });
   }
 
   getDefaultValue() {
@@ -210,7 +211,7 @@ export class VariantBox extends Box<IVariantType> {
       if (!found) return undefined;
       return Box.enBox(this, this.name, found, this.getDefaultValue().value);
     });
-    this.key.addObserver((_) => this.notifyChildChanged())
+    this.key.addObserver((_) => this.notifyChildChanged({ repaginate: true }))
   }
 
   getValue() {
@@ -228,7 +229,7 @@ export class VariantBox extends Box<IVariantType> {
       this.key.setValue(this.getDefaultValue().key);
     }
     if (validate) this.validate();
-    this.notifyChildChanged();
+    this.notifyChildChanged({ repaginate: true });
   }
 
   getDefaultValue() {

@@ -1,10 +1,9 @@
-import { JsxComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX } from "../../core/tiny-jsx";
+import { JsxComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX, Value, computed } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 export interface PagerProps {
-  pageCount: number;
-  selectedPage: number;
-  onPageSelected: (page: number) => void;
+  pageCount: Value<number>;
+  selectedPage: Value<number>;
 }
 
 Styles.add(".buttons.btn:focus", {
@@ -12,8 +11,9 @@ Styles.add(".buttons.btn:focus", {
 });
 
 export const Pager: JsxComponent<PagerProps> = (props) => {
-  const generatePages = () => {
-    const { pageCount, selectedPage } = props;
+  function generatePages() {
+    const pageCount = props.pageCount.getValue();
+    const selectedPage = props.selectedPage.getValue();
     const pages: (number | string)[] = [];
 
     if (pageCount <= 9) {
@@ -39,55 +39,52 @@ export const Pager: JsxComponent<PagerProps> = (props) => {
     return pages;
   };
 
-  return (
-    <ul class="pagination">
-      {/* Bouton "Previous" */}
-      <li class={`page-item ${props.selectedPage === 1 ? 'disabled' : ''}`}>
-        <a
-          class="page-link"
-          href="#"
-          aria-label="Previous"
-          onClick={() =>
-            props.selectedPage > 1 && props.onPageSelected(props.selectedPage - 1)
-          }
-        >
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-
-      {/* Boutons des pages */}
-      <For each={generatePages()}>
-        {(page) => (
-          <Show
-            when={() => typeof page === "number"}
-            fallback={<li class="page-item disabled"><span class="page-link">…</span></li>}
+  return <>{
+    computed({ pageCount: props.pageCount, selectedPage: props.selectedPage }, (p) =>
+      <ul class="pagination">
+        {/* Bouton "Previous" */}
+        <li class={`page-item ${p.selectedPage === 1 ? 'disabled' : ''}`}>
+          <a
+            class="page-link"
+            href="#"
+            aria-label="Previous"
+            onClick={() => p.selectedPage > 1 && props.selectedPage.setValue(p.selectedPage - 1)}
           >
-            <li class={`page-item ${props.selectedPage === page ? 'active' : ''}`}>
-              <a
-                class="page-link"
-                href="#"
-                onClick={() => typeof page === "number" && props.onPageSelected(page)}
-              >
-                {page}
-              </a>
-            </li>
-          </Show>
-        )}
-      </For>
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
 
-      {/* Bouton "Next" */}
-      <li class={`page-item ${props.selectedPage === props.pageCount ? 'disabled' : ''}`}>
-        <a
-          class="page-link"
-          href="#"
-          aria-label="Next"
-          onchange={() =>
-            props.selectedPage < props.pageCount && props.onPageSelected(props.selectedPage + 1)
-          }
-        >
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-    </ul>
-  );
+        {/* Boutons des pages */}
+        <For each={generatePages()}>
+          {(page) => (
+            <Show
+              when={() => typeof page === "number"}
+              fallback={<li class="page-item disabled"><span class="page-link">…</span></li>}
+            >
+              <li class={`page-item ${p.selectedPage === page ? 'active' : ''}`}>
+                <a
+                  class="page-link"
+                  href="#"
+                  onClick={() => typeof page === "number" && props.selectedPage.setValue(page)}
+                >
+                  {page}
+                </a>
+              </li>
+            </Show>
+          )}
+        </For>
+
+        {/* Bouton "Next" */}
+        <li class={`page-item ${props.selectedPage === props.pageCount ? 'disabled' : ''}`}>
+          <a
+            class="page-link"
+            href="#"
+            aria-label="Next"
+            onClick={() => p.selectedPage < p.pageCount && props.selectedPage.setValue(p.selectedPage + 1)}
+          >
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>)}
+  </>;
 };

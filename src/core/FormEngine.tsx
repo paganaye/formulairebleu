@@ -69,7 +69,7 @@ export abstract class FormEngine {
         let lineNo = 0
         let firstNonObjectSeen: boolean = false;
 
-        let recurse = (box: Box) => {
+        let paginateRecursely = (box: Box) => {
             let originalType = box.type;
             let actualType = this.getActualType(originalType)
             if ((originalType.pageBreak || actualType.pageBreak) && lineNo > 0) {
@@ -85,18 +85,18 @@ export abstract class FormEngine {
                     firstNonObjectSeen = true;
                     let entries = (box as ArrayBox).$entryBoxes
                     for (let e of entries.getValue()) {
-                        recurse(e)
+                        paginateRecursely(e)
                     }
                     break;
                 case 'object':
                     let members = (box as ObjectBox).getMembers()
                     for (let m of members) {
-                        recurse(m)
+                        paginateRecursely(m)
                     }
                     break;
                 case 'variant':
                     let variant = (box as VariantBox).getInnerVariant();
-                    recurse(variant.getValue())
+                    paginateRecursely(variant.getValue())
                     break;
                 case 'boolean':
                 case 'const':
@@ -118,7 +118,7 @@ export abstract class FormEngine {
             })
         }
 
-        recurse(rootBox)
+        paginateRecursely(rootBox)
         this.pageCount.setValue(pageNo);
     }
 
@@ -132,6 +132,9 @@ export abstract class FormEngine {
 
         let currentJSONString: string = "";
 
+        rootBox.addObserver((v) => {
+            console.log("hi");
+        })
         // createEffect(() => {
         //     const propJSONString = JSON.stringify(props.value);
         //     if (propJSONString === currentJSONString) return;
@@ -173,28 +176,15 @@ export abstract class FormEngine {
 
 
     InputRenderer(props: InputRenderProps) {
-
-        let result: JsxComponent<InputRenderProps>;
         let inputComponent = this.getRenderer(props.box.type);
 
-        const isVisible = computed({}, (p) => {
-            return true
+        const isVisible = computed({ page: this.pageNo, box: props.box.pageNo }, (p) => {
+            let box = p.box;
+            if (!box) return true;
+            let page = p.page;
+            if (page == 0) return true;
+            return box.startPage <= page && page <= box.endPage
         });
-
-        // return this.isBoxVisible(props.box);
-        // createEffect(() => {
-        //     inputComponent.setValue(() => this.getRenderer(props.box?.getType()));
-        // })
-
-        // isBoxVisible(box: Box): boolean {
-        //     if (!box) return true;
-        //     let currentPage = this.pageNo.getValue();
-        //     if (currentPage == 0) return true;
-        //     let boxPage = box.pageNo.getValue();
-        //     if (!boxPage) return true;
-        //     return boxPage.startPage <= currentPage && currentPage <= boxPage.endPage
-        // }
-
 
         return (<>
             <Show when={isVisible}>

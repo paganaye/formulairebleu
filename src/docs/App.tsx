@@ -15,8 +15,11 @@ let variant1 = {
     ]
 } as const satisfies IFormType;
 
-let str1 = { type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' }  as const satisfies IFormType;
+let str1 = { type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' } as const satisfies IFormType;
 let num1 = { type: 'number', label: 'A simple string', defaultValue: 55, help: 'Here you can enter an unconstrained string with default view.' } as const satisfies IFormType;
+let arr1 = { type: 'array' as any, entryType: { type: 'string' }, pageBreak: false } as const satisfies IFormType;
+let arr2 = { type: 'array' as any, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
+let arr3 = { type: 'array' as any, view: { type: 'mynumber1', min: 1 }, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
 
 let obj1 = {
     type: 'object',
@@ -27,19 +30,30 @@ let obj1 = {
         { key: 'str1', type: 'string' as any, pageBreak: false },
         { key: 'dat1', type: 'date' as any, pageBreak: false },
         { key: 'tim1', type: 'time' as any, pageBreak: false },
-        { key: 'arr1', type: 'array' as any, entryType: { type: 'string' }, pageBreak: false },
-        { key: 'arr2', type: 'array' as any, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false }
     ]
 } as const satisfies IFormType;
 
 let telephone = { type: 'string', validations: [{ type: 'regex', arg: '09-99-99-99-99' }] } as const satisfies IFormType;
 
+let complex = {
+    type: 'object',
+    membersTypes: [
+        { key: 'str1', ...str1 },
+        { key: 'num1', ...num1 },
+        { key: 'variant1', ...variant1 },
+        { key: 'obj1', ...obj1 },
+        { key: 'arr1', ...arr1 },
+        { key: 'arr2', ...arr2 }
+    ]
+} as const satisfies IFormType
+
+let complex2 = { type: 'array' as any, entryType: complex, pageBreak: true } as const satisfies IFormType;
 
 let form1Type = {
     name: 'form1',
     version: '1',
-    templates: {},
-    dataType: variant1
+    templates: { telephone },
+    dataType: complex2
 } as const satisfies IForm;
 
 // // let n: formulairebleu.InferDataType<{ type: 'number' }> = 5
@@ -88,9 +102,6 @@ let engine = new BootstrapEngine();
 
 export default function App() {
     let value = new Value(formValue);
-    value.addObserver((v) => {
-        console.log("value", v)
-    });
     value.setValue(formValue);
     let onValueChanged = (v: any) => {
         console.log("v", v);

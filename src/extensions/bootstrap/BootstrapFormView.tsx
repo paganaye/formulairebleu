@@ -19,8 +19,12 @@ interface FormBodyProps {
 
 const FormBody = (props: FormBodyProps) => {
   const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.$value.getValue());
+
   rootBox.addObserver((v) => {
-    props.$value.setValue(v);    
+    props.$value.setValue(v);
+    if (v.repaginate) {
+      props.engine.paginate(rootBox);
+    }
   })
   // createEffect(() => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
@@ -144,7 +148,7 @@ export const BootstrapFormView = (props: ({ engine: FormEngine } & IFormProps)) 
         onValueChanged={props.onValueChanged}
         header=<h1>{props.form.name}</h1>
         footer=<>
-          <Pager pageCount={props.engine.pageCount.getValue()} onPageSelected={p => pageNo.setValue(p)} selectedPage={pageNo.getValue()} />
+          <Pager pageCount={props.engine.pageCount} selectedPage={pageNo} />
         </>
       />
     </main >
