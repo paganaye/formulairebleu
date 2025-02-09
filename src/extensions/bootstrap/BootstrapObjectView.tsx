@@ -11,7 +11,7 @@ export type ObjectInputProps = {
   engine: BootstrapEngine;
 };
 
-export const BootstrapObjectView: JsxComponent<ObjectInputProps> = (props) => {
+export function BootstrapObjectView(props: ObjectInputProps) {
   return (
     <>
       {props.engine.InputTop({ ...props })}

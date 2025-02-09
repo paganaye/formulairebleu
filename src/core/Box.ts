@@ -1,27 +1,29 @@
 import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, IVariantMemberType, IVariantType } from "./IForm";
-import { computed, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
+import { computed, IValue, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 
 type PageChanged = { repaginate?: boolean };
 
-export abstract class Box<TFormType extends IFormType = IFormType> {
+export abstract class Box<TFormType extends IFormType = IFormType, U = InferDataType<TFormType>> extends Value<U> {
   readonly uniqueId: number = Box.getUniqueId();
   readonly errors = new Value<ErrorString[]>([]);
   readonly pageNo = new Value<IPageNo>(undefined as any);
   #observers?: Set<Observer<any>>;
-  // value: Value<TFormType> = new Value<TFormType>(undefined)
+  // value: IValue<TFormType> = new Value<TFormType>(undefined)
 
-  constructor(readonly parent: Box | null, readonly name: string, readonly type: TFormType) { }
+  constructor(readonly parent: Box | null, readonly name: string, readonly type: TFormType) {
+    super(undefined)
+  }
 
   static lastBoxId: number = 0;
   static getUniqueId(): number {
     return ++(Box.lastBoxId);
   }
 
-  abstract getValue(): InferDataType<TFormType>;
-  abstract setValue(value: JSONValue | undefined, validate: boolean): void;
-  abstract getDefaultValue(): InferDataType<TFormType>;
+  //abstract getValue(): U;
+  //abstract setValue(value: U, validate?: boolean): void;
+  abstract getDefaultValue(): U;
 
-  addObserver(observer: Observer<PageChanged>) {
+  addObserver(observer: Observer<U>) {
     (this.#observers || (this.#observers = new Set())).add(observer);
   }
 
@@ -74,20 +76,17 @@ export abstract class Box<TFormType extends IFormType = IFormType> {
 }
 
 export class StringBox extends Box<IStringType> {
-  private $innerValue: Value<string>;
 
   constructor(parent: Box | null, name: string, type: IStringType, value?: JSONValue) {
     super(parent, name, type);
-    this.$innerValue = new Value<string>(value == null ? this.getDefaultValue() : String(value));
+    super.setValue(value == null ? this.getDefaultValue() : String(value));
   }
 
-  getValue(): string {
-    return this.$innerValue.getValue();
-  }
 
-  setValue(value: JSONValue | undefined, validate: boolean): void {
-    this.$innerValue.setValue(value == null ? this.getDefaultValue() : String(value));
-    if (validate) this.validate();
+
+  setValue(value: JSONValue | undefined): void {
+    super.setValue(value == null ? this.getDefaultValue() : String(value));
+    this.validate();
     this.notifyChildChanged()
   }
 
@@ -97,7 +96,7 @@ export class StringBox extends Box<IStringType> {
 }
 
 export class NumberBox extends Box<INumberType> {
-  private $innerValue: Value<number | null>;
+  private $innerValue: IValue<number | null>;
 
   constructor(parent: Box | null, name: string, type: INumberType, value?: JSONValue) {
     super(parent, name, type);
@@ -108,9 +107,9 @@ export class NumberBox extends Box<INumberType> {
     return this.$innerValue.getValue();
   }
 
-  setValue(value: JSONValue | undefined, validate: boolean): void {
-    this.$innerValue.setValue(value == null ? this.getDefaultValue() : Number(value));
-    if (validate) this.validate();
+  setValue(value: JSONValue | undefined): void {
+    super.setValue(value == null ? this.getDefaultValue() : Number(value));
+    this.validate();
     this.notifyChildChanged();
   }
 
@@ -120,7 +119,7 @@ export class NumberBox extends Box<INumberType> {
 }
 
 export class BooleanBox extends Box<IBooleanType> {
-  private $innerValue: Value<boolean>;
+  private $innerValue: IValue<boolean>;
 
   constructor(parent: Box | null, name: string, type: IBooleanType, value?: JSONValue) {
     super(parent, name, type);
@@ -131,9 +130,10 @@ export class BooleanBox extends Box<IBooleanType> {
     return this.$innerValue.getValue();
   }
 
-  setValue(value: JSONValue | undefined, validate: boolean): void {
+  setValue(value: JSONValue | undefined): void {
     this.$innerValue.setValue(value == null ? this.getDefaultValue() : Boolean(value));
-    if (validate) this.validate();
+    this.validate();
+    this.notifyChildChanged();
   }
 
   getDefaultValue() {
@@ -153,12 +153,13 @@ export class ObjectBox extends Box<IObjectType> {
     return Object.fromEntries(this.members.map(member => [member.name, member.getValue()]));
   }
 
-  setValue(value: JSONValue | undefined, validate: boolean): void {
+  setValue(value: JSONValue | undefined): void {
     if (typeof value === 'object' && value !== null) {
-      this.members.forEach(member => member.setValue(value[member.name], validate));
+      this.members.forEach(member => member.setValue(value[member.name]));
       this.notifyChildChanged();
     }
-    if (validate) this.validate();
+    this.validate();
+    super.notifyChildChanged()
   }
 
   getDefaultValue() {
@@ -174,22 +175,22 @@ export class ObjectBox extends Box<IObjectType> {
 }
 
 export class ArrayBox extends Box<IArrayType> {
-  readonly $entryBoxes: Value<Box<IArrayType['entryType']>[]> = new Value<Box[]>(this.getDefaultValue());
+  readonly $entryBoxes: IValue<Box<IArrayType['entryType']>[]> = new Value<Box[]>(this.getDefaultValue());
 
   constructor(parent: Box | null, name: string, type: IArrayType, value?: JSONValue[]) {
     super(parent, name, type);
-    if (value !== undefined) this.setValue(value, false)
+    if (value !== undefined) super.setValue(value)
   }
 
   getValue(): JSONValue[] {
     return this.$entryBoxes.getValue().map(entry => entry.getValue());
   }
 
-  setValue(value: JSONValue | undefined, validate: boolean): void {
+  setValue(value: JSONValue | undefined): void {
     if (Array.isArray(value)) {
       this.$entryBoxes.setValue(value.map((v, i) => Box.enBox(this, `${this.name}#${i}`, this.type.entryType, v)));
     }
-    if (validate) this.validate();
+    this.validate();
     this.notifyChildChanged({ repaginate: true });
   }
 
@@ -202,11 +203,11 @@ export class ArrayBox extends Box<IArrayType> {
 export class VariantBox extends Box<IVariantType> {
   readonly key = new Value<string>(undefined);
 
-  variantBox: Value<Box>;
+  variantBox: IValue<Box>;
 
   constructor(parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
     super(parent, name, type);
-    this.setValue(value, false);
+    super.setValue(value as any);
     this.variantBox = computed({ key: this.key }, p => {
       let found = this.type.variants.find(v => v.key === this.key.getValue());
       if (!found) return undefined;
@@ -221,7 +222,7 @@ export class VariantBox extends Box<IVariantType> {
     return result;
   }
 
-  setValue(value: JSONValue | undefined, validate: boolean): void {
+  setValue(value: JSONValue | undefined): void {
     if (value && typeof value === 'object' && "key" in value) {
       this.key.setValue(String(value.key));
       let valueValue = (value as any).value;
@@ -229,7 +230,6 @@ export class VariantBox extends Box<IVariantType> {
     } else {
       this.key.setValue(this.getDefaultValue().key);
     }
-    if (validate) this.validate();
     this.notifyChildChanged({ repaginate: true });
   }
 

@@ -17,7 +17,7 @@ Styles.add(".buttons.btn:focus", {
   border: '1px solid #ccc'
 })
 
-export const Buttons: JsxComponent<DialogButtonsProps> = (props) => {
+export function Buttons(props: DialogButtonsProps) {
   return <For each={props.buttons as DialogButton[]}>
     {(button) => {
       return (

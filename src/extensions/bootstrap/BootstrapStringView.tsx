@@ -47,7 +47,7 @@ const applyMask = (value: string, mask: string, pos: number): { newValue: string
   return { newValue: maskedValue, newPos: pos + (incrementPos ? 1 : 0) };
 };
 
-export const BootstrapStringView = (props: StringInputProps) => {
+export function BootstrapStringView(props: StringInputProps) {
   let id = getUniqueId(`txt_${props.label}`);
   const isFocused = new Value(false);
   let mask: string | undefined = (props.box.type.view as any)?.mask;
@@ -95,7 +95,7 @@ export const BootstrapStringView = (props: StringInputProps) => {
                 }
               }
 
-              props.box.setValue(newValue, true);
+              props.box.setValue(newValue);
             }
           }}
         />

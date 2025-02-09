@@ -61,7 +61,7 @@
 // //   setIsOpen: (value: boolean) => void;
 // // }
 
-// // export const ModalFormView: Component<IModalFormProps> = (props) => {
+// // export function ModalFormView: Component<IModalFormProps> = (props)   {
 
 // //   const context = new BootstrapEngine(props.form.templates);
 // //   const pageNo = context.pageNo;
@@ -89,7 +89,7 @@
 // //   setIsOpen: (value: boolean) => void;
 // // }
 
-// // export const PopupFormView: Component<IPopupFormProps> = (props) => {
+// // export function PopupFormView: Component<IPopupFormProps> = (props)   {
 // //   const context = new BootstrapEngine(props.form.templates);
 // //   let onClose = () => { props.setIsOpen(false) }
 
@@ -125,7 +125,7 @@
 // // }
 
 
-// export const PlainFormView: Component<IFormProps> = (props) => {
+// export function PlainFormView: Component<IFormProps> = (props)   {
 //   //   const context = new BootstrapEngine(props.form.templates);
 //   //   let pageNo = context.pageNo;
 //   return (<main>

@@ -14,7 +14,7 @@ export interface IJSONDate {
   value: string;
 }
 
-export const DateInputView = (props: DateInputProps) => {
+export function DateInputView(props: DateInputProps) {
   let id = getUniqueId(`date_${props.label}`);
   const isFocused = new Value(false);
   const suffix = (props.box.type.view as any)?.suffix;

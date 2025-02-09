@@ -21,7 +21,7 @@
 // //   paddingRight: '27px !important' // add the width of the up-down number input when it's hidden
 // // });
 
-// export const PlainCheckboxView: Component<PlainCheckboxProps> = (props) => {
+// export function PlainCheckboxView: Component<PlainCheckboxProps> = (props)   {
 //     //   let id = getUniqueId(`num_${props.label}`);
 //     //   const [isFocused, setIsFocused] = createSignal(false);
 //     //   const suffix = (props.box.type.view as any)?.suffix;

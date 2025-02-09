@@ -75,7 +75,7 @@ let form1Type = {
 // // let f2: formulairebleu.InferFormType<typeof f1v> = 123
 
 function randomize<T extends IForm>(form: T): InferFormType<T> {
-    const randomValue = (type: IFormType): any => {
+    function randomValue(type: IFormType): any {
         let actualType = (form.templates && form.templates[type.type]) || type;
         switch (actualType.type) {
             case 'number': return Math.random() * 100;

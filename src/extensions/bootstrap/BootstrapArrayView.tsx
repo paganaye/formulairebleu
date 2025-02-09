@@ -31,7 +31,7 @@ Styles.add("th.table-title", {
     cursor: "pointer "
 });
 
-export const BootstrapArrayView = (props: BootstrapArrayProps) => {
+export function BootstrapArrayView(props: BootstrapArrayProps) {
     let viewAsType = props.box.type.view;
     let arrayUtils = new ArrayUtils(props.box)
 
@@ -65,7 +65,7 @@ export const BootstrapArrayView = (props: BootstrapArrayProps) => {
                 onClick={() => {
                     let values = props.box.getValue();
                     let newValues = [...values, newArrayEntry()]
-                    props.box.setValue(newValues, false);
+                    props.box.setValue(newValues);
                 }}
             >Add</button>;
     }
@@ -78,7 +78,7 @@ export const BootstrapArrayView = (props: BootstrapArrayProps) => {
                 onClick={() => {
                     let values = props.box.getValue();
                     values.splice(index, 1);
-                    props.box.setValue(values, false);
+                    props.box.setValue(values);
                 }}
             > Delete</button >;
     }
@@ -92,7 +92,7 @@ export const BootstrapArrayView = (props: BootstrapArrayProps) => {
                     ? <input
                         type="text"
                         value={entry.getValue() as string}
-                        onInput={(e) => entry.setValue(e.currentTarget.value, true)}
+                        onInput={(e) => entry.setValue(e.currentTarget.value)}
                     />
                     : <For each={columns}>
                         {(column, columnIndex) => (renderEntryField(entry, rowIndex, column, columnIndex))}

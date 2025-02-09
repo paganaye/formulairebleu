@@ -9,13 +9,13 @@ export type ErrorsProps = {
   errors: string[];
 };
 
-export const ErrorView: JsxComponent<{ error: string }> = (props) => {
+export function ErrorView(props: { error: string }) {
   return (<Show when={props}>
     <div class="error">{props.error}</div>
   </Show >);
 };
 
-export const ErrorsView: JsxComponent<ErrorsProps> = (props) => {
+export function ErrorsView(props: ErrorsProps) {
   return (<Show when={props.errors}>
     <div class="errors">
       <For each={props.errors}>

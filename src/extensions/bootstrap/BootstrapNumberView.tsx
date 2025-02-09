@@ -18,7 +18,7 @@ Styles.add('input.number-input[type="string"]', {
   paddingRight: '27px !important' // add the width of the up-down number input when it's hidden
 });
 
-export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
+export function BootstrapNumberView(props: NumberInputProps) {
   let id = getUniqueId(`num_${props.label}`);
   const isFocused = new Value(false);
   const suffix = (props.box.type.view as any)?.suffix;
@@ -68,7 +68,7 @@ export const BootstrapNumberView: JsxComponent<NumberInputProps> = (props) => {
               props.box.validate();
             }}
             onInput={(e) => {
-              if (isFocused.getValue()) props.box.setValue(parseNumber(e.currentTarget.value), true);
+              if (isFocused.getValue()) props.box.setValue(parseNumber(e.currentTarget.value));
             }}
           />
           <label for={id} class="form-label">{props.label}</label>

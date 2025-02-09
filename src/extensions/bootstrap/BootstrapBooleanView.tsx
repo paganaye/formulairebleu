@@ -36,7 +36,7 @@ Styles.add(".form-check-input:indeterminate", {
 });
 
 
-export const BootstrapBooleanView = (props: BooleanInputProps) => {
+export function BootstrapBooleanView(props: BooleanInputProps) {
   let typeView: IFormType = props.box.type;
   // je suis obligé de mettre as any ici
   const isSwitch = (() => ((typeView as any)?.view?.type === "switch"));

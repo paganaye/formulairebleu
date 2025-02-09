@@ -21,7 +21,7 @@ export function closeTopModal() {
   }
 }
 
-export const InnerModalView: JsxComponent<InnerModalProps> = (props, children) => {
+export function InnerModalView(props, children): JsxComponent<InnerModalProps> {
   let animationTimeout: number | undefined;
   const showBackdrop = new Value(false);
   const showModal = new Value(false);
@@ -120,7 +120,7 @@ interface IPopupProps {
   onClose?: () => void;
   title?: string;
 }
-export const PopupView: JsxComponent<IPopupProps> = (props) => {
+export function PopupView(props): JsxComponent<IPopupProps> {
   return <InnerModalView {...props} backDropClickClosesModal={true} />
 }
 
@@ -131,8 +131,6 @@ interface IModalProps {
   buttons?: DialogButton[]
 }
 
-export const ModalView: JsxComponent<IModalProps> = (props) => {
+export function ModalView<IModalProps>(props) {
   return <InnerModalView {...props} backDropClickClosesModal={false} />
 }
-
-export default ModalView;

@@ -5,11 +5,11 @@ export type ConstVueProps = Omit<ConstValue, 'type'> & {
 
 };
 
-export const ConstView: JsxComponent<ConstVueProps> = (props) => {
+export function ConstView(props: ConstVueProps) {
 
   switch (props.view) {
     case "html":
-      return <div innerHTML={props.data} />;
+      return <div innerHTML={props.value} />;
     //   case "text":
     //     return <div innerText={props.data} />;
     //   case "file":

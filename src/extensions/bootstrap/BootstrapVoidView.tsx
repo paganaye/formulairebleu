@@ -7,7 +7,7 @@ export type VoidVueProps = {
 };
 
 
-export const VoidView: JsxComponent<VoidVueProps> = (props) => {
+export function VoidView(props: VoidVueProps) {
   // switch (props.view) {
   //   case "html":
   //     return <div innerHTML={props.data} />;

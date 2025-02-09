@@ -1,4 +1,4 @@
-import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, JSONObject, JSONValue, Value } from "./tiny-jsx";
+import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, IValue, JSONObject, JSONValue, Value } from "./tiny-jsx";
 import { Box, ArrayBox, ObjectBox } from "./Box";
 import { IArrayType, IFormType, ISelectionList } from "./IForm";
 import { FormEngine } from "./FormEngine";
@@ -28,7 +28,7 @@ export interface SortOrder {
 export class ArrayUtils {
   sortOrder = new Value<SortOrder[]>([]);
   filters = new Value<string[]>([]);
-  entryBoxes: Value<Box<IFormType>[]>;
+  entryBoxes: IValue<Box<IFormType>[]>;
   columns: IColumn[] = undefined;
 
   constructor(readonly box: ArrayBox) {
@@ -54,13 +54,13 @@ export class ArrayUtils {
   addValue() {
     let values = this.box.getValue();
     let newValues = [...values, this.newArrayEntry()]
-    this.box.setValue(newValues, false);
+    this.box.setValue(newValues);
   }
 
   deleteValue(index: number) {
     let values = this.box.getValue();
     values.splice(index, 1);
-    this.box.setValue(values, false);
+    this.box.setValue(values);
   }
 
   toggleSort(key: string, fieldNo: number, event: MouseEvent) {
@@ -92,7 +92,7 @@ export class ArrayUtils {
     this.filters.setValue(newFilters);
   }
 
-  _filteredValues: Value<any[]> = undefined;
+  _filteredValues: IValue<any[]> = undefined;
 
   get filteredValues() {
     return this._filteredValues ?? (this._filteredValues = computed({ entries: this.entryBoxes, filters: this.filters }, (p) => {

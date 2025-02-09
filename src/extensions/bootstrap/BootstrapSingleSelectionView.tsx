@@ -1,4 +1,4 @@
-import { formulaireBleuJSXFragment, formulaireBleuJSX, For, JSONValue, JsxComponent, Value, computed } from "../../core/tiny-jsx";
+import { formulaireBleuJSXFragment, formulaireBleuJSX, For, JSONValue, JsxComponent, Value, computed, IValue } from "../../core/tiny-jsx";
 import { getUniqueId, } from "../../core/Utils";
 import { ISelectionEntry, IView } from "../../core/IForm";
 import { IBootstrapRadioButtonsView } from './BootstrapForm';
@@ -8,7 +8,7 @@ import { Bootstrap } from "./BootstrapEngine";
 export type SingleSelectionProps = {
   label: string;
   entries: ISelectionEntry[];
-  selectedKey: Value<string>;
+  selectedKey: IValue<string>;
   view: IView;
 };
 

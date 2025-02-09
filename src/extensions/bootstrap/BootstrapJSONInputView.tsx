@@ -12,7 +12,7 @@ export type JSONInputProps = {
 
 // unfinished
 
-export const BootstrapJSONView: JsxComponent<JSONInputProps> = (props) => {
+export function BootstrapJSONView(props: JSONInputProps) {
   let id = getUniqueId(`json_${props.label}`);
   return (
     <>
@@ -27,7 +27,7 @@ export const BootstrapJSONView: JsxComponent<JSONInputProps> = (props) => {
           placeholder=""
           onInput={(e) => {
             let newValue = String(e.currentTarget.value);
-            props.box.setValue(newValue, true);
+            props.box.setValue(newValue);
           }} />
         <label for={id} class="form-label">{props.label}</label>
       </div>

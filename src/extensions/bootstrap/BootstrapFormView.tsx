@@ -1,5 +1,5 @@
-import { formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, JSXSource, Observer, Value } from "../../core/tiny-jsx";
-import ModalView, { PopupView } from './BootstrapModalView';
+import { formulaireBleuJSX, formulaireBleuJSXFragment, IValue, JSONValue, JSXSource, Observer, Value } from "../../core/tiny-jsx";
+import { ModalView, PopupView } from './BootstrapModalView';
 import { IForm } from "../../core/IForm";
 import { Box } from "../../core/Box";
 import { Pager } from './BootstrapPagerView';
@@ -11,7 +11,7 @@ import { BootstrapEngine } from './BootstrapEngine';
 interface FormBodyProps {
   engine: BootstrapEngine;
   form: IForm,
-  $value: Value<JSONValue>,
+  $value: IValue<JSONValue>,
   onValueChanged: (v) => void,
   header?: JSXSource;
   footer?: JSXSource;
@@ -22,9 +22,7 @@ const FormBody = (props: FormBodyProps) => {
 
   rootBox.addObserver((v) => {
     props.$value.setValue(v);
-    if (v.repaginate) {
-      props.engine.paginate(rootBox);
-    }
+    props.engine.paginate(rootBox);
   })
   // createEffect(() => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
@@ -73,7 +71,7 @@ interface IModalFormProps extends IFormProps {
   setIsOpen: (value: boolean) => void;
 }
 
-export const ModalFormView = (props: IModalFormProps) => {
+export function ModalFormView(props: IModalFormProps) {
 
   const context = new BootstrapEngine(props.form.templates);
   const pageNo = context.pageNo;
@@ -101,7 +99,7 @@ interface IPopupFormProps extends IFormProps {
   setIsOpen: (value: boolean) => void;
 }
 
-export const PopupFormView = (props: IPopupFormProps) => {
+export function PopupFormView(props: IPopupFormProps) {
   const context = new BootstrapEngine(props.form.templates);
   let onClose = () => { props.setIsOpen(false) }
 
@@ -136,7 +134,7 @@ export function formatTemplateString(templateString: string, data: Record<string
   }
 }
 
-export const BootstrapFormView = (props: ({ engine: FormEngine } & IFormProps)) => {
+export function BootstrapFormView(props: ({ engine: FormEngine } & IFormProps)) {
   let pageNo = props.engine.pageNo;
 
   return (

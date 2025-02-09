@@ -1,16 +1,16 @@
-import { JsxComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX, Value, computed } from "../../core/tiny-jsx";
+import { JsxComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX, Value, computed, IValue } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 export interface PagerProps {
-  pageCount: Value<number>;
-  selectedPage: Value<number>;
+  pageCount: IValue<number>;
+  selectedPage: IValue<number>;
 }
 
 Styles.add(".buttons.btn:focus", {
   border: '1px solid #ccc',
 });
 
-export const Pager: JsxComponent<PagerProps> = (props) => {
+export function Pager(props: PagerProps) {
   function generatePages() {
     const pageCount = props.pageCount.getValue();
     const selectedPage = props.selectedPage.getValue();

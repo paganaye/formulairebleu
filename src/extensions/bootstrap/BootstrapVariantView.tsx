@@ -12,7 +12,7 @@ export type VariantInputProps = {
 };
 
 
-export const BootstrapVariantView = (props: VariantInputProps) => {
+export function BootstrapVariantView(props: VariantInputProps) {
   //let id = getUniqueId(`txt_${props.label}`);
   let innerVariant = props.box.getInnerVariant();
 

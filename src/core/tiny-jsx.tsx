@@ -5,13 +5,22 @@ export type JSONValue = JSONPrimitive | JSONArray | JSONObject;
 
 export class formulaireBleuJSXFragment { }
 
-export type JSXSource = JSONValue | Node | (() => JSXSource) | Value<JSXSource>;
+export type JSXSource = JSONValue | Node | (() => JSXSource) | IValue<JSXSource>;
 
 export type Observer<T> = (newValue: T) => void
 
 
+export interface IValue<T = any> {
+    getValue(): T;
+    setValue(newValue: T): void;
+    addObserver(observer: Observer<T>);
+}
 
-export class Value<T = any> {
+export function isIValue(v: any): v is IValue {
+    return v && typeof v.getValue === "function";
+}
+
+export class Value<T = any> implements IValue<T> {
     #observers?: Set<Observer<T>>;
     #value: T;
     constructor(value: T) { this.#value = value; }
@@ -38,8 +47,8 @@ export class Value<T = any> {
 
 
 
-function observe<T>(source: T | Value<T>, update: (value: T) => void, init: boolean): void {
-    if (source instanceof Value) {
+function observe<T>(source: T | IValue<T>, update: (value: T) => void, init: boolean): void {
+    if (isIValue(source)) {
         if (init) update(source.getValue());
         source.addObserver(update);
     } else {
@@ -54,7 +63,7 @@ function createElements(source: JSXSource): Node[] {
     if (['string', 'number', 'boolean'].includes(type))
         return [document.createTextNode(source.toString())];
     if (type == 'object') {
-        if (source instanceof Value) {
+        if (isIValue(source)) {
             let elts = createElements(source.getValue());
             const observer = (val: any) => {
                 const parent = elts[0]?.parentNode;
@@ -97,7 +106,7 @@ export function formulaireBleuJSX(
                         elt.addEventListener(k.slice(2).toLowerCase(), v);
                     else {
                         if (v === undefined) v = "";
-                        if (v instanceof Value) {
+                        if (isIValue(v)) {
                             observe(v, (v) => {
                                 if (v === true) v = ""
                                 if (v === false) elt.removeAttribute(k)
@@ -127,7 +136,7 @@ export function formulaireBleuJSX(
 }
 
 export function For<T>(
-    props: { each: T[] | Value<T[]> },
+    props: { each: T[] | IValue<T[]> },
     children: (entry: any, index: number) => JSXSource
 ) {
     const childZero = children[0];
@@ -151,9 +160,9 @@ export function render(content: JSXSource, root: HTMLElement = document.body) {
 }
 
 export function computed<T extends Record<string, any>, R>(
-    values: { [K in keyof T]: Value<T[K]> },
+    values: { [K in keyof T]: IValue<T[K]> },
     calculation: (props: T) => R
-): Value<R> {
+): IValue<R> {
     const args = {} as T, result = new Value<R>(undefined!);
     for (const key in values) {
         const v = values[key];
@@ -167,14 +176,14 @@ export function computed<T extends Record<string, any>, R>(
     return result;
 }
 
-export function Show(props: { when: Value<any> | any, fallback?: any }, children?: any[]) {
+export function Show(props: { when: IValue<any> | any, fallback?: any }, children?: any[]) {
     const result = new Value(undefined);
     observe(props.when, v => result.setValue(v ? children : props.fallback), true);
     return result;
 }
 
 export function Switch<T>(
-    props: { when: Value<T> | T },
+    props: { when: IValue<T> | T },
     children: any[]) {
     const result = new Value<Node[]>([]);
     const update = (value: T) => {

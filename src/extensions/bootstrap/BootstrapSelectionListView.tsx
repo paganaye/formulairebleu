@@ -13,7 +13,7 @@ export type SelectionListInputProps = {
   engine: BootstrapEngine;
 };
 
-export const BootstrapSelectionListView = (props: SelectionListInputProps) => {
+export function BootstrapSelectionListView(props: SelectionListInputProps) {
 
   let comp = computed({}, () => {
     let selectionList: ISelectionList | undefined = (props.box.type as any).selectionList ?? props.box.type.selectionList;
@@ -44,11 +44,11 @@ export const BootstrapSelectionListView = (props: SelectionListInputProps) => {
     } else {
       if (!view) view = { type: 'dropdown' }
       return <SingleSelectionVue label={props.label} entries={entries}
-        selectedKey={String(props.box.getValue())} setSelectedKey={(v) => {
-          props.box.setValue(v);
-          //props.onValueChanged({ pagesChanged: false });
-        }}
+        selectedKey={props.box as any}
         view={view as IBootstrapSingleSelectionView} />
+      //setSelectedKey={        (v) => {          props.box.setValue(v, true);  
+      //  props.onValueChanged({ pagesChanged: false });        }
+      //}
     }
   });
   return <>
