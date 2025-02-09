@@ -1,13 +1,13 @@
 import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, IVariantMemberType, IVariantType } from "./IForm";
 import { computed, IValue, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 
-type PageChanged = { repaginate?: boolean };
+type ChildChangedEvent = { box: Box };
 
 export abstract class Box<TFormType extends IFormType = IFormType, U = InferDataType<TFormType>> extends Value<U> {
   readonly uniqueId: number = Box.getUniqueId();
   readonly errors = new Value<ErrorString[]>([]);
-  readonly pageNo = new Value<IPageNo>(undefined as any);
-  #observers?: Set<Observer<any>>;
+  readonly pageNo = new Value<IPageNo>({ startPage: 0, startLine: 0, endPage: 0, endLine: 0 });
+  #childChangedObservers?: Set<Observer<ChildChangedEvent>>;
   // value: IValue<TFormType> = new Value<TFormType>(undefined)
 
   constructor(readonly parent: Box | null, readonly name: string, readonly type: TFormType) {
@@ -19,20 +19,17 @@ export abstract class Box<TFormType extends IFormType = IFormType, U = InferData
     return ++(Box.lastBoxId);
   }
 
-  //abstract getValue(): U;
-  //abstract setValue(value: U, validate?: boolean): void;
   abstract getDefaultValue(): U;
 
-  addObserver(observer: Observer<U>) {
-    (this.#observers || (this.#observers = new Set())).add(observer);
+  addChildChangedObserver(observer: Observer<ChildChangedEvent>) {
+    (this.#childChangedObservers || (this.#childChangedObservers = new Set())).add(observer);
   }
 
-  notifyChildChanged(options: PageChanged = {}) {
-    if (this.#observers) {
-      let value = this.getValue();
-      this.#observers.forEach(observer => observer(value));
+  notifyChildChanged(box: Box) {
+    if (this.#childChangedObservers) {
+      this.#childChangedObservers.forEach(observer => observer({ box }));
     }
-    this.parent?.notifyChildChanged(options);
+    this.parent?.notifyChildChanged(box);
   }
 
   validate(): void {
@@ -82,12 +79,10 @@ export class StringBox extends Box<IStringType> {
     super.setValue(value == null ? this.getDefaultValue() : String(value));
   }
 
-
-
   setValue(value: JSONValue | undefined): void {
     super.setValue(value == null ? this.getDefaultValue() : String(value));
     this.validate();
-    this.notifyChildChanged()
+    this.notifyChildChanged(this)
   }
 
   getDefaultValue() {
@@ -96,21 +91,16 @@ export class StringBox extends Box<IStringType> {
 }
 
 export class NumberBox extends Box<INumberType> {
-  private $innerValue: IValue<number | null>;
 
   constructor(parent: Box | null, name: string, type: INumberType, value?: JSONValue) {
     super(parent, name, type);
-    this.$innerValue = new Value<number | null>(value == null ? this.getDefaultValue() : Number(value));
-  }
-
-  getValue(): number | null {
-    return this.$innerValue.getValue();
+    super.setValue(value == null ? this.getDefaultValue() : Number(value));
   }
 
   setValue(value: JSONValue | undefined): void {
     super.setValue(value == null ? this.getDefaultValue() : Number(value));
     this.validate();
-    this.notifyChildChanged();
+    this.notifyChildChanged(this);
   }
 
   getDefaultValue() {
@@ -119,21 +109,16 @@ export class NumberBox extends Box<INumberType> {
 }
 
 export class BooleanBox extends Box<IBooleanType> {
-  private $innerValue: IValue<boolean>;
 
   constructor(parent: Box | null, name: string, type: IBooleanType, value?: JSONValue) {
     super(parent, name, type);
-    this.$innerValue = new Value<boolean>(value == null ? this.getDefaultValue() : Boolean(value));
-  }
-
-  getValue(): boolean {
-    return this.$innerValue.getValue();
+    super.setValue(value == null ? this.getDefaultValue() : Boolean(value));
   }
 
   setValue(value: JSONValue | undefined): void {
-    this.$innerValue.setValue(value == null ? this.getDefaultValue() : Boolean(value));
+    super.setValue(value == null ? this.getDefaultValue() : Boolean(value));
     this.validate();
-    this.notifyChildChanged();
+    this.notifyChildChanged(this);
   }
 
   getDefaultValue() {
@@ -156,10 +141,9 @@ export class ObjectBox extends Box<IObjectType> {
   setValue(value: JSONValue | undefined): void {
     if (typeof value === 'object' && value !== null) {
       this.members.forEach(member => member.setValue(value[member.name]));
-      this.notifyChildChanged();
     }
     this.validate();
-    super.notifyChildChanged()
+    super.notifyChildChanged(this)
   }
 
   getDefaultValue() {
@@ -179,7 +163,7 @@ export class ArrayBox extends Box<IArrayType> {
 
   constructor(parent: Box | null, name: string, type: IArrayType, value?: JSONValue[]) {
     super(parent, name, type);
-    if (value !== undefined) super.setValue(value)
+    if (value !== undefined) this.setValue(value)
   }
 
   getValue(): JSONValue[] {
@@ -191,7 +175,7 @@ export class ArrayBox extends Box<IArrayType> {
       this.$entryBoxes.setValue(value.map((v, i) => Box.enBox(this, `${this.name}#${i}`, this.type.entryType, v)));
     }
     this.validate();
-    this.notifyChildChanged({ repaginate: true });
+    this.notifyChildChanged(this);
   }
 
   getDefaultValue() {
@@ -202,7 +186,6 @@ export class ArrayBox extends Box<IArrayType> {
 
 export class VariantBox extends Box<IVariantType> {
   readonly key = new Value<string>(undefined);
-
   variantBox: IValue<Box>;
 
   constructor(parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
@@ -213,7 +196,7 @@ export class VariantBox extends Box<IVariantType> {
       if (!found) return undefined;
       return Box.enBox(this, this.name, found, this.getDefaultValue().value);
     });
-    this.key.addObserver((_) => this.notifyChildChanged({ repaginate: true }))
+    this.key.addObserver((_) => this.notifyChildChanged(this))
   }
 
   getValue() {
@@ -230,7 +213,7 @@ export class VariantBox extends Box<IVariantType> {
     } else {
       this.key.setValue(this.getDefaultValue().key);
     }
-    this.notifyChildChanged({ repaginate: true });
+    this.notifyChildChanged(this);
   }
 
   getDefaultValue() {
@@ -245,8 +228,6 @@ export class VariantBox extends Box<IVariantType> {
 
 }
 
-
-// Supporting types
 export interface IPageNo {
   startPage: number;
   startLine: number;
@@ -254,35 +235,4 @@ export interface IPageNo {
   endLine: number;
 }
 
-// export type BoxInnerArray = { type: IArrayType; entries: Box[] };
-// export type BoxInnerObject = { type: IObjectType; members: Box[] };
-// export type BoxInnerVariant = { type: IVariantType, key: string, value: Box; };
-// export type BoxInnerValue = null
-//   | number
-//   | string
-//   | boolean
-//   | BoxInnerArray
-//   | BoxInnerObject
-//   | BoxInnerVariant;
-
 type ErrorString = string;
-
-// export function getDefaultValue(type: IFormType): JSONValue {
-//   switch (type.type) {
-//     case 'boolean':
-//       return type.defaultValue ?? null;
-//     case 'string':
-//       return type.defaultValue ?? "";
-//     case 'number':
-//       return type.defaultValue ?? null;
-//     case 'array':
-//       return [];
-//     case 'object':
-//       const memberValues: JSONObject = {};
-//       type.membersTypes.forEach((t) => {
-//         if (t.type != 'const') memberValues[t.key] = getDefaultValue(t);
-//       });
-//       return memberValues;
-//   }
-//   return null;
-// }

@@ -23,7 +23,9 @@ export function isIValue(v: any): v is IValue {
 export class Value<T = any> implements IValue<T> {
     #observers?: Set<Observer<T>>;
     #value: T;
-    constructor(value: T) { this.#value = value; }
+    constructor(value: T) {
+        this.#value = value;
+    }
     getValue(): T { return this.#value; }
     setValue(newValue: T): void {
         if (newValue === this.#value) return
@@ -66,14 +68,20 @@ function createElements(source: JSXSource): Node[] {
         if (isIValue(source)) {
             let elts = createElements(source.getValue());
             const observer = (val: any) => {
-                const parent = elts[0]?.parentNode;
                 const next = elts[elts.length - 1]?.nextSibling;
                 const newElts = createElements(val);
+                if (newElts.length == 0) {
+                    newElts.push(document.createComment("placeholder"));
+                }
+                const parent = elts[0]?.parentNode;
                 if (parent) {
                     elts.forEach(n => n.parentNode?.removeChild(n));
                     newElts.forEach(n => parent.insertBefore(n, next));
+                    elts = newElts;
+                } else {
+                    elts.length = 0;
+                    elts.push(...newElts);
                 }
-                elts = newElts;
             };
             source.addObserver(observer);
             return elts;
@@ -136,7 +144,10 @@ export function formulaireBleuJSX(
 }
 
 export function For<T>(
-    props: { each: T[] | IValue<T[]> },
+    props: {
+        each: T[] | IValue<T[]>
+        filter?: (e: T, index: number) => boolean
+    },
     children: (entry: any, index: number) => JSXSource
 ) {
     const childZero = children[0];
@@ -145,9 +156,11 @@ export function For<T>(
     const result = new Value<Node[]>([]);
     const update = (eachArray: T[]) => {
         const nodes: Node[] = [];
-        eachArray.forEach((item, index) =>
-            nodes.push(...createElements(childZero(item, index)))
-        );
+        eachArray.forEach((item, index) => {
+            if (!props.filter || props.filter(item, index)) {
+                nodes.push(...createElements(childZero(item, index)))
+            }
+        });
         if (nodes.length == 0) nodes.push(document.createComment('placeholder'));
         result.setValue(nodes);
     };
@@ -169,7 +182,8 @@ export function computed<T extends Record<string, any>, R>(
         args[key] = v.getValue();
         v.addObserver(nv => {
             args[key] = nv;
-            result.setValue(calculation(args));
+            let newEntries = calculation(args);
+            result.setValue(newEntries);
         });
     }
     result.setValue(calculation(args));

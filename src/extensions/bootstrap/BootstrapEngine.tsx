@@ -2,7 +2,7 @@ import { JsxComponent, formulaireBleuJSX } from "../../core/tiny-jsx"
 import { FormEngine, IFormProps } from "../../core/FormEngine";
 import { BootstrapArrayView } from "./BootstrapArrayView";
 import { BootstrapBooleanView } from "./BootstrapBooleanView";
-import { DateInputView } from "./BootstrapDateInputView";
+import { BootstrapDateView } from "./BootstrapDateView";
 import { ErrorView } from "./BootstrapErrorsView";
 import { BootstrapFormView } from "./BootstrapFormView";
 import { BootstrapNumberView } from "./BootstrapNumberView";
@@ -59,9 +59,9 @@ export class BootstrapEngine extends FormEngine {
             'object': BootstrapObjectView,
             'variant': BootstrapVariantView,
             'selectionList': BootstrapSelectionListView,
-            'date': DateInputView,
-            'time': DateInputView,
-            'datetime': DateInputView,
+            'date': BootstrapDateView,
+            'time': BootstrapDateView,
+            'datetime': BootstrapDateView,
             'void': VoidView
         };
         let result = typeRenderers[(actualType.view as any)?.type ?? 'undefined'] ?? typeRenderers[actualType.type ?? 'undefined'];

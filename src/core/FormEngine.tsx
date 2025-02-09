@@ -2,7 +2,7 @@ import { JsxComponent, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragm
 import { IForm, IFormType, IKeyedMemberType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
-import { ArrayBox, Box, ObjectBox, VariantBox } from "./Box";
+import { ArrayBox, Box, IPageNo, ObjectBox, VariantBox } from "./Box";
 import { Value } from './tiny-jsx';
 
 export type OnValueChanged = { pagesChanged?: boolean };
@@ -48,6 +48,7 @@ export abstract class FormEngine {
     isReadonly: boolean = false;
     readonly pageNo = new Value(1);
     readonly pageCount = new Value(1);
+    readonly rePaginationCount = new Value(1);
 
     constructor(templates?: Record<string, IFormType>) {
         this.templates = templates ?? {};
@@ -68,6 +69,7 @@ export abstract class FormEngine {
         let pageNo = 1;
         let lineNo = 0
         let firstNonObjectSeen: boolean = false;
+        let pagesChanged = false;
 
         let paginateRecursely = (box: Box) => {
             let originalType = box.type;
@@ -95,8 +97,8 @@ export abstract class FormEngine {
                     }
                     break;
                 case 'variant':
-                    let variant = (box as VariantBox).getInnerVariant();
-                    paginateRecursely(variant.getValue())
+                    let innerVariant = (box as VariantBox).getInnerVariant().getValue();
+                    if (innerVariant) paginateRecursely(innerVariant);
                     break;
                 case 'boolean':
                 case 'const':
@@ -110,6 +112,7 @@ export abstract class FormEngine {
                     //
                 }
             }
+            if (!pagesChanged && startPage != box.pageNo.getValue().startPage) pagesChanged = true;
             box.pageNo.setValue({
                 startPage,
                 startLine,
@@ -120,6 +123,9 @@ export abstract class FormEngine {
 
         paginateRecursely(rootBox)
         this.pageCount.setValue(pageNo);
+        if (pagesChanged) {
+            this.rePaginationCount.setValue(this.rePaginationCount.getValue() + 1);
+        }
     }
 
 
@@ -189,6 +195,7 @@ export abstract class FormEngine {
         return (<>
             <Show when={isVisible}>
                 {inputComponent?.(props)}
+                {/* {JSON.stringify(props.box.pageNo.getValue())} */}
             </Show>
         </>);
 
@@ -237,5 +244,13 @@ export abstract class FormEngine {
 
     abstract FormView(props: IFormProps);
 
-
+    isBoxVisible(box: Box) {
+        let pageNo = this.pageNo.getValue();
+        let boxPage = box.pageNo.getValue()
+        if (!boxPage || !pageNo) return true;
+        return boxPage.startPage <= pageNo && pageNo <= boxPage.endPage;
+    }
 }
+
+
+
