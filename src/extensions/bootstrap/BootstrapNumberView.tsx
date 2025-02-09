@@ -44,7 +44,7 @@ export function BootstrapNumberView(props: NumberInputProps) {
 
   return (
     <>
-      <props.engine.InputTop {...props} />
+      {props.engine.InputTop(props)}
       <div class="input-group mb-3">
         <div class="form-floating">
 
@@ -77,7 +77,7 @@ export function BootstrapNumberView(props: NumberInputProps) {
           <span class="input-group-text" id="basic-addon2">{suffix}</span>
         </Show>
       </div>
-      <props.engine.InputBottom {...props} />
+      {props.engine.InputBottom(props)}
     </>
   );
 };

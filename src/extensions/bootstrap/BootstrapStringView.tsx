@@ -54,6 +54,7 @@ export function BootstrapStringView(props: StringInputProps) {
 
   return (
     <>
+      {props.engine.InputTop(props)}
       <div class="form-floating">
         <input
           type={computed({ isFocused }, (p) => (p.isFocused ? "text" : "string"))}
@@ -103,6 +104,7 @@ export function BootstrapStringView(props: StringInputProps) {
           {props.label}
         </label>
       </div>
+      {props.engine.InputBottom(props)}
     </>
   );
 };

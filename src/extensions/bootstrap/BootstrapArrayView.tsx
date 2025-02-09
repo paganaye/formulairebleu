@@ -44,6 +44,9 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
     };
     let renderFunction = renderFunctions[viewAsType?.type] || renderAsFlow;
     let entryBoxes = props.box.$entryBoxes;
+    let currentPageBoxes = computed({ $entryBoxes: props.box.$entryBoxes, pageNo: props.engine.pageNo, rePaginationCount: props.engine.rePaginationCount }, (p) => {
+        return props.box.$entryBoxes.getValue().filter(p => props.engine.isBoxVisible(p))
+    })
 
     function inputTop() {
         props.engine.InputTop(props)
@@ -80,7 +83,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     values.splice(index, 1);
                     props.box.setValue(values);
                 }}
-            > Delete</button >;
+            >Delete</button >;
     }
 
     function renderEntry(entry: Box, rowIndex: number) {
@@ -190,11 +193,14 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     </tr>
                 </thead>
                 <tbody>
-                    <For each={arrayUtils.sortedValues}>
-                        {(entry, index) => (
-                            <TableRow {...props} entry={entry} index={index} />
-                        )}
-                    </For>
+                    {computed({ pageNo: props.engine.pageNo }, (p) => {
+
+                        return <For each={arrayUtils.sortedValues}>
+                            {(entry, index) => (
+                                <TableRow {...props} entry={entry} index={index} />
+                            )}
+                        </For>
+                    })}
 
                 </tbody>
             </table>
@@ -207,7 +213,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
         return (
             <>
                 {inputTop}
-                <For each={entryBoxes}>
+                <For each={currentPageBoxes}>
                     {(entry, index) => (
                         <div class="flow-item">
                             {renderEntry?.(entry, index)}
@@ -226,7 +232,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
         return <>
             <div class="tabs-container">
                 <ul class="nav nav-tabs">
-                    <For each={entryBoxes}>
+                    <For each={currentPageBoxes}>
                         {(entry, index) => (
                             <li class="nav-item">
                                 <button
@@ -240,7 +246,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     </For>
                 </ul>
                 <div class="tab-content mt-3">
-                    <For each={entryBoxes}>
+                    <For each={currentPageBoxes}>
                         {(entry, index) => (
                             <div class={computed({ activeTab }, p => `tab-pane fade ${index === p.activeTab ? 'show active' : ''}`)}>
                                 {renderEntry(entry, index)}
@@ -340,7 +346,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
         return <>
             {inputTop()}
             <ul class="list-group">
-                <For each={entryBoxes}>
+                <For each={currentPageBoxes}>
                     {(entry) => {
                         const title = getTitle(entry);
                         return (

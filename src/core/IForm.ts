@@ -1,6 +1,6 @@
 import { IQuery } from "./IQuery";
 import { JSONValue } from "./tiny-jsx";
-import { ArrayValidation, BooleanValidation, DateValidation, NumberValidation, StringValidation, Validation } from "./Validation";
+import { ArrayValidations, BooleanValidations, ConstValidations, DatetimeValidations, DateValidations, NumberValidations, ObjectValidations, StringValidations, TimeValidations, VariantValidations, VoidValidations } from "./Validation";
 
 export interface IForm {
   version: '1';
@@ -34,121 +34,126 @@ export type GetFormViews<T extends PrimitiveType = any> = FormPrimitives[T]['vie
 export type GetFormType<T extends PrimitiveType = any> = FormPrimitives[T]['type']
 export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType;
 
-export interface TypeBase<PrimType extends PrimitiveType> {
+interface TypeBase {
   label?: string;
   help?: string;
   mandatory?: boolean;
   readonly?: boolean;
   visibility?: IQuery;
-  validations?: Validation[];
   templateString?: string;
   pageBreak?: boolean;
   selectionList?: ISelectionList
 }
 
-
-export interface IArrayType extends TypeBase<'array'> {
+export interface IArrayType extends TypeBase {
   type: 'array';
   entryType: IFormType;
   primaryKeys?: string[];
-  validations?: ArrayValidation[];
   view?: OneOf<IArrayViews>
+  validations?: ArrayValidations;
 }
 
 export interface IArrayViews {
 }
 
-export interface IBooleanType extends TypeBase<'boolean'> {
+export interface IBooleanType extends TypeBase {
   type: 'boolean';
   defaultValue?: boolean;
-  validations?: BooleanValidation[];
   view?: OneOf<IBooleanViews>
+  validations?: BooleanValidations;
 }
 
 export interface IBooleanViews {
 }
 
-export interface IConstType extends TypeBase<'const'> {
+export interface IConstType extends TypeBase {
   type: 'const';
   value: JSONValue;
   key?: undefined;
   view?: OneOf<IConstViews>
+  validations?: ConstValidations;
 }
 
 export interface IConstViews {
 }
 
-export interface IDateType extends TypeBase<'date'> {
+export interface IDateType extends TypeBase {
   type: 'date';
   view?: OneOf<IDateViews>
+  validations?: DateValidations;
 }
 
 export interface IDateViews {
 }
 
-export interface IDateTimeType extends TypeBase<'datetime'> {
+export interface IDateTimeType extends TypeBase {
   type: 'datetime';
   view?: OneOf<IDateTimeViews>
+  validations?: DatetimeValidations;
 }
 
 export interface IDateTimeViews {
 }
 
-export interface INumberType extends TypeBase<'number'> {
+export interface INumberType extends TypeBase {
   type: 'number',
   minValue?: number;
   maxValue?: number;
   decimals?: number;
   defaultValue?: number;
-  validations?: NumberValidation[];
   view?: OneOf<INumberViews>
+  validations?: NumberValidations;
 }
 
 export interface INumberViews {
 }
 
-export interface IObjectType extends TypeBase<'object'> {
+export interface IObjectType extends TypeBase {
   type: 'object';
   membersTypes: IObjectMemberType[];
   view?: OneOf<IObjectViews>
+  validations?: ObjectValidations;
 }
 
 export interface IObjectViews {
 }
 
-export interface IStringType extends TypeBase<'string'> {
+export interface IStringType extends TypeBase {
   type: 'string';
   defaultValue?: string;
-  validations?: StringValidation[];
   view?: OneOf<IStringViews>
+  validations?: StringValidations;
 }
 
 export interface IStringViews {
 }
 
-export interface ITimeType extends TypeBase<'time'> {
+export interface ITimeType extends TypeBase {
   type: 'time';
   view?: OneOf<ITimeViews>
+  validations?: TimeValidations;
 }
 
 export interface ITimeViews {
 }
 
 
-export interface IVariantType extends TypeBase<'variant'> {
+export interface IVariantType extends TypeBase {
   type: 'variant';
   variants: IVariantMemberType[];
   defaultValue?: 'void';
   view?: OneOf<IVariantViews>
+  validations?: VariantValidations;
 }
 
 export interface IVariantViews {
 }
 
 
-export interface IVoidType extends TypeBase<'void'> {
+export interface IVoidType extends TypeBase {
   type: 'void';
   view?: OneOf<IVoidViews>
+  validations?: VoidValidations;
 }
 
 export interface IVoidViews {

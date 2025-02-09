@@ -14,7 +14,7 @@ export type ObjectInputProps = {
 export function BootstrapObjectView(props: ObjectInputProps) {
   return (
     <>
-      {props.engine.InputTop({ ...props })}
+      {props.engine.InputTop(props)}
       <p>{props.label ?? props.box.type.label}</p>
       <For each={props.box.getMembers()}>
         {(sub, index) => {
@@ -34,7 +34,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
           );
         }}
       </For>
-      {props.engine.InputBottom({ ...props })}
+      {props.engine.InputBottom(props)}
     </>
   );
 };

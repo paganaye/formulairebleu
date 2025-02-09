@@ -2,7 +2,7 @@ import { JsxComponent, formulaireBleuJSX } from "../../core/tiny-jsx"
 import { FormEngine, IFormProps } from "../../core/FormEngine";
 import { BootstrapArrayView } from "./BootstrapArrayView";
 import { BootstrapBooleanView } from "./BootstrapBooleanView";
-import { DateInputView } from "./BootstrapDateInputView";
+import { BootstrapDateView } from "./BootstrapDateView";
 import { ErrorView } from "./BootstrapErrorsView";
 import { BootstrapFormView } from "./BootstrapFormView";
 import { BootstrapNumberView } from "./BootstrapNumberView";
@@ -25,6 +25,7 @@ declare module "../../core/IForm" {
     export interface IBooleanViews {
         //   switch: IBootstapSwitchType;
     }
+
     export interface IArrayViews {
         table: { type: 'table' }
         tabs: { type: 'tabs' }
@@ -33,6 +34,14 @@ declare module "../../core/IForm" {
         // carousel: { type: 'carousel', autoplay?: boolean, interval?: number }
         // list: { type: 'list' }
     }
+}
+
+declare module "../../core/Validation" {
+
+    export interface StringValidations /* extends IValidationRules */ {
+        bootstrapColor?: { type: 'bootstrap-color' }
+    }
+
 
 }
 
@@ -59,9 +68,9 @@ export class BootstrapEngine extends FormEngine {
             'object': BootstrapObjectView,
             'variant': BootstrapVariantView,
             'selectionList': BootstrapSelectionListView,
-            'date': DateInputView,
-            'time': DateInputView,
-            'datetime': DateInputView,
+            'date': BootstrapDateView,
+            'time': BootstrapDateView,
+            'datetime': BootstrapDateView,
             'void': VoidView
         };
         let result = typeRenderers[(actualType.view as any)?.type ?? 'undefined'] ?? typeRenderers[actualType.type ?? 'undefined'];
@@ -112,7 +121,5 @@ export class BootstrapEngine extends FormEngine {
         }
         console.log("Bootstrap loaded");
     }
-
-
 
 }

@@ -18,9 +18,12 @@ interface FormBodyProps {
 }
 
 const FormBody = (props: FormBodyProps) => {
-  const rootBox = Box.enBox(null, props.form.name, props.form.dataType, props.$value.getValue());
+  const rootBox = Box.enBox(props.engine, null, props.form.name, props.form.dataType, props.$value.getValue());
+  //setTimeout(() => {
+  // });
 
-  rootBox.addObserver((v) => {
+  rootBox.addChildChangedObserver((e) => {
+    let v = rootBox.getValue();
     props.$value.setValue(v);
     props.engine.paginate(rootBox);
   })
@@ -28,7 +31,6 @@ const FormBody = (props: FormBodyProps) => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
   // })
 
-  let currentJSONString: string = "";
 
   // createEffect(() => {
   //   const propJSONString = JSON.stringify(props.value);
@@ -50,20 +52,20 @@ const FormBody = (props: FormBodyProps) => {
   //     props.engine.paginate(rootBox);
   //   }
   // }
+  let result = <div class="container" >
+    {props.header}
+    {props.engine.InputRenderer({
+      engine: props.engine,
+      label: props.form.dataType.label ?? props.form.name,
+      level: 1,
+      box: rootBox,
+    })}
+    {props.footer}
+  </div >
 
+  props.engine.paginate(rootBox)
 
-  return (
-    <div class="container" >
-      {props.header}
-      {props.engine.InputRenderer({
-        engine: props.engine,
-        label: props.form.dataType.label ?? props.form.name,
-        level: 1,
-        box: rootBox,
-      })}
-      {props.footer}
-    </div >
-  );
+  return result;
 };
 
 interface IModalFormProps extends IFormProps {

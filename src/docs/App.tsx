@@ -15,9 +15,16 @@ let variant1 = {
     ]
 } as const satisfies IFormType;
 
-let str1 = { type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' } as const satisfies IFormType;
+let str1 = {
+    type: 'string', label: 'A simple string',
+    // defaultValue: "A", 
+    help: 'Here you can enter an unconstrained string with default view.',
+    validations: {
+        mandatory: true
+    }
+} as const satisfies IFormType;
 let num1 = { type: 'number', label: 'A simple string', defaultValue: 55, help: 'Here you can enter an unconstrained string with default view.' } as const satisfies IFormType;
-let arr1 = { type: 'array' as any, entryType: { type: 'string' }, pageBreak: false } as const satisfies IFormType;
+let arr1 = { type: 'array' as any, entryType: { type: 'string', pageBreak: true } } as const satisfies IFormType;
 let arr2 = { type: 'array' as any, view: { type: 'table' }, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
 let arr3 = { type: 'array' as any, view: { type: 'flow' }, entryType: { type: 'object', membersTypes: [{ key: 'onum1', type: 'number' as any, pageBreak: true }, { key: 'ostr1', type: 'string' as any, pageBreak: false }] }, pageBreak: false } as const satisfies IFormType;
 
@@ -33,7 +40,11 @@ let obj1 = {
     ]
 } as const satisfies IFormType;
 
-let telephone = { type: 'string', validations: [{ type: 'regex', arg: '09-99-99-99-99' }] } as const satisfies IFormType;
+let telephone = {
+    type: 'string', validations: {
+        mandatory: true
+    }
+} as const satisfies IFormType;
 
 let complex = {
     type: 'object',
@@ -53,7 +64,7 @@ let form1Type = {
     name: 'form1',
     version: '1',
     templates: { telephone },
-    dataType: { ...arr3 }
+    dataType: { ...str1 }
 } as const satisfies IForm;
 
 // // let n: formulairebleu.InferDataType<{ type: 'number' }> = 5
@@ -99,6 +110,7 @@ function randomize<T extends IForm>(form: T): InferFormType<T> {
 
 let formValue = randomize(form1Type);
 let engine = new BootstrapEngine();
+formValue = undefined;
 
 export default function App() {
     let value = new Value(formValue);
@@ -106,6 +118,7 @@ export default function App() {
     let onValueChanged = (v: any) => {
         console.log("v", v);
     }
+
     let formView1 = engine.FormView({ form: form1Type, $value: value, onValueChanged })
 
     return (<div>

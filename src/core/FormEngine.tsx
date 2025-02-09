@@ -1,9 +1,10 @@
 import { JsxComponent, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
-import { IForm, IFormType, IKeyedMemberType } from "./IForm";
+import { IForm, IFormType, IKeyedMemberType, INumberType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
-import { ArrayBox, Box, ObjectBox, VariantBox } from "./Box";
+import { ArrayBox, Box, IPageNo, ObjectBox, VariantBox } from "./Box";
 import { Value } from './tiny-jsx';
+import { ArrayValidations, BooleanValidations, ConstValidations, DatetimeValidations, DateValidations, ErrorString, NumberValidations, ObjectValidations, StringValidations, TimeValidations, ValidationRules, VariantValidations, VoidValidations } from "./Validation";
 
 export type OnValueChanged = { pagesChanged?: boolean };
 
@@ -48,6 +49,7 @@ export abstract class FormEngine {
     isReadonly: boolean = false;
     readonly pageNo = new Value(1);
     readonly pageCount = new Value(1);
+    readonly rePaginationCount = new Value(1);
 
     constructor(templates?: Record<string, IFormType>) {
         this.templates = templates ?? {};
@@ -68,6 +70,7 @@ export abstract class FormEngine {
         let pageNo = 1;
         let lineNo = 0
         let firstNonObjectSeen: boolean = false;
+        let pagesChanged = false;
 
         let paginateRecursely = (box: Box) => {
             let originalType = box.type;
@@ -95,8 +98,8 @@ export abstract class FormEngine {
                     }
                     break;
                 case 'variant':
-                    let variant = (box as VariantBox).getInnerVariant();
-                    paginateRecursely(variant.getValue())
+                    let innerVariant = (box as VariantBox).getInnerVariant().getValue();
+                    if (innerVariant) paginateRecursely(innerVariant);
                     break;
                 case 'boolean':
                 case 'const':
@@ -110,6 +113,7 @@ export abstract class FormEngine {
                     //
                 }
             }
+            if (!pagesChanged && startPage != box.pageNo.getValue().startPage) pagesChanged = true;
             box.pageNo.setValue({
                 startPage,
                 startLine,
@@ -120,8 +124,10 @@ export abstract class FormEngine {
 
         paginateRecursely(rootBox)
         this.pageCount.setValue(pageNo);
+        if (pagesChanged) {
+            this.rePaginationCount.setValue(this.rePaginationCount.getValue() + 1);
+        }
     }
-
 
     FormBody(props: FormBodyProps) {
         const rootBox = new Value(undefined);
@@ -174,7 +180,6 @@ export abstract class FormEngine {
         );
     };
 
-
     InputRenderer(props: InputRenderProps) {
         let inputComponent = this.getRenderer(props.box.type);
 
@@ -189,11 +194,11 @@ export abstract class FormEngine {
         return (<>
             <Show when={isVisible}>
                 {inputComponent?.(props)}
+                {/* {JSON.stringify(props.box.pageNo.getValue())} */}
             </Show>
         </>);
 
     }
-
 
     abstract getRenderer(type: IFormType): JsxComponent<InputRenderProps>;
 
@@ -205,11 +210,10 @@ export abstract class FormEngine {
         </>
     }
 
-
     InputBottom(props: InputBottomProps) {
         // let errors = createMemo(() => props.box.errors());
         return <>
-            <ErrorsView errors={['']} />
+            <ErrorsView errors={props.box.errors} />
             {/* <Show when={props.options.filter?.(props as any)}>
                 <Show fallback={<pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}...{props.box.getEndPageNo()}:{props.box.getEndLineNo()} </pre>} when={props.box.getStartPageNo() == props.box.getEndPageNo() && props.box.getStartLineNo() == props.box.getEndLineNo()}>
                     <pre>Page {props.box.getStartPageNo()}:{props.box.getStartLineNo()}</pre>
@@ -237,5 +241,285 @@ export abstract class FormEngine {
 
     abstract FormView(props: IFormProps);
 
+    isBoxVisible(box: Box) {
+        let pageNo = this.pageNo.getValue();
+        let boxPage = box.pageNo.getValue()
+        if (!boxPage || !pageNo) return true;
+        return boxPage.startPage <= pageNo && pageNo <= boxPage.endPage;
+    }
 
+    // validateNumber(box: Box<INumberType>, validationRule: Validation, value: any, errors: ErrorString[]) {
+    //     switch (validationRule.type) {
+    //         case 'mandatory':
+    //             if (value == null || value === '') {
+    //                 errors.push(validationRule.message || `${box.name} is required.`);
+    //             }
+    //             break;
+    //         default:
+    //             errors.push("Unknown rule " + validationRule.type);
+    //             break
+
+    //     }
+
+    // }
+
+    array
+    boolean
+    const
+    date
+    datetime
+    number
+    object
+    string
+    time
+    variant
+    void
+
+    validate(box: Box, rules: ValidationRules, errors: ErrorString[]): void {
+        const value = box.getValue();
+        const name = box.name;
+        const validators = {
+            array: validateArray,
+            boolean: validateBoolean,
+            const: validateConst,
+            date: validateDate,
+            datetime: validateDatetime,
+            number: validateNumber,
+            object: validateObject,
+            string: validateString,
+            time: validateTime,
+            variant: validateVariant,
+            void: validateVoid,
+        };
+
+        validators[box.type.type]?.(rules as any);
+
+
+        function addError(
+            error: number | string | true | { message?: string },
+            defaultMessage: string
+        ) {
+            const message =
+                typeof error === 'object' && typeof error.message === 'string'
+                    ? error.message
+                    : defaultMessage;
+            errors.push(message);
+        }
+
+        function validateArray(rules: ArrayValidations) {
+            if (rules.mandatory && (value == null || (Array.isArray(value) && value.length === 0))) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+            if (rules.minLength) {
+                const minLength =
+                    typeof rules.minLength === 'number'
+                        ? rules.minLength
+                        : rules.minLength.value;
+                if (Array.isArray(value) && value.length < minLength) {
+                    addError(rules.minLength, `${name} must have at least ${minLength} items.`);
+                }
+            }
+            if (rules.maxLength) {
+                const maxLength =
+                    typeof rules.maxLength === 'number'
+                        ? rules.maxLength
+                        : rules.maxLength.value;
+                if (Array.isArray(value) && value.length > maxLength) {
+                    addError(rules.maxLength, `${name} must have at most ${maxLength} items.`);
+                }
+            }
+        }
+
+        function validateBoolean(rules: BooleanValidations) {
+            if (rules.mandatory && (value === null || value === undefined)) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+        }
+
+        function validateConst(rules: ConstValidations) {
+            if (rules.mandatory && (value === null || value === undefined || value === '')) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+        }
+
+        function validateDate(rules: DateValidations) {
+            if (rules.mandatory && (!value || value === '')) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+            const dateValue = new Date(String(value));
+            if (rules.minDate) {
+                const minDateStr =
+                    typeof rules.minDate === 'string' ? rules.minDate : rules.minDate.value;
+                const minDate = new Date(minDateStr);
+                if (dateValue < minDate) {
+                    addError(
+                        rules.minDate,
+                        `${name} must be on or after ${minDate.toISOString().split('T')[0]}.`
+                    );
+                }
+            }
+            if (rules.maxDate) {
+                const maxDateStr =
+                    typeof rules.maxDate === 'string' ? rules.maxDate : rules.maxDate.value;
+                const maxDate = new Date(maxDateStr);
+                if (dateValue > maxDate) {
+                    addError(
+                        rules.maxDate,
+                        `${name} must be on or before ${maxDate.toISOString().split('T')[0]}.`
+                    );
+                }
+            }
+        }
+
+        function validateDatetime(rules: DatetimeValidations) {
+            if (rules.mandatory && (!value || value === '')) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+            const dateTimeValue = new Date(String(value));
+            if (rules.minDate) {
+                const minDateStr =
+                    typeof rules.minDate === 'string' ? rules.minDate : rules.minDate.value;
+                const minDate = new Date(minDateStr);
+                if (dateTimeValue < minDate) {
+                    addError(
+                        rules.minDate,
+                        `${name} must be on or after ${minDate.toISOString()}.`
+                    );
+                }
+            }
+            if (rules.maxDate) {
+                const maxDateStr =
+                    typeof rules.maxDate === 'string' ? rules.maxDate : rules.maxDate.value;
+                const maxDate = new Date(maxDateStr);
+                if (dateTimeValue > maxDate) {
+                    addError(
+                        rules.maxDate,
+                        `${name} must be on or before ${maxDate.toISOString()}.`
+                    );
+                }
+            }
+            if (rules.minTime) {
+                const minTime =
+                    typeof rules.minTime === 'string' ? rules.minTime : rules.minTime.value;
+                const timeString = dateTimeValue.toTimeString().slice(0, 5);
+                if (timeString < minTime) {
+                    addError(rules.minTime, `${name} must be after ${minTime}.`);
+                }
+            }
+            if (rules.maxTime) {
+                const maxTime =
+                    typeof rules.maxTime === 'string' ? rules.maxTime : rules.maxTime.value;
+                const timeString = dateTimeValue.toTimeString().slice(0, 5);
+                if (timeString > maxTime) {
+                    addError(rules.maxTime, `${name} must be before ${maxTime}.`);
+                }
+            }
+        }
+
+        function validateNumber(rules: NumberValidations) {
+            if (
+                rules.mandatory &&
+                (value === null || value === '' || Number.isNaN(Number(value)))
+            ) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+            const numValue = Number(value);
+            if (rules.minValue) {
+                const minValue =
+                    typeof rules.minValue === 'number' ? rules.minValue : rules.minValue.value;
+                if (numValue < minValue) {
+                    addError(rules.minValue, `${name} must be at least ${minValue}.`);
+                }
+            }
+            if (rules.maxValue) {
+                const maxValue =
+                    typeof rules.maxValue === 'number' ? rules.maxValue : rules.maxValue.value;
+                if (numValue > maxValue) {
+                    addError(rules.maxValue, `${name} must be at most ${maxValue}.`);
+                }
+            }
+            if (rules.maxDecimals !== undefined) {
+                const maxDecimals =
+                    typeof rules.maxDecimals === 'number'
+                        ? rules.maxDecimals
+                        : rules.maxDecimals.value;
+                const decimals = value.toString().split('.')[1]?.length || 0;
+                if (decimals > maxDecimals) {
+                    addError(
+                        rules.maxDecimals,
+                        `${name} must have at most ${maxDecimals} decimal places.`
+                    );
+                }
+            }
+        }
+
+        function validateObject(rules: ObjectValidations) {
+            if (rules.mandatory && (value === null || value === undefined)) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+        }
+
+        function validateString(rules: StringValidations) {
+            if (rules.mandatory && (value === null || value === '')) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+            if (rules.minLength) {
+                const minLength =
+                    typeof rules.minLength === 'number'
+                        ? rules.minLength
+                        : rules.minLength.value;
+                if (String(value).length < minLength) {
+                    addError(rules.minLength, `${name} must have at least ${minLength} characters.`);
+                }
+            }
+            if (rules.maxLength) {
+                const maxLength =
+                    typeof rules.maxLength === 'number'
+                        ? rules.maxLength
+                        : rules.maxLength.value;
+                if (String(value).length > maxLength) {
+                    addError(rules.maxLength, `${name} must have at most ${maxLength} characters.`);
+                }
+            }
+            if (rules.regex) {
+                const regexPattern =
+                    typeof rules.regex === 'string' ? rules.regex : rules.regex.regex;
+                if (!new RegExp(regexPattern).test(String(value))) {
+                    addError(rules.regex, `Does not match expression ${regexPattern}.`);
+                }
+            }
+        }
+
+        function validateTime(rules: TimeValidations) {
+            if (rules.mandatory && (value === null || value === '')) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+            if (rules.minTime) {
+                const minTime =
+                    typeof rules.minTime === 'string' ? rules.minTime : rules.minTime.value;
+                if (String(value) < minTime) {
+                    addError(rules.minTime, `${name} must be after ${minTime}.`);
+                }
+            }
+            if (rules.maxTime) {
+                const maxTime =
+                    typeof rules.maxTime === 'string' ? rules.maxTime : rules.maxTime.value;
+                if (String(value) > maxTime) {
+                    addError(rules.maxTime, `${name} must be before ${maxTime}.`);
+                }
+            }
+        }
+
+        function validateVariant(rules: VariantValidations) {
+            if (rules.mandatory && (value === null || value === '')) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+        }
+
+        function validateVoid(rules: VoidValidations) {
+            if (rules.mandatory && (value === null || value === '')) {
+                addError(rules.mandatory, `${name} is mandatory.`);
+            }
+        }
+    }
 }

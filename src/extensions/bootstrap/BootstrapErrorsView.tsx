@@ -1,4 +1,4 @@
-import { JsxComponent, formulaireBleuJSX, formulaireBleuJSXFragment, For, Show } from "../../core/tiny-jsx";
+import { JsxComponent, formulaireBleuJSX, formulaireBleuJSXFragment, For, Show, Value } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 Styles.add(".error", {
@@ -6,7 +6,7 @@ Styles.add(".error", {
 });
 
 export type ErrorsProps = {
-  errors: string[];
+  errors: Value<string[]>;
 };
 
 export function ErrorView(props: { error: string }) {

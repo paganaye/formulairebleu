@@ -160,7 +160,6 @@ export class ArrayUtils {
 
   }
 
-
   sortSuffix(key: string | undefined) {
     if (!key) return "";
     let sortOrderValue = this.sortOrder.getValue();

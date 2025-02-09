@@ -1,45 +1,75 @@
+export type ErrorString = string;
 
-export type Validation = StringValidation |
-  BooleanValidation |
-  NumberValidation |
-  ObjectValidation |
-  ArrayValidation;
-
-export type StringValidation =
-  | StringLengthMinValidation
-  | StringLengthMaxValidation
-  | RegexValidation
-  | MandatoryValidation;
-export type BooleanValidation = MandatoryValidation;
-export type NumberValidation =
-  | MandatoryValidation
-  | MinValueValidation
-  | MaxValueValidation
-  | MaxDecimalsValidation;
-
-export type DateValidation =
-  | MandatoryValidation;
-
-export type ObjectValidation = ObjectEmptyValidation;
-export type ArrayValidation =
-  | ArrayLengthMinValidation
-  | ArrayLengthMaxValidation
-  | UniqueKeyValidation;
-
-export interface IValidationRule<TRule extends string, TArg = any> {
-  type: TRule;
-  arg?: TArg;
-  message?: string;
+export interface ArrayValidations {
+  mandatory?: true | { message?: string };
+  minLength?: number | { value: number, message?: string };
+  maxLength?: number | { value: number, message?: string };
 }
 
-export type StringLengthMinValidation = IValidationRule<'stringLengthMin', number>;
-export type StringLengthMaxValidation = IValidationRule<'stringLengthMax', number>;
-export type ArrayLengthMinValidation = IValidationRule<'arrayLengthMin', number>;
-export type ArrayLengthMaxValidation = IValidationRule<'arrayLengthMax', number>;
-export type RegexValidation = IValidationRule<'regex', string>;
-export type MandatoryValidation = IValidationRule<'mandatory', undefined>;
-export type MinValueValidation = IValidationRule<'minValue', number>;
-export type MaxValueValidation = IValidationRule<'maxValue', number>;
-export type MaxDecimalsValidation = IValidationRule<'maxDecimals', number>;
-export type ObjectEmptyValidation = IValidationRule<'objectNotEmpty'>;
-export type UniqueKeyValidation = IValidationRule<'uniqueKey', string>;
+export interface BooleanValidations {
+  mandatory?: true | { message?: string };
+}
+
+
+export interface ConstValidations {
+  mandatory?: true | { message?: string };
+}
+
+export interface DateValidations {
+  mandatory?: true | { message?: string };
+  minDate?: string | { value: string, message?: string };
+  maxDate?: string | { value: string, message?: string };
+}
+
+export interface DatetimeValidations {
+  mandatory?: true | { message?: string };
+  minDate?: string | { value: string, message?: string };
+  maxDate?: string | { value: string, message?: string };
+  minTime?: string | { value: string, message?: string };
+  maxTime?: string | { value: string, message?: string };
+}
+
+export interface NumberValidations {
+  mandatory?: true | { message?: string };
+  minValue?: number | { value: number, message?: string };
+  maxValue?: number | { value: number, message?: string };
+  maxDecimals?: number | { value: number, message?: string };
+}
+
+export interface ObjectValidations {
+  mandatory: true | { message?: string };
+}
+
+export interface StringValidations {
+  mandatory?: true | { message?: string };
+  minLength?: number | { value: number, message?: string };
+  maxLength?: number | { value: number, message?: string };
+  regex?: string | { type: 'regex', regex: string, message?: string };
+}
+
+export interface TimeValidations {
+  mandatory?: true | { message?: string };
+  minTime?: string | { value: string, message?: string };
+  maxTime?: string | { value: string, message?: string };
+}
+
+export interface VariantValidations {
+  mandatory?: true | { message?: string };
+}
+
+export interface VoidValidations {
+  mandatory?: true | { message?: string };
+}
+
+export type ValidationRules =
+  | ArrayValidations
+  | BooleanValidations
+  | ConstValidations
+  | DateValidations
+  | DatetimeValidations
+  | NumberValidations
+  | ObjectValidations
+  | StringValidations
+  | TimeValidations
+  | VariantValidations
+  | VoidValidations;
