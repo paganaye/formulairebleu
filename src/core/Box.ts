@@ -1,19 +1,27 @@
 import { FormEngine } from "./FormEngine";
-import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, IVariantMemberType, IVariantType } from "./IForm";
+import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, ITemplatedType, IVariantMemberType, IVariantType } from "./IForm";
 import { computed, IValue, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 import { ErrorString } from "./Validation";
 
 type ChildChangedEvent = { box: Box };
 
-export abstract class Box<TFormType extends IFormType = IFormType, U = InferDataType<TFormType>> extends Value<U> {
+// A box contains 
+//  - a form field type
+//  - its JSON value
+//  - validation errors
+//  - page and line number
+//  - children boxes (when the box is an object, an array or a Variant)
+export abstract class Box<TFormType extends IFormType = any, U extends JSONValue = any> extends Value<U> {
   readonly uniqueId: number = Box.getUniqueId();
+  readonly type: Exclude<TFormType, ITemplatedType>
   readonly errors = new Value<ErrorString[]>([]);
   readonly pageNo = new Value<IPageNo>({ startPage: 0, startLine: 0, endPage: 0, endLine: 0 });
   #childChangedObservers?: Set<Observer<ChildChangedEvent>>;
-  // value: IValue<TFormType> = new Value<TFormType>(undefined)
 
-  constructor(readonly engine: FormEngine, readonly parent: Box | null, readonly name: string, readonly type: TFormType) {
+  constructor(readonly engine: FormEngine, readonly parent: Box | null, readonly name: string, type: TFormType) {
     super(undefined)
+    let templateType = engine.templates[type.type];
+    this.type = (templateType ?? type) as any;
   }
 
   static lastBoxId: number = 0;
@@ -23,15 +31,18 @@ export abstract class Box<TFormType extends IFormType = IFormType, U = InferData
 
   abstract getDefaultValue(): U;
 
-  addChildChangedObserver(observer: Observer<ChildChangedEvent>) {
+  addChildChangedObserver(observer: Observer<ChildChangedEvent>, immediate: boolean = false) {
     (this.#childChangedObservers || (this.#childChangedObservers = new Set())).add(observer);
+    if (immediate) observer({ box: this });
   }
 
   notifyChildChanged(box: Box) {
     if (this.#childChangedObservers) {
       this.#childChangedObservers.forEach(observer => observer({ box }));
     }
-    this.parent?.notifyChildChanged(box);
+    if (this.parent) {
+      this.parent.notifyChildChanged(box);
+    }
   }
 
   validate(): void {
@@ -40,12 +51,13 @@ export abstract class Box<TFormType extends IFormType = IFormType, U = InferData
     this.errors.setValue(errors);
   }
 
-  static enBox<TFormType extends IFormType = IFormType>(engine: FormEngine, parent: Box | null, name: string, type: TFormType, value: JSONValue): Box {
+  static enBox(engine: FormEngine, parent: Box | null, name: string, type: IFormType, value: JSONValue): Box {
+    type = engine.getActualType(type)
     switch (type.type) {
       case 'number':
-        return new NumberBox(engine, parent, name, type, value);
+        return new NumberBox(engine, parent, name, type as INumberType, value);
       case 'boolean':
-        return new BooleanBox(engine, parent, name, type, value);
+        return new BooleanBox(engine, parent, name, type as IBooleanType, value);
       case 'object':
         return new ObjectBox(engine, parent, name, type as IObjectType, value as JSONObject);
       case 'array':
@@ -58,7 +70,7 @@ export abstract class Box<TFormType extends IFormType = IFormType, U = InferData
     }
   }
 
-  static unBox<Q extends IFormType = IFormType>(box: Box<Q>): InferDataType<Q> {
+  static unBox<Q extends IFormType = any>(box: Box<Q>): InferDataType<Q> {
     return box.getValue();
   }
 }

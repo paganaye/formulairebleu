@@ -1,5 +1,5 @@
 import { JsxComponent, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
-import { IForm, IFormType, IKeyedMemberType, INumberType } from "./IForm";
+import { IForm, IFormType, IKeyedMemberType, INumberType, ITemplatedType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
 import { ArrayBox, Box, IPageNo, ObjectBox, VariantBox } from "./Box";
@@ -55,7 +55,7 @@ export abstract class FormEngine {
         this.templates = templates ?? {};
     }
 
-    getActualType(type: IFormType): IFormType {
+    getActualType<T extends IFormType>(type: T) {
         let viewType = (type?.view as any)?.type;
         let templateType: IFormType | undefined;
         if (viewType) templateType = this.templates[viewType];
@@ -63,7 +63,7 @@ export abstract class FormEngine {
             let typeType = type?.type;
             templateType = this.templates[typeType];
         }
-        return templateType ?? type;
+        return (templateType ?? type) as any;
     }
 
     paginate(rootBox: Box) {
@@ -226,11 +226,11 @@ export abstract class FormEngine {
     Title(props: TitleProps) {
         let title: string | HTMLElement;
         let parentType = (props.parentType as IKeyedMemberType).key ?? "Item";
-        if (props.type.templateString) {
-            title = formatTemplateString(props.type.templateString, Box.unBox(props.box) as any);
-        } else {
-            title = parentType + " " + String(props.index + 1)
-        }
+        // if (props.type.templateString) {
+        //     title = formatTemplateString(props.type.templateString, props.box);
+        // } else {
+        //     title = parentType + " " + String(props.index + 1)
+        // }
 
         return (
             <>
@@ -263,18 +263,6 @@ export abstract class FormEngine {
 
     // }
 
-    array
-    boolean
-    const
-    date
-    datetime
-    number
-    object
-    string
-    time
-    variant
-    void
-
     validate(box: Box, rules: ValidationRules, errors: ErrorString[]): void {
         const value = box.getValue();
         const name = box.name;
@@ -291,8 +279,7 @@ export abstract class FormEngine {
             variant: validateVariant,
             void: validateVoid,
         };
-
-        validators[box.type.type]?.(rules as any);
+        if (rules != null) validators[box.type.type]?.(rules as any);
 
 
         function addError(
@@ -482,10 +469,13 @@ export abstract class FormEngine {
                 }
             }
             if (rules.regex) {
-                const regexPattern =
-                    typeof rules.regex === 'string' ? rules.regex : rules.regex.regex;
-                if (!new RegExp(regexPattern).test(String(value))) {
-                    addError(rules.regex, `Does not match expression ${regexPattern}.`);
+                let regexArray = Array.isArray(rules.regex) ? rules.regex : [rules.regex];
+                for (let regex of regexArray) {
+                    const regexPattern =
+                        typeof regex === 'string' ? regex : regex.regex;
+                    if (!new RegExp(regexPattern).test(String(value))) {
+                        addError(regex, `Does not match expression ${regexPattern}.`);
+                    }
                 }
             }
         }
@@ -521,5 +511,42 @@ export abstract class FormEngine {
                 addError(rules.mandatory, `${name} is mandatory.`);
             }
         }
+    }
+
+    Span(box: Box): HTMLSpanElement {
+        let spanText = new Value("...");
+
+        box.addChildChangedObserver(() => {
+            spanText.setValue(toString(1, box));
+        }, true)
+
+        function toString(level: number, box: Box): string {
+            if (box == null) return ""
+            switch (box.type.type) {
+                case "object": {
+                    let members = (box as ObjectBox).getMembers();
+                    let result = members.map(b => toString(level + 1, b)).filter(s => s.length).join(", ");
+                    return level == 1 ? result : '{ ' + result + ' }'
+                }
+
+                case "array": {
+                    let entries = (box as ArrayBox).$entryBoxes.getValue();
+                    let result = entries.filter(m => m != null).map(b => toString(level + 1, b)).join(", ");
+                    return level == 1 ? result : '[ ' + result + ' ]'
+                }
+
+                case 'variant':
+                    let vbox = box as VariantBox;
+                    return String(vbox.key.getValue()) + ": " + toString(level + 1, vbox.getInnerVariant().getValue());
+
+                default:
+                    let value = box.getValue();
+                    value = String(value);
+                    if (value.length == 0) return "";
+                    if (value.length > 40) value = value.slice(0, 37) + "..."
+                    return (box.name) + ": " + value;
+            }
+        }
+        return <span>{spanText}</span>;
     }
 }

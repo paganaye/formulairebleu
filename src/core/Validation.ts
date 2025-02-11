@@ -44,7 +44,7 @@ export interface StringValidations {
   mandatory?: true | { message?: string };
   minLength?: number | { value: number, message?: string };
   maxLength?: number | { value: number, message?: string };
-  regex?: string | { type: 'regex', regex: string, message?: string };
+  regex?: string | { regex: string, message?: string } | { regex: string, message?: string }[];
 }
 
 export interface TimeValidations {

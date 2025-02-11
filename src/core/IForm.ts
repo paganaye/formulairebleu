@@ -5,7 +5,7 @@ import { ArrayValidations, BooleanValidations, ConstValidations, DatetimeValidat
 export interface IForm {
   version: '1';
   name: string;
-  templates?: Record<string, IFormType>;
+  templates?: Record<TemplateName, IFormType>;
   dataType: IFormType;
 }
 
@@ -32,7 +32,7 @@ type OneOf<T> = T[keyof T];
 
 export type GetFormViews<T extends PrimitiveType = any> = FormPrimitives[T]['views']
 export type GetFormType<T extends PrimitiveType = any> = FormPrimitives[T]['type']
-export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType;
+export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType  | ITemplatedType;
 
 interface TypeBase {
   label?: string;
@@ -45,6 +45,13 @@ interface TypeBase {
   selectionList?: ISelectionList
 }
 
+export type TemplateName = `${Uppercase<string>}${string}`;
+
+export interface ITemplatedType {
+  type: TemplateName;
+  view?: OneOf<IArrayViews | IBooleanViews | IConstViews | IDateTimeViews | IDateTimeViews | INumberViews | IObjectViews | IStringViews | IDateTimeViews | IVariantViews | IVoidViews>
+}
+
 export interface IArrayType extends TypeBase {
   type: 'array';
   entryType: IFormType;
@@ -52,6 +59,7 @@ export interface IArrayType extends TypeBase {
   view?: OneOf<IArrayViews>
   validations?: ArrayValidations;
 }
+
 
 export interface IArrayViews {
 }
@@ -116,6 +124,7 @@ export interface IObjectType extends TypeBase {
 }
 
 export interface IObjectViews {
+  default: { type: 'flow' }
 }
 
 export interface IStringType extends TypeBase {
@@ -181,10 +190,10 @@ export interface IVoidViews {
 //   value: string | null;
 // }
 
-export type IVariantMemberType<TKind extends string = string, TType extends IFormType = IFormType> = { key: TKind, label?: string } & TType;
+export type IVariantMemberType<TKind extends string = string, TType extends IFormType = any> = { key: TKind, label?: string } & TType;
 
 export type IObjectMemberType = IKeyedMemberType | IConstType;
-export type IKeyedMemberType<TKey extends string = string, TType extends IFormType = IFormType> = {
+export type IKeyedMemberType<TKey extends string = string, TType extends IFormType = any> = {
   key: TKey
 } & TType;
 
@@ -210,9 +219,9 @@ export interface ISelectionColumn {
   width?: number;
 }
 
+
 export type InferDataType<T extends IFormType> =
-  T extends IForm ? InferDataType<T['dataType']>
-  : T extends IBooleanType ? boolean
+  T extends IBooleanType ? boolean
   : T extends INumberType ? number
   : T extends IStringType ? string
   : T extends IConstType ? T['value']

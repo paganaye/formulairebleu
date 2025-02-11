@@ -16,11 +16,13 @@ let variant1 = {
 } as const satisfies IFormType;
 
 let str1 = {
-    type: 'string', label: 'A simple string',
+    type: 'string', label: 'Hex Bytes',
     // defaultValue: "A", 
-    help: 'Here you can enter an unconstrained string with default view.',
+    help: 'Here you can enter hexadecimal bytes.',
     validations: {
-        mandatory: true
+        mandatory: true,
+        regex: { regex: "^[0-9A-F]+[0-9A-F]( [0-9A-F]+[0-9A-F]+)*$", message: "Invalid Hexadecimal sequence. For example: 00 02 FF" },
+        maxLength: 11
     }
 } as const satisfies IFormType;
 let num1 = { type: 'number', label: 'A simple string', defaultValue: 55, help: 'Here you can enter an unconstrained string with default view.' } as const satisfies IFormType;
@@ -33,8 +35,8 @@ let obj1 = {
     help: "Parent object help",
     label: "Parent Object Label",
     membersTypes: [
-        { key: 'num1', type: 'number' as any, pageBreak: true },
-        { key: 'str1', type: 'string' as any, pageBreak: false },
+        { key: 'num1', ...num1 },
+        { key: 'str1', ...str1 },
         { key: 'dat1', type: 'date' as any, pageBreak: false },
         { key: 'tim1', type: 'time' as any, pageBreak: false },
     ]
@@ -42,7 +44,8 @@ let obj1 = {
 
 let telephone = {
     type: 'string', validations: {
-        mandatory: true
+        mandatory: true,
+        minLength: 6
     }
 } as const satisfies IFormType;
 
@@ -63,8 +66,14 @@ let complex2 = { type: 'array' as any, entryType: complex, pageBreak: true } as 
 let form1Type = {
     name: 'form1',
     version: '1',
-    templates: { telephone },
-    dataType: { ...str1 }
+    templates: { Telephone: telephone },
+    dataType: {
+        type: 'object',
+        membersTypes: [
+            { key: 'primary', type: 'Telephone' },
+            { key: 'other', ...obj1, view: { type: "wizard", popup: true } }
+        ]
+    }
 } as const satisfies IForm;
 
 // // let n: formulairebleu.InferDataType<{ type: 'number' }> = 5
@@ -88,6 +97,7 @@ let form1Type = {
 function randomize<T extends IForm>(form: T): InferFormType<T> {
     function randomValue(type: IFormType): any {
         let actualType = (form.templates && form.templates[type.type]) || type;
+
         switch (actualType.type) {
             case 'number': return Math.random() * 100;
             case 'boolean': return Math.random() < 0.5;

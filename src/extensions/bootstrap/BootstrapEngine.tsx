@@ -31,9 +31,14 @@ declare module "../../core/IForm" {
         tabs: { type: 'tabs' }
         flow: { type: 'flow' }
         object: { type: 'modal' }
-        // carousel: { type: 'carousel', autoplay?: boolean, interval?: number }
-        // list: { type: 'list' }
     }
+
+    export interface IObjectViews {
+        popup: { type: 'popup' }
+        wizard: { type: 'wizard', popup?: boolean },
+        tabs: { type: 'tabs', popup?: boolean }
+    }
+
 }
 
 declare module "../../core/Validation" {
@@ -55,6 +60,12 @@ export class BootstrapEngine extends FormEngine {
 
     FormView(props: IFormProps) {
         let engine = this;
+        let formTemplates = props.form.templates;
+        if (formTemplates) {
+            for (let key of Object.keys(formTemplates)) {
+                engine.templates[key] = formTemplates[key];
+            }
+        }
         return <BootstrapFormView engine={engine} {...props} />
     }
 
@@ -75,7 +86,7 @@ export class BootstrapEngine extends FormEngine {
         };
         let result = typeRenderers[(actualType.view as any)?.type ?? 'undefined'] ?? typeRenderers[actualType.type ?? 'undefined'];
         if (!result) {
-            return () => <ErrorView error={`Form type is unknown ${JSON.stringify(actualType.type || null)}`} />
+            return () => <ErrorView error={`Form type  ${JSON.stringify(actualType.type ?? null)} is unknown`} />
         }
         return result;
 

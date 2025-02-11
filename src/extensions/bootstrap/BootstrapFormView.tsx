@@ -21,12 +21,13 @@ const FormBody = (props: FormBodyProps) => {
   const rootBox = Box.enBox(props.engine, null, props.form.name, props.form.dataType, props.$value.getValue());
   //setTimeout(() => {
   // });
-
+  if (rootBox.type.templates) props.engine.templates
   rootBox.addChildChangedObserver((e) => {
     let v = rootBox.getValue();
     props.$value.setValue(v);
     props.engine.paginate(rootBox);
   })
+
   // createEffect(() => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
   // })
@@ -115,7 +116,7 @@ export function PopupFormView(props: IPopupFormProps) {
 
 }
 
-export function formatTemplateString(templateString: string, data: Record<string, any>): HTMLElement {
+export function formatTemplateString(templateString: string, data: Box): HTMLElement {
   try {
     // const compiledTemplate = Handlebars.compile(templateString);
     // const result = compiledTemplate(data);

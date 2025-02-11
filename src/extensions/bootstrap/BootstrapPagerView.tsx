@@ -41,7 +41,7 @@ export function Pager(props: PagerProps) {
 
   return <>{
     computed({ pageCount: props.pageCount, selectedPage: props.selectedPage }, (p) =>
-      <ul class="pagination">
+      <ul class="pagination mt-2">
         {/* Bouton "Previous" */}
         <li class={`page-item ${p.selectedPage === 1 ? 'disabled' : ''}`}>
           <a
