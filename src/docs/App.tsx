@@ -1,11 +1,11 @@
 import { computed, For, Match, Show, Switch, Value, formulaireBleuJSX, formulaireBleuJSXFragment, Observer } from '../core/tiny-jsx'
-import { IForm, IFormType, InferFormType } from '../core/IForm';
+import { IForm, IFormType, InferFormType, ISelectionList } from '../core/IForm';
 import { BootstrapEngine } from '../extensions/bootstrap/BootstrapEngine';
 
 let variant1 = {
     type: 'variant',
     help: "This is an object wit str2, num2, date2 and bool2 members.",
-    label: "Object2 label here",
+    label: "variant1 label here",
     pageBreak: true,
     variants: [
         { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
@@ -63,7 +63,7 @@ let complex = {
 
 let complex2 = { type: 'array' as any, entryType: complex, pageBreak: true } as const satisfies IFormType;
 
-let form1Type = {
+let objectWithTEmplateAndPopup = {
     name: 'form1',
     version: '1',
     templates: { Telephone: telephone },
@@ -71,11 +71,52 @@ let form1Type = {
         type: 'object',
         membersTypes: [
             { key: 'primary', type: 'Telephone' },
-            { key: 'other', ...obj1, view: { type: "wizard", popup: true } }
+            { key: 'other', ...obj1, view: { type: "tabs", popup: true } }
         ]
     }
 } as const satisfies IForm;
 
+let arrayWithPopup = {
+    type: 'array',
+    view: { type: 'popup' },
+    entryType: obj1
+} as const satisfies IFormType;
+
+let selectionList = {
+    multiple: false,
+    entries: [
+        { label: "<empty>", value: "" },
+        { value: "AA" },
+        { value: "BB" },
+        { value: "CC" }
+    ]
+} as const satisfies ISelectionList<string>;
+
+let stringWithSelectionList = {
+    type: 'string',
+    help: "This is an object wit str2, num2, date2 and bool2 members.",
+    label: "stringWithSelectionList label here",
+    view: { type: 'select', selectionList },
+} as const satisfies IFormType;
+
+
+let form1Type = {
+    name: 'form1',
+    version: '1',
+    templates: { Telephone: telephone },
+    dataType: variant1
+} as const satisfies IForm;
+/*
+<div class="form-floating">
+  <select class="form-select" id="floatingSelect" aria-label="Floating label select example">
+    <option selected>Open this select menu</option>
+    <option value="1">One</option>
+    <option value="2">Two</option>
+    <option value="3">Three</option>
+  </select>
+  <label for="floatingSelect">Works with selects</label>
+</div>
+*/
 // // let n: formulairebleu.InferDataType<{ type: 'number' }> = 5
 // // let b: formulairebleu.InferDataType<{ type: 'boolean' }> = false
 // // let s: formulairebleu.InferDataType<{ type: 'string' }> = "abc"
@@ -112,6 +153,7 @@ function randomize<T extends IForm>(form: T): InferFormType<T> {
             case 'void': return undefined;
             default: {
                 //ignore
+                return null
             }
         }
     };
@@ -120,10 +162,10 @@ function randomize<T extends IForm>(form: T): InferFormType<T> {
 
 let formValue = randomize(form1Type);
 let engine = new BootstrapEngine();
-formValue = undefined;
+// formValue = undefined;
 
 export default function App() {
-    let value = new Value(formValue);
+    let value = new Value("appValue", formValue);
     value.setValue(formValue);
     let onValueChanged = (v: any) => {
         console.log("v", v);
@@ -133,41 +175,39 @@ export default function App() {
 
     return (<div>
         {formView1}
-        <pre>{computed({ value }, p => JSON.stringify(p.value, undefined, '   '))}</pre>
+        {/* <pre>{computed("app.pre", { value }, p => JSON.stringify(p.value, undefined, '   '))}</pre> */}
     </div>);
 }
 
-function testTinyJSX() {
-    let checked = new Value(false)
-    let intValue1 = new Value(5)
-    let tick = () => {
-        intValue1.setValue(intValue1.getValue() + 1);
-        setTimeout(tick);
-    }
-    tick();
-    return <>
-        <input type="checkbox" onchange={() => {
-            checked.setValue(!checked.getValue())
-        }} />
-        <Show when={computed({ checked, intValue1 }, (props) => props.checked && (props.intValue1 & 1))} fallback={<p>aa</p>}>
-            <h1>hi {intValue1}</h1>
-        </Show>
-        <p>hi</p>
-        <For each={["One", "Two", "Three", "Four", "Five"]}>
-            {(e, i) => <p>{e}: {i} {intValue1}</p>}
-        </For>
-        <Switch when={computed({ intValue1 }, (v) => (v.intValue1 / 100) & 7)}>
-            <Match value={1}>Un</Match>
-            <Match value={2}><><p>this is Deux</p><p>This is Deux {intValue1}</p></></Match>
-            <Match value={3}>Trois</Match>
-            <Match value={4}>Quatre</Match>
-            <Match value={5}>Cinq</Match>
-            <Match fallback>Ot<b>er</b></Match>
-        </Switch>
-    </>
-}
-
-
+// function testTinyJSX() {
+//     let checked = new Value("testTinyJSX", false)
+//     let intValue1 = new Value("intValue1", 5)
+//     let tick = () => {
+//         intValue1.setValue(intValue1.getValue() + 1);
+//         setTimeout(tick);
+//     }
+//     tick();
+//     return <>
+//         <input type="checkbox" onchange={() => {
+//             checked.setValue(!checked.getValue())
+//         }} />
+//         <Show when={computed("", { checked, intValue1 }, (props) => props.checked && (props.intValue1 & 1))} fallback={<p>aa</p>}>
+//             <h1>hi {intValue1}</h1>
+//         </Show>
+//         <p>hi</p>
+//         <For each={["One", "Two", "Three", "Four", "Five"]}>
+//             {(e, i) => <p>{e}: {i} {intValue1}</p>}
+//         </For>
+//         <Switch when={computed("", { intValue1 }, (v) => (v.intValue1 / 100) & 7)}>
+//             <Match value={1}>Un</Match>
+//             <Match value={2}><><p>this is Deux</p><p>This is Deux {intValue1}</p></></Match>
+//             <Match value={3}>Trois</Match>
+//             <Match value={4}>Quatre</Match>
+//             <Match value={5}>Cinq</Match>
+//             <Match fallback>Ot<b>er</b></Match>
+//         </Switch>
+//     </>
+// }
 
 // // import { Route, HashRouter } from "@solidjs/router";
 // // import Home from "./pages/Home";
@@ -259,47 +299,7 @@ function testTinyJSX() {
 // { key: 'tel29', type: 'telephone' as any, pageBreak: true },
 // { key: 'tel30', type: 'telephone' as any, pageBreak: true },
 // { key: 'tel31', type: 'telephone' as any, pageBreak: true },
-// {
-//     key: 'o1',
-//     type: 'object',
-//     help: "This is an object wit str1, num1, date1 and bool1 members.",
-//     label: "Object1 label here",
-//     pageBreak: true,
-//     membersTypes: [
-//         { key: 'str1', type: 'string', label: 'A simple string', help: 'Here you can enter an unconstrained string with default view.' },
-//         { key: 'num1', type: 'number', label: 'A simple number', help: 'Here you can enter an unconstrained number with default view.' },
-//         { key: 'bool1', type: 'boolean', label: 'A simple boolean', help: 'Here you can enter an unconstrained boolean with default view.' },
-//         { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
-//     ]
-// },
-// {
-//     key: 'o2',
-//     type: 'object',
-//     help: "This is an object wit str2, num2, date2 and bool2 members.",
-//     label: "Object2 label here",
-//     pageBreak: true,
-//     membersTypes: [
-//         { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
-//         { key: 'num1', type: 'number', label: 'A simple number', defaultValue: 123, help: 'Here you can enter an unconstrained number with default view.' },
-//         { key: 'bool1', type: 'boolean', label: 'A simple boolean', defaultValue: false, help: 'Here you can enter an unconstrained boolean with default view.' },
-//         { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
-//     ]
-// },
-// {
-//     key: 'o3',
-//     type: 'array',
-//     help: "This is an object wit str2, num2, date2 and bool2 members.",
-//     label: "Object2 label here",
-//     entryType: {
-//         type: 'object',
-//         membersTypes: [
-//             { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
-//             { key: 'num1', type: 'number', label: 'A simple number', defaultValue: 123, help: 'Here you can enter an unconstrained number with default view.' },
-//             { key: 'bool1', type: 'boolean', label: 'A simple boolean', defaultValue: false, help: 'Here you can enter an unconstrained boolean with default view.' },
-//             { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
-//         ]
-//     }
-// },
+
 //  ]
 // }
 
@@ -359,33 +359,6 @@ function testTinyJSX() {
 //         { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
 //     ]
 // },
-// {
-//     key: 'o2',
-//     type: 'object',
-//     help: "This is an object wit str2, num2, date2 and bool2 members.",
-//     label: "Object2 label here",
-//     pageBreak: true,
-//     membersTypes: [
-//         { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
-//         { key: 'num1', type: 'number', label: 'A simple number', defaultValue: 123, help: 'Here you can enter an unconstrained number with default view.' },
-//         { key: 'bool1', type: 'boolean', label: 'A simple boolean', defaultValue: false, help: 'Here you can enter an unconstrained boolean with default view.' },
-//         { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
-//     ]
-// },
-// {
-//     key: 'o3',
-//     type: 'array',
-//     help: "This is an object wit str2, num2, date2 and bool2 members.",
-//     label: "Object2 label here",
-//     entryType: {
-//         type: 'object',
-//         membersTypes: [
-//             { key: 'str1', type: 'string', label: 'A simple string', defaultValue: "A", help: 'Here you can enter an unconstrained string with default view.' },
-//             { key: 'num1', type: 'number', label: 'A simple number', defaultValue: 123, help: 'Here you can enter an unconstrained number with default view.' },
-//             { key: 'bool1', type: 'boolean', label: 'A simple boolean', defaultValue: false, help: 'Here you can enter an unconstrained boolean with default view.' },
-//             { key: 'date1', type: 'date', label: 'A simple date', help: 'Here you can enter an unconstrained boolean with default view.' },
-//         ]
-//     }
-// },
+
 //  ]
 // }

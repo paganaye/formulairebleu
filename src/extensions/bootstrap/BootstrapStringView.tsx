@@ -49,7 +49,7 @@ const applyMask = (value: string, mask: string, pos: number): { newValue: string
 
 export function BootstrapStringView(props: StringInputProps) {
   let id = getUniqueId(`txt_${props.label}`);
-  const isFocused = new Value(false);
+  const isFocused = new Value("stringViewIsFocused", false);
   let mask: string | undefined = (props.box.type.view as any)?.mask;
 
   return (
@@ -57,11 +57,11 @@ export function BootstrapStringView(props: StringInputProps) {
       {props.engine.InputTop(props)}
       <div class="form-floating">
         <input
-          type={computed({ isFocused }, (p) => (p.isFocused ? "text" : "string"))}
+          type={computed("BootstrapStringView.type", { isFocused }, (p) => (p.isFocused ? "text" : "string"))}
           id={id}
           class="form-control"
           value={isFocused.getValue() ? (props.box.getValue() || "") : props.box.getValue()}
-          readOnly={computed({ isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
+          readOnly={computed("BootstrapStringView.readonly", { isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
           placeholder={""}
           required={props.box.type.mandatory}
           onFocus={(e) => {

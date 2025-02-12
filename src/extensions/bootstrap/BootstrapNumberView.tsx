@@ -1,4 +1,4 @@
-import { JsxComponent, Show, Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
+import { JSXComponent, Show, Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
@@ -20,7 +20,7 @@ Styles.add('input.number-input[type="string"]', {
 
 export function BootstrapNumberView(props: NumberInputProps) {
   let id = getUniqueId(`num_${props.label}`);
-  const isFocused = new Value(false);
+  const isFocused = new Value("bootstrapNumberIsFocused", false);
   const suffix = (props.box.type.view as any)?.suffix;
   function formatNumber() {
     let value = props.box.getValue()
@@ -50,11 +50,11 @@ export function BootstrapNumberView(props: NumberInputProps) {
 
           <input
             x-test={isFocused}
-            type={computed({ isFocused }, (p) => p.isFocused ? "number" : "string")}
+            type={computed("BootstrapNumber.type", { isFocused }, (p) => p.isFocused ? "number" : "string")}
             id={id}
             class="form-control number-input"
             value={formatNumber()}
-            readOnly={computed({ isFocused }, (p) => (props.engine.isReadonly || !isFocused.getValue()))}
+            readOnly={computed("BootstrapNumber.readonly", { isFocused }, (p) => (props.engine.isReadonly || !isFocused.getValue()))}
             placeholder={"" /* bootstrap won't show it when form-floating is set.  */}
             onFocus={(e) => {
               if (!isFocused.getValue()) {

@@ -1,12 +1,24 @@
-import { JsxComponent, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
+import { JSXComponent, JSXSource, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
 import { IForm, IFormType, IKeyedMemberType, INumberType, ITemplatedType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
 import { ArrayBox, Box, IPageNo, ObjectBox, VariantBox } from "./Box";
 import { Value } from './tiny-jsx';
 import { ArrayValidations, BooleanValidations, ConstValidations, DatetimeValidations, DateValidations, ErrorString, NumberValidations, ObjectValidations, StringValidations, TimeValidations, ValidationRules, VariantValidations, VoidValidations } from "./Validation";
+import { Styles } from "./Styles";
 
 export type OnValueChanged = { pagesChanged?: boolean };
+
+
+Styles.add('.form-span-label', {
+    color: '#888',
+    marginLeft: '0.5em',
+    minWidth: '15%'
+})
+
+Styles.add('.form-span-content', {
+    minWidth: '25%'
+});
 
 export interface IFormProps {
     form: IForm,
@@ -47,9 +59,9 @@ type TitleProps = {
 export abstract class FormEngine {
     templates: Record<string, IFormType>;
     isReadonly: boolean = false;
-    readonly pageNo = new Value(1);
-    readonly pageCount = new Value(1);
-    readonly rePaginationCount = new Value(1);
+    readonly pageNo = new Value("formPageNo", 1);
+    readonly pageCount = new Value("formPageCount", 1);
+    readonly rePaginationCount = new Value("formRepaginationCount", 1);
 
     constructor(templates?: Record<string, IFormType>) {
         this.templates = templates ?? {};
@@ -130,7 +142,7 @@ export abstract class FormEngine {
     }
 
     FormBody(props: FormBodyProps) {
-        const rootBox = new Value(undefined);
+        const rootBox = new Value("formBodyRootBox", undefined);
 
         // createEffect(() => {
         //     rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
@@ -183,7 +195,7 @@ export abstract class FormEngine {
     InputRenderer(props: InputRenderProps) {
         let inputComponent = this.getRenderer(props.box.type);
 
-        const isVisible = computed({ page: this.pageNo, box: props.box.pageNo }, (p) => {
+        const isVisible = computed("inputRenderIsVisible", { page: this.pageNo, box: props.box.pageNo }, (p) => {
             let box = p.box;
             if (!box) return true;
             let page = p.page;
@@ -200,7 +212,7 @@ export abstract class FormEngine {
 
     }
 
-    abstract getRenderer(type: IFormType): JsxComponent<InputRenderProps>;
+    abstract getRenderer(type: IFormType): JSXComponent<InputRenderProps>;
 
     InputTop(props: InputTopProps) {
         return <>
@@ -514,39 +526,42 @@ export abstract class FormEngine {
     }
 
     Span(box: Box): HTMLSpanElement {
-        let spanText = new Value("...");
+        let content = new Value<JSXSource[]>("BoxSpan", ["..."]);
 
         box.addChildChangedObserver(() => {
-            spanText.setValue(toString(1, box));
+            content.setValue(toSpan(1, box));
         }, true)
 
-        function toString(level: number, box: Box): string {
-            if (box == null) return ""
+        function toSpan(level: number, box: Box): JSXSource[] {
+            if (box == null) return [""]
             switch (box.type.type) {
                 case "object": {
                     let members = (box as ObjectBox).getMembers();
-                    let result = members.map(b => toString(level + 1, b)).filter(s => s.length).join(", ");
-                    return level == 1 ? result : '{ ' + result + ' }'
+                    let result = members.flatMap(b => toSpan(level + 1, b));
+                    return level == 1 ? result : ['{ ', ...result, ' }']
                 }
 
                 case "array": {
                     let entries = (box as ArrayBox).$entryBoxes.getValue();
-                    let result = entries.filter(m => m != null).map(b => toString(level + 1, b)).join(", ");
-                    return level == 1 ? result : '[ ' + result + ' ]'
+                    let result = entries.filter(m => m != null).flatMap(b => toSpan(level + 1, b));
+                    return level == 1 ? result : ['[ ', ...result, ' ]']
                 }
 
-                case 'variant':
+                case 'variant': {
                     let vbox = box as VariantBox;
-                    return String(vbox.key.getValue()) + ": " + toString(level + 1, vbox.getInnerVariant().getValue());
+                    let value = toSpan(level + 1, vbox.getInnerVariant().getValue());
+                    return [<small class="form-span-label">{String(vbox.key.getValue()) + ": "}</small>, <span class="form-span-content">{value}</span>];
+                }
 
-                default:
+                default: {
                     let value = box.getValue();
                     value = String(value);
-                    if (value.length == 0) return "";
+                    if (value.length == 0) return [""];
                     if (value.length > 40) value = value.slice(0, 37) + "..."
-                    return (box.name) + ": " + value;
+                    return [<small class="form-span-label">{(box.name) + ": "}</small>, <span class="form-span-content">{value}</span>];
+                }
             }
         }
-        return <span>{spanText}</span>;
+        return <>{content}</>;
     }
 }

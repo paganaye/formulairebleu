@@ -1,6 +1,5 @@
 import { formulaireBleuJSXFragment, formulaireBleuJSX, computed } from "../../core/tiny-jsx";
-import { Box, VariantBox } from "../../core/Box";
-import { Value } from '../../core/tiny-jsx';
+import { VariantBox } from "../../core/Box";
 import { SingleSelectionVue } from './BootstrapSingleSelectionView';
 import { BootstrapEngine } from './BootstrapEngine';
 
@@ -20,16 +19,16 @@ export function BootstrapVariantView(props: VariantInputProps) {
   //   //let view = props.box.type.view ?? { type: 'textbox' };
   //   //mask = view.type == 'masked-textbox' ? view.mask : undefined;
   // })
-  const variantComp = computed({ key: props.box.key, box: props.box.variantBox }, p => {
-    if (p.key && p.box) {
+  const variantComp = computed("BootstrapVariantView.comp", { box: props.box.variantBox }, p => {
+    if (p.box) {
       return props.engine.InputRenderer({
         engine: props.engine,
         label: props.label,
         level: props.level,
         box: p.box
       });
-    } else return undefined;
-    return undefined;
+    }
+    return <span>...</span>
   })
 
   function onViewChanged(value: string) {

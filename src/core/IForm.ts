@@ -32,7 +32,7 @@ type OneOf<T> = T[keyof T];
 
 export type GetFormViews<T extends PrimitiveType = any> = FormPrimitives[T]['views']
 export type GetFormType<T extends PrimitiveType = any> = FormPrimitives[T]['type']
-export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType  | ITemplatedType;
+export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType | ITemplatedType;
 
 interface TypeBase {
   label?: string;
@@ -42,14 +42,14 @@ interface TypeBase {
   visibility?: IQuery;
   templateString?: string;
   pageBreak?: boolean;
-  selectionList?: ISelectionList
 }
 
 export type TemplateName = `${Uppercase<string>}${string}`;
 
 export interface ITemplatedType {
   type: TemplateName;
-  view?: OneOf<IArrayViews | IBooleanViews | IConstViews | IDateTimeViews | IDateTimeViews | INumberViews | IObjectViews | IStringViews | IDateTimeViews | IVariantViews | IVoidViews>
+  view?: undefined;
+  label?: undefined;
 }
 
 export interface IArrayType extends TypeBase {
@@ -72,6 +72,7 @@ export interface IBooleanType extends TypeBase {
 }
 
 export interface IBooleanViews {
+  selectionList: { type: 'select', selectionList: ISelectionList<boolean> }
 }
 
 export interface IConstType extends TypeBase {
@@ -114,6 +115,7 @@ export interface INumberType extends TypeBase {
 }
 
 export interface INumberViews {
+  selectionList: { type: 'select', selectionList: ISelectionList<number> }
 }
 
 export interface IObjectType extends TypeBase {
@@ -135,6 +137,8 @@ export interface IStringType extends TypeBase {
 }
 
 export interface IStringViews {
+  selectionList: { type: 'select', selectionList: ISelectionList<string> }
+  default: { type: 'string' }
 }
 
 export interface ITimeType extends TypeBase {
@@ -197,14 +201,14 @@ export type IKeyedMemberType<TKey extends string = string, TType extends IFormTy
   key: TKey
 } & TType;
 
-export type ISelectionEntry = {
+export type ISelectionEntry<T extends JSONValue = string> = {
   value: JSONValue;
   label?: string;
 }
 
-export type ISelectionList = {
+export type ISelectionList<T extends JSONValue> = {
   multiple?: boolean;
-  entries: ISelectionEntry[] | IDynamicSelection;
+  entries: ISelectionEntry<T>[] | IDynamicSelection;
 };
 
 export interface IDynamicSelection {

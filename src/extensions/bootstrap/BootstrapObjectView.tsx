@@ -1,4 +1,4 @@
-import { JsxComponent, For, formulaireBleuJSX, formulaireBleuJSXFragment, computed, Value, Show } from "../../core/tiny-jsx";
+import { JSXComponent, For, formulaireBleuJSX, formulaireBleuJSXFragment, computed, Value, Show } from "../../core/tiny-jsx";
 import { ConstView } from './BootstrapConstView';
 import { Box, ObjectBox } from "../../core/Box";
 import { BootstrapEngine } from './BootstrapEngine';
@@ -14,7 +14,7 @@ export type ObjectInputProps = {
 
 export function BootstrapObjectView(props: ObjectInputProps) {
   const renderFunctions = {
-    popup: renderAsPopup,
+    popup: renderAsPopupButton,
     tabs: renderAsTabs,
     wizard: renderAsWizard,
     default: renderAsFlow,
@@ -33,7 +33,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
   }
 
   function renderAsTabs() {
-    const activeTab = new Value(0);
+    const activeTab = new Value("tabActiveTab", 0);
     return <>
       <div class="tabs-container">
         <ul class="nav nav-tabs">
@@ -41,7 +41,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
             {(box, index) => (
               <li class="nav-item">
                 <button
-                  class={computed({ activeTab }, p => `nav-link ${index === p.activeTab ? 'active' : ''}`)}
+                  class={computed("Tabs.Button", { activeTab }, p => `nav-link ${index === p.activeTab ? 'active' : ''}`)}
                   onClick={() => activeTab.setValue(index)}
                 >
                   {() => box.type.label || box.type.key}
@@ -53,7 +53,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
         <div class="tab-content mt-3">
           <For each={members}>
             {(entry, index) => (
-              <div class={computed({ activeTab }, p => `tab-pane fade ${index === p.activeTab ? 'show active' : ''}`)}>
+              <div class={computed("Tabs.Panel", { activeTab }, p => `tab-pane fade ${index === p.activeTab ? 'show active' : ''}`)}>
                 {renderEntry(entry, index)}
               </div>
             )}
@@ -69,14 +69,16 @@ export function BootstrapObjectView(props: ObjectInputProps) {
   }
 
 
-  function renderAsWizard(args: { onClosed?: () => void }) {
-    const activeStep = new Value(0);
+  function renderAsWizard(args: { onClosed?: () => void } = {}) {
+    const activeStep = new Value("wizardActiveStep", 0);
 
     function nextStep(index) {
       if (validateStep(index)) {
         if (index >= members.length - 1) {
-          activeStep.setValue(0);
-          args.onClosed?.();
+          if (args.onClosed) {
+            activeStep.setValue(0);
+            args.onClosed();
+          }
         }
         else activeStep.setValue(index + 1);
       }
@@ -98,7 +100,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
               <button
                 type="button"
                 data-bs-target="#wizardCarousel"
-                class={computed({ activeStep }, p => { index <= p.activeStep ? 'active' : '' })}
+                class={computed("Wizard.carouselButtonClass", { activeStep }, p => { index <= p.activeStep ? 'active' : '' })}
                 disabled
               ></button>
             )}
@@ -109,7 +111,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
         <div class="carousel-inner">
           <For each={members}>
             {(entry, index) => (
-              <div class={computed({ activeStep }, p => `carousel-item ${index === p.activeStep ? 'active' : ''}`)}>
+              <div class={computed("Wizard.carouselContentClass", { activeStep }, p => `carousel-item ${index === p.activeStep ? 'active' : ''}`)}>
                 {renderEntry(entry, index)}
                 <div class="d-flex justify-content-between mt-3">
                   <button class="btn btn-secondary" disabled={index === 0} onClick={() => prevStep(index)}>Précédent</button>
@@ -124,64 +126,23 @@ export function BootstrapObjectView(props: ObjectInputProps) {
     </>
   }
 
-
-
-  function renderAsPopup(inPopupRenderFunction?: Function, showButtons: boolean = true) {
-    if (!inPopupRenderFunction || inPopupRenderFunction == renderAsPopup) {
-      inPopupRenderFunction = renderAsFlow
-    }
-    const isOpen = new Value(false);
-
-    function openModal() {
-      isOpen.setValue(true);
-    }
-
-    function closeModal() {
-      isOpen.setValue(false);
-    }
-
-    function validateAndClose() {
-      if (validatePopup()) {
-        closeModal();
-      }
-    }
-
-    function validatePopup(): boolean {
-      return true; // Ajouter la validation ici si nécessaire
-    }
+  function renderAsPopupButton() {
+    let popupVisible = new Value("popupButtonPopupVisible", false);
+    let { PopupButton, Span } = props.engine;
 
     return <>
-
-      <Show when={isOpen} fallback={
-        <div class="row">
-          <div class="col-auto">
-            <button class="btn btn-primary" onClick={openModal}>Ouvrir</button>
-          </div>
-          <div class="col">{props.engine.Span(props.box)}</div>
-        </div>}>
-        <div class={computed({ isOpen }, p => `modal fade ${p.isOpen ? 'show d-block' : ''}`)} tabindex="-1">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Fenêtre modale</h5>
-                <button type="button" class="btn-close" onClick={closeModal}></button>
-              </div>
-              <div class="modal-body">
-                {inPopupRenderFunction({ onClosed: closeModal })}
-              </div>
-              <Show when={showButtons}>
-                <div class="modal-footer">
-                  <button class="btn btn-secondary" onClick={closeModal}>Fermer</button>
-                  <button class="btn btn-primary" onClick={validateAndClose}>Valider</button>
-                </div>
-              </Show>
-            </div>
-          </div>
+      <div class="row">
+        <div class="col-auto">
+          <PopupButton visible={popupVisible}>
+            {renderFunction}
+          </PopupButton>
         </div>
-      </Show >
-      {computed({ isOpen }, p => p.isOpen ? <div class="modal-backdrop fade show"></div> : null)}
+        <div class="col">{Span(props.box)}</div>
+      </div >
     </>
   }
+
+
 
 
   function inputTop() {
@@ -221,10 +182,9 @@ export function BootstrapObjectView(props: ObjectInputProps) {
   }
 
   if (typeof viewAsType === 'object' && 'popup' in viewAsType && viewAsType.popup) {
-    return renderAsPopup(renderFunction, false)
+    return renderAsPopupButton
   } else {
     return renderFunction;
-
   }
 
 };

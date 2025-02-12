@@ -1,6 +1,6 @@
 import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, Show, Value } from "../../core/tiny-jsx";
 import { Box, ArrayBox, ObjectBox } from "../../core/Box";
-import { IArrayType, ISelectionList } from "../../core/IForm";
+import { IArrayType, IObjectType, ISelectionList } from "../../core/IForm";
 import { BootstrapEngine } from './BootstrapEngine';
 import { For } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
@@ -11,7 +11,6 @@ export type BootstrapArrayProps = {
     label: string;
     level: number;
     engine: BootstrapEngine;
-    selectionList?: ISelectionList;
     isSelected?: (item: any) => boolean;
     onSelectionChanged?: (item: any, newValue: boolean) => void;
 };
@@ -41,10 +40,11 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
         carousel: renderAsCarousel,
         list: renderAsList,
         flow: renderAsFlow,
+        popup: renderAsPopup
     };
     let renderFunction = renderFunctions[viewAsType?.type] || renderAsFlow;
     let entryBoxes = props.box.$entryBoxes;
-    let currentPageBoxes = computed({ $entryBoxes: props.box.$entryBoxes, pageNo: props.engine.pageNo, rePaginationCount: props.engine.rePaginationCount }, (p) => {
+    let currentPageBoxes = computed("BootstrapArrayView.currentPageBoxes", { $entryBoxes: props.box.$entryBoxes, pageNo: props.engine.pageNo, rePaginationCount: props.engine.rePaginationCount }, (p) => {
         return props.box.$entryBoxes.getValue().filter(p => props.engine.isBoxVisible(p))
     })
 
@@ -106,7 +106,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
     }
 
     let columns: IColumn[] = [];
-    let entryType = (props.box.type as IArrayType).entryType;
+    let entryType = (props.box.type as IArrayType).entryType as IObjectType;
     if (entryType && entryType.type == 'object')
         columns = entryType.membersTypes.map((t: any, i: any) => ({ key: t.key ?? "", label: t.key, memberIndex: i }));
     else columns = [
@@ -165,7 +165,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                 <thead>
 
                     <Show when={columns[0]?.key != "#value"}>
-                        {computed({ sortOrder: arrayUtils.sortOrder }, (p) => (<tr>
+                        {computed("tableLabels", { sortOrder: arrayUtils.sortOrders }, (p) => (<tr>
                             <For each={columns}>
                                 {(entry, index) => (
                                     <th class="table-title" onMouseDown={(e) => arrayUtils.toggleSort(entry.key, index, e)}>
@@ -193,7 +193,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     </tr>
                 </thead>
                 <tbody>
-                    {computed({ pageNo: props.engine.pageNo }, (p) => {
+                    {computed("BootstrapArrayVIew.pageContent", { pageNo: props.engine.pageNo }, (p) => {
 
                         return <For each={arrayUtils.sortedValues}>
                             {(entry, index) => (
@@ -208,6 +208,34 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
             {inputBottom()}
         </>;
     }
+
+    function renderAsPopup() {
+        return (
+            <>
+                {inputTop}
+                <div class="list-group">
+                    <For each={currentPageBoxes}>
+                        {(entry, index) => {
+                            let isOpen = new Value("popupIsOpen", false);
+                            return (
+                                <div class="list-group-item list-group-item-action d-flex align-items-center"
+                                    onClick={() => isOpen.setValue(true)}>
+                                    <span>#{String(index + 1)} {props.engine.Span(entry)}</span>
+                                    <props.engine.PopupButton visible={isOpen} button={<span></span>}>
+                                        {renderEntry?.(entry, index)}
+                                    </props.engine.PopupButton>
+                                </div>
+                            );
+                        }}
+                    </For >
+                </div >
+                {addButton()}
+                {props.engine.InputBottom(props)}
+            </>
+        );
+    }
+
+
 
     function renderAsFlow() {
         return (
@@ -228,7 +256,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
 
 
     function renderAsTabs() {
-        const activeTab = new Value(0);
+        const activeTab = new Value("tabsActiveTab", 0);
         return <>
             <div class="tabs-container">
                 <ul class="nav nav-tabs">
@@ -236,7 +264,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                         {(entry, index) => (
                             <li class="nav-item">
                                 <button
-                                    class={computed({ activeTab }, p => `nav-link ${index === p.activeTab ? 'active' : ''}`)}
+                                    class={computed("tabsHeader#" + index, { activeTab }, p => `nav-link ${index === p.activeTab ? 'active' : ''}`)}
                                     onClick={() => activeTab.setValue(index)}
                                 >
                                     {index + 1}
@@ -248,7 +276,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                 <div class="tab-content mt-3">
                     <For each={currentPageBoxes}>
                         {(entry, index) => (
-                            <div class={computed({ activeTab }, p => `tab-pane fade ${index === p.activeTab ? 'show active' : ''}`)}>
+                            <div class={computed("tabsPanel#" + index, { activeTab }, p => `tab-pane fade ${index === p.activeTab ? 'show active' : ''}`)}>
                                 {renderEntry(entry, index)}
                             </div>
                         )}
@@ -262,19 +290,16 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
 
 
     function renderAsCarousel() {
-        const activeIndex = new Value(0);
+        const activeIndex = new Value("carouselActiveIndex", 0);
         const length = entryBoxes.getValue().length;
         const view: { autoplay?: boolean, interval?: number } = props.box.type.view as any || {};
         const autoplay = view.autoplay !== undefined ? view.autoplay : true;
         const intervalTime = view.interval ?? 3000;
 
         if (autoplay && length > 0) {
-            computed({}, () => {
-                const intervalId = setInterval(() => {
-                    activeIndex.setValue((activeIndex.getValue() + 1) % length);
-                }, intervalTime);
-                // onCleanup(() => clearInterval(intervalId));
-            });
+            const intervalId = setInterval(() => {
+                activeIndex.setValue((activeIndex.getValue() + 1) % length);
+            }, intervalTime);
         }
 
         return <>
@@ -284,8 +309,8 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     <For each={entryBoxes}>
                         {(entry, index) => (
                             <button type="button"
-                                class={computed({ activeIndex }, p => index === p.activeIndex ? 'active' : '')}
-                                aria-current={computed({ activeIndex }, p => index === p.activeIndex ? 'true' : 'false')}
+                                class={computed("carouselClass", { activeIndex }, p => index === p.activeIndex ? 'active' : '')}
+                                aria-current={computed("carouselAriaCurrent", { activeIndex }, p => index === p.activeIndex ? 'true' : 'false')}
                                 aria-label={`Slide ${index + 1}`}
                                 onClick={() => activeIndex.setValue(index)}
                             ></button>
@@ -295,7 +320,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                 <div class="carousel-inner">
                     <For each={entryBoxes}>
                         {(entry, index) => (
-                            <div class={computed({ activeIndex }, p => `carousel-item ${index === p.activeIndex ? 'active' : ''}`)}>
+                            <div class={computed("carouselInner", { activeIndex }, p => `carousel-item ${index === p.activeIndex ? 'active' : ''}`)}>
                                 {renderEntry(entry, index)}
                             </div>
                         )}
@@ -318,60 +343,61 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
     }
 
     function renderAsList() {
-        const selectionType = (props.selectionList && props.selectionList.multiple) ? "checkbox" : "radio";
-        const id = `list_${props.label.replace(/\s+/g, '_')}_${Math.random().toString(36).substr(2, 9)}`;
+        //const selectionType = (props.selectionList && props.selectionList.multiple) ? "checkbox" : "radio";
+        // const id = `list_${props.label.replace(/\s+/g, '_')}_${Math.random().toString(36).substr(2, 9)}`;
 
-        function handleListItemClick(e: MouseEvent) {
-            const target = e.currentTarget as HTMLElement;
-            const input = target.querySelector("input");
-            if (!input) return;
-            if (selectionType === "checkbox") {
-                input.checked = !input.checked;
-                props.onSelectionChanged?.(input.value, input.checked);
-            } else {
-                input.checked = true;
-                props.onSelectionChanged?.(input.value, true);
-            }
-        }
+        // function handleListItemClick(e: MouseEvent) {
+        //     const target = e.currentTarget as HTMLElement;
+        //     const input = target.querySelector("input");
+        //     if (!input) return;
+        //     if (selectionType === "checkbox") {
+        //         input.checked = !input.checked;
+        //         props.onSelectionChanged?.(input.value, input.checked);
+        //     } else {
+        //         input.checked = true;
+        //         props.onSelectionChanged?.(input.value, true);
+        //     }
+        // }
 
-        function handleInputChange(e: Event, entry: Box) {
-            const input = e.currentTarget as HTMLInputElement;
-            props.onSelectionChanged?.(entry, input.checked);
-        }
+        // function handleInputChange(e: Event, entry: Box) {
+        //     const input = e.currentTarget as HTMLInputElement;
+        //     props.onSelectionChanged?.(entry, input.checked);
+        // }
 
-        function getTitle(entry: Box): string {
-            return entry.name || String(entry.getValue());
-        }
+        // function getTitle(entry: Box): string {
+        //     return entry.name || String(entry.getValue());
+        // }
 
-        return <>
-            {inputTop()}
-            <ul class="list-group">
-                <For each={currentPageBoxes}>
-                    {(entry) => {
-                        const title = getTitle(entry);
-                        return (
-                            <li class="list-group-item" onClick={handleListItemClick} style="cursor: pointer;">
-                                <input
-                                    class="form-check-input me-2"
-                                    type={selectionType}
-                                    name={selectionType === "radio" ? id : undefined}
-                                    value={title}
-                                    checked={props.isSelected ? props.isSelected(entry) : false}
-                                    oninput={(e) => handleInputChange(e, entry)}
-                                />
-                                <label class="form-check-label">{title}</label>
-                            </li>
-                        );
-                    }}
-                </For>
-            </ul>
-            {inputBottom()}
-            {addButton()}
-        </>;
+        // return <>
+        //     {inputTop()}
+        //     <ul class="list-group">
+        //         <For each={currentPageBoxes}>
+        //             {(entry) => {
+        //                 const title = getTitle(entry);
+        //                 return (
+        //                     <li class="list-group-item" onClick={handleListItemClick} style="cursor: pointer;">
+        //                         <input
+        //                             class="form-check-input me-2"
+        //                             type={selectionType}
+        //                             name={selectionType === "radio" ? id : undefined}
+        //                             value={title}
+        //                             checked={props.isSelected ? props.isSelected(entry) : false}
+        //                             oninput={(e) => handleInputChange(e, entry)}
+        //                         />
+        //                         <label class="form-check-label">{title}</label>
+        //                     </li>
+        //                 );
+        //             }}
+        //         </For>
+        //     </ul>
+        //     {inputBottom()}
+        //     {addButton()}
+        // </>;
+        return <>todo</>
     }
 
     return <>
-        <pre>hi here we have: {computed({}, (p) => 0)}</pre>
+        <pre>hi here we have: {computed("BootstrapArrayView.Content", {}, (p) => 0)}</pre>
         {renderFunction}
     </>;
 

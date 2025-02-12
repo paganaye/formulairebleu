@@ -1,6 +1,6 @@
 import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, IValue, JSONObject, JSONValue, Value } from "./tiny-jsx";
 import { Box, ArrayBox, ObjectBox } from "./Box";
-import { IArrayType, IFormType, ISelectionList } from "./IForm";
+import { IArrayType, IFormType, IObjectType, ISelectionList } from "./IForm";
 import { FormEngine } from "./FormEngine";
 import { keepFocus } from "./Utils";
 
@@ -9,7 +9,6 @@ export type BaseArrayProps = {
   label: string;
   level: number;
   engine: FormEngine;
-  selectionList?: ISelectionList;
   isSelected?: (item: any) => boolean;
   onSelectionChanged?: (item: any, newValue: boolean) => void;
 };
@@ -26,8 +25,8 @@ export interface SortOrder {
 }
 
 export class ArrayUtils {
-  sortOrder = new Value<SortOrder[]>([]);
-  filters = new Value<string[]>([]);
+  sortOrders = new Value<SortOrder[]>("arraySortOrders", []);
+  filters = new Value<string[]>("arrayFilters", []);
   entryBoxes: IValue<Box<IFormType>[]>;
   columns: IColumn[] = undefined;
 
@@ -36,7 +35,7 @@ export class ArrayUtils {
 
     let entryType = (this.box.type as IArrayType).entryType;
     this.columns = (entryType && entryType.type == 'object')
-      ? entryType.membersTypes.map((t: any, i: any) => ({ key: t.key ?? "", label: t.key, memberIndex: i }))
+      ? (entryType as IObjectType).membersTypes.map((t: any, i: any) => ({ key: t.key ?? "", label: t.key, memberIndex: i }))
       : [{ key: "#value", label: "Value" }]
 
   }
@@ -65,7 +64,7 @@ export class ArrayUtils {
 
   toggleSort(key: string, fieldNo: number, event: MouseEvent) {
     keepFocus(event);
-    let prev = this.sortOrder.getValue();
+    let prev = this.sortOrders.getValue();
     const existing = prev.find((s) => s.column.key === key);
 
     let newList;
@@ -83,7 +82,7 @@ export class ArrayUtils {
         : [];
     }
     console.log(JSON.stringify(newList));
-    this.sortOrder.setValue(newList);
+    this.sortOrders.setValue(newList);
   }
 
   updateFilter(index: number, value: string) {
@@ -95,7 +94,7 @@ export class ArrayUtils {
   _filteredValues: IValue<any[]> = undefined;
 
   get filteredValues() {
-    return this._filteredValues ?? (this._filteredValues = computed({ entries: this.entryBoxes, filters: this.filters }, (p) => {
+    return this._filteredValues ?? (this._filteredValues = computed("arrayFilteredValues", { entries: this.entryBoxes, filters: this.filters }, (p) => {
       const data = [...p.entries];
       const currentFilters = p.filters;
 
@@ -118,7 +117,7 @@ export class ArrayUtils {
   _sortedValues: any = undefined;
 
   get sortedValues() {
-    return this._sortedValues ?? (this._sortedValues = computed({ filteredValues: this.filteredValues, sortOrder: this.sortOrder }, (p) => {
+    return this._sortedValues ?? (this._sortedValues = computed("arraySortedValues", { filteredValues: this.filteredValues, sortOrder: this.sortOrders }, (p) => {
       const data = p.filteredValues;
       const orderBy = p.sortOrder;
 
@@ -162,7 +161,7 @@ export class ArrayUtils {
 
   sortSuffix(key: string | undefined) {
     if (!key) return "";
-    let sortOrderValue = this.sortOrder.getValue();
+    let sortOrderValue = this.sortOrders.getValue();
     const index = sortOrderValue.findIndex(s => s.column.key === key);
     if (index >= 0) {
       return (sortOrderValue[index].direction === "asc" ? "▲" : "▼") + (index > 0 ? String(index + 1) : "");

@@ -1,3 +1,5 @@
+import { getUniqueId } from "./Utils";
+
 export type JSONPrimitive = number | string | null | boolean;
 export type JSONArray = JSONValue[];
 export type JSONObject = { [key: string]: JSONValue };
@@ -23,9 +25,13 @@ export function isIValue(v: any): v is IValue {
 export class Value<T = any> implements IValue<T> {
     #observers?: Set<Observer<T>>;
     #value: T;
-    constructor(value: T) {
+    readonly id: string;
+
+    constructor(namePrefix: string, value: T = undefined) {
         this.#value = value;
+        this.id = getUniqueId(namePrefix);
     }
+
     getValue(): T { return this.#value; }
     setValue(newValue: T): void {
         if (newValue === this.#value) return
@@ -59,8 +65,8 @@ function observe<T>(source: T | IValue<T>, update: (value: T) => void, init: boo
 }
 
 function createElements(source: JSXSource): Node[] {
-    if (source === undefined) return [document.createComment("undefined")];
-    if (source === null) return [document.createComment("null")];
+    if (source === undefined) return [document.createComment(getUniqueId("undefined-source"))];
+    if (source === null) return [document.createComment(getUniqueId("null-source"))];
     const type = typeof source;
     if (['string', 'number', 'boolean'].includes(type))
         return [document.createTextNode(source.toString())];
@@ -71,17 +77,15 @@ function createElements(source: JSXSource): Node[] {
                 const next = elts[elts.length - 1]?.nextSibling;
                 const newElts = createElements(val);
                 if (newElts.length == 0) {
-                    newElts.push(document.createComment("placeholder"));
+                    newElts.push(document.createComment(getUniqueId((source as Value).id + "-placeholder")));
                 }
                 const parent = elts[0]?.parentNode;
                 if (parent) {
                     elts.forEach(n => n.parentNode?.removeChild(n));
                     newElts.forEach(n => parent.insertBefore(n, next));
-                    elts = newElts;
-                } else {
-                    elts.length = 0;
-                    elts.push(...newElts);
                 }
+                elts.length = 0;
+                elts.push(...newElts);
             };
             source.addObserver(observer);
             return elts;
@@ -97,19 +101,23 @@ function createElements(source: JSXSource): Node[] {
     throw Error('Unexpected JSX child ' + source);
 }
 
-export type JsxComponent<TProps = Record<string, any>> = ((props: TProps, children?: JSXSource[]) => Node | Node[]);
+export type JSXComponent<TProps = Record<string, any>> = ((props: TProps, children?: JSXSource[]) => Node | Node[]);
 
 export function formulaireBleuJSX(
-    src: string | JsxComponent<any> | formulaireBleuJSXFragment,
+    src: string | JSXComponent<any> | formulaireBleuJSXFragment,
     attrs?: Record<string, JSXSource>,
     ...children: JSXSource[]
 ): Node | Node[] {
     switch (typeof src) {
         case 'string':
             const elt = document.createElement(src);
+            elt.id = getUniqueId(src);
             if (attrs) {
                 Object.keys(attrs).forEach(k => {
                     let v = attrs[k];
+                    if (k == 'ref' && v instanceof Value) {
+                        setTimeout(() => (v as Value).setValue(elt));
+                    }
                     if (k.startsWith("on") && typeof v === "function")
                         elt.addEventListener(k.slice(2).toLowerCase(), v);
                     else {
@@ -153,7 +161,7 @@ export function For<T>(
     const childZero = children[0];
     if (typeof childZero !== 'function')
         throw new Error("For expects its child to be a function");
-    const result = new Value<Node[]>([]);
+    const forContent = new Value<Node[]>("ForContent", []);
     const update = (eachArray: T[]) => {
         const nodes: Node[] = [];
         eachArray.forEach((item, index) => {
@@ -161,11 +169,11 @@ export function For<T>(
                 nodes.push(...createElements(childZero(item, index)))
             }
         });
-        if (nodes.length == 0) nodes.push(document.createComment('placeholder'));
-        result.setValue(nodes);
+        if (nodes.length == 0) nodes.push(document.createComment(getUniqueId('For-placeholder')));
+        forContent.setValue(nodes);
     };
     observe(props.each, update, true);
-    return result;
+    return forContent;
 }
 
 export function render(content: JSXSource, root: HTMLElement = document.body) {
@@ -173,11 +181,12 @@ export function render(content: JSXSource, root: HTMLElement = document.body) {
 }
 
 export function computed<T extends Record<string, any>, R>(
+    computationName: string,
     values: { [K in keyof T]: IValue<T[K]> },
     calculation: (props: T) => R
 ): IValue<R> {
     const args = {} as T,
-        result = new Value<R>(undefined!);
+        result = new Value<R>(computationName, undefined!);
     for (const key in values) {
         const v = values[key];
         args[key] = v.getValue();
@@ -191,27 +200,42 @@ export function computed<T extends Record<string, any>, R>(
     return result;
 }
 
-export function Show(props: { when: IValue<any> | any, fallback?: any }, children?: any[]) {
-    const result = new Value(undefined);
-    observe(props.when, v => result.setValue(v ? children : props.fallback), true);
-    return result;
+export function Show(props: { when: IValue<any> | any, fallback?: any }, children?: JSXSource[]) {
+    let when = props.when;
+    while (typeof when == 'function') when = when();
+    if (when instanceof Value) {
+        const showResult = new Value("show", undefined);
+        observe(when, v => showResult.setValue(v ? children : props.fallback), true);
+        return showResult;
+    } else {
+        return when ? children : props.fallback
+    }
+}
+
+interface MatchElement<T> {
+    props: {
+        value?: T;
+        fallback?: boolean;
+    };
+    children: any[];
 }
 
 export function Switch<T>(
     props: { when: IValue<T> | T },
-    children: any[]) {
-    const result = new Value<Node[]>([]);
+    children: MatchElement<T>[]) {
+    const switchContent = new Value<Node[]>("switchContent", []);
     const update = (value: T) => {
         const matchedChild = children.find(child =>
             child.props?.value !== undefined ? child.props.value === value : child.props?.fallback
         );
-        result.setValue(matchedChild ? createElements(matchedChild.children) : []);
+        switchContent.setValue(matchedChild ? createElements(matchedChild.children) : []);
     };
     observe(props.when, update, true);
-    return result;
+    return switchContent;
 }
 
 export function Match<T>(props: { value?: T; fallback?: boolean }, children: any[]) {
     return { props, children };
 }
+
 

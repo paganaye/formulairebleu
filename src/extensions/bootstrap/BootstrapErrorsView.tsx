@@ -1,4 +1,4 @@
-import { JsxComponent, formulaireBleuJSX, formulaireBleuJSXFragment, For, Show, Value } from "../../core/tiny-jsx";
+import { JSXComponent, formulaireBleuJSX, formulaireBleuJSXFragment, For, Show, Value } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 Styles.add(".error", {

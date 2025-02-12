@@ -16,11 +16,11 @@ export interface IJSONDate {
 
 export function BootstrapDateView(props: DateInputProps) {
   let id = getUniqueId(`date_${props.label}`);
-  const isFocused = new Value(false);
+  const isFocused = new Value("bootstrapDateIsFocused", false);
   const suffix = (props.box.type.view as any)?.suffix;
 
 
-  const inputType = computed({ isFocused }, (p) => {
+  const inputType = computed("BootstrapDateView.inputType", { isFocused }, (p) => {
     if (!p.isFocused) return "string";
     switch (props.box.type.type as string) {
       case "time": return "time";
@@ -62,7 +62,7 @@ export function BootstrapDateView(props: DateInputProps) {
             id={id}
             class="form-control"
             value={formattedDate()}
-            readOnly={computed({ isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
+            readOnly={computed("BootstrapDateView.readonly", { isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
             placeholder=""
             onFocus={(e: Event) => {
               isFocused.setValue(true)

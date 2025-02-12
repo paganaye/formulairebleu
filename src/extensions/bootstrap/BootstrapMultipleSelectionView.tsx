@@ -1,4 +1,4 @@
-import { computed, For, JsxComponent } from "../../core/tiny-jsx";
+import { computed, For, JSXComponent } from "../../core/tiny-jsx";
 import { ISelectionEntry } from "../../core/IForm";
 
 import { IBootstrapMultipleSelectionView } from "./BootstrapForm";
@@ -12,10 +12,10 @@ export type MultipleSelectionProps = {
   view: IBootstrapMultipleSelectionView;
 };
 
-export function MultipleSelectionVue(props: MultipleSelectionProps): JsxComponent {
+export function MultipleSelectionVue(props: MultipleSelectionProps): JSXComponent {
   let groupId = getUniqueId("checkbox-group");
 
-  const selectedSet = computed({}, () => {
+  const selectedSet = computed("MultipleSelectionVue.Set", {}, () => {
     return new Set<string>(props.selectedKeys)
   });
 

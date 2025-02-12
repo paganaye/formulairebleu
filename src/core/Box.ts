@@ -14,12 +14,12 @@ type ChildChangedEvent = { box: Box };
 export abstract class Box<TFormType extends IFormType = any, U extends JSONValue = any> extends Value<U> {
   readonly uniqueId: number = Box.getUniqueId();
   readonly type: Exclude<TFormType, ITemplatedType>
-  readonly errors = new Value<ErrorString[]>([]);
-  readonly pageNo = new Value<IPageNo>({ startPage: 0, startLine: 0, endPage: 0, endLine: 0 });
+  readonly errors = new Value<ErrorString[]>("boxErrors", []);
+  readonly pageNo = new Value<IPageNo>("boxPageNo", { startPage: 0, startLine: 0, endPage: 0, endLine: 0 });
   #childChangedObservers?: Set<Observer<ChildChangedEvent>>;
 
   constructor(readonly engine: FormEngine, readonly parent: Box | null, readonly name: string, type: TFormType) {
-    super(undefined)
+    super("box", undefined)
     let templateType = engine.templates[type.type];
     this.type = (templateType ?? type) as any;
   }
@@ -162,7 +162,7 @@ export class ObjectBox extends Box<IObjectType> {
 }
 
 export class ArrayBox extends Box<IArrayType> {
-  readonly $entryBoxes: IValue<Box<IArrayType['entryType']>[]> = new Value<Box[]>(this.getDefaultValue());
+  readonly $entryBoxes: IValue<Box<IArrayType['entryType']>[]> = new Value<Box[]>("arrayBoxEntryBoxes", this.getDefaultValue());
 
   constructor(engine: FormEngine, parent: Box | null, name: string, type: IArrayType, value?: JSONValue[]) {
     super(engine, parent, name, type);
@@ -188,14 +188,14 @@ export class ArrayBox extends Box<IArrayType> {
 }
 
 export class VariantBox extends Box<IVariantType> {
-  readonly key = new Value<string>(undefined);
+  readonly key = new Value<string>("variantBoxKey", undefined);
   variantBox: IValue<Box>;
 
   constructor(engine: FormEngine, parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
     super(engine, parent, name, type);
     super.setValue(value as any);
-    this.variantBox = computed({ key: this.key }, p => {
-      let found = this.type.variants.find(v => v.key === this.key.getValue());
+    this.variantBox = computed("variantInnerBox", { key: this.key }, p => {
+      let found = this.type.variants.find(v => v.key === p.key);
       if (!found) return undefined;
       return Box.enBox(engine, this, this.name, found, this.getDefaultValue().value);
     });

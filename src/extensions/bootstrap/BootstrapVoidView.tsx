@@ -1,4 +1,4 @@
-import { JsxComponent } from "../../core/tiny-jsx";
+import { JSXComponent } from "../../core/tiny-jsx";
 import { Box } from "../../core/Box";
 import { ConstView } from './BootstrapConstView';
 

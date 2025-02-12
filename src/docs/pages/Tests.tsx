@@ -5,8 +5,8 @@ import "../../extensions/bootstrap/BootstrapExtension"
 import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine"
 
 export default function Tests() {
-    let version = new Value("...");
-    let error = new Value("");
+    let version = new Value("testVersion", "...");
+    let error = new Value("testError", "");
     (async () => {
         try {
             // let pkg = await import('../../../package.json');
@@ -23,7 +23,7 @@ export default function Tests() {
         templates: {}
     }
     let engine = new BootstrapEngine();
-    let value = new Value("a")
+    let value = new Value("testValue", "a")
 
     return (<>
         <div class="container">

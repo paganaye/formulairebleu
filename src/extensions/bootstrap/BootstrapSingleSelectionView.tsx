@@ -1,4 +1,4 @@
-import { formulaireBleuJSXFragment, formulaireBleuJSX, For, JSONValue, JsxComponent, Value, computed, IValue } from "../../core/tiny-jsx";
+import { formulaireBleuJSXFragment, formulaireBleuJSX, For, JSONValue, JSXComponent, Value, computed, IValue } from "../../core/tiny-jsx";
 import { getUniqueId, } from "../../core/Utils";
 import { ISelectionEntry, IView } from "../../core/IForm";
 import { IBootstrapRadioButtonsView } from './BootstrapForm';
@@ -22,7 +22,7 @@ export type SingleSelectionProps = {
 //   backgroundColor: 'red',
 // });
 
-export function SingleSelectionVue(props: SingleSelectionProps): JsxComponent {
+export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
   let id = getUniqueId("single_selection");
   let dropDown: bootstrap.Dropdown;
 
@@ -58,6 +58,21 @@ export function SingleSelectionVue(props: SingleSelectionProps): JsxComponent {
           </For>
         </div >
       </div >
+
+    case "select":
+      return <div class="form-floating">
+        <select class="form-select" id={id} onInput={(e) => props.selectedKey.setValue((e.target as HTMLSelectElement).value)}>
+          <For each={props.entries ?? []}>
+            {(entry) => (
+              <option value={String(entry.value)} selected={entry.value === props.selectedKey}>
+                {entry.label || String(entry.value)}
+              </option>
+            )}
+          </For>
+        </select>
+        <label for={id}>{props.label}</label>
+      </div>;
+
     case "dropdown":
     default:
       return <div class="dropdown" x-data-bs-toggle="dropdown"
@@ -70,7 +85,7 @@ export function SingleSelectionVue(props: SingleSelectionProps): JsxComponent {
           aria-expanded="false"
           onClick={onDropdownClick}
         >
-          {computed({ selectedKey: props.selectedKey }, (p) => (props.entries ?? []).find((entry) => entry.value === p.selectedKey)?.label || props.selectedKey)
+          {computed("SingleSelectionVue.buttonText", { selectedKey: props.selectedKey }, (p) => (props.entries ?? []).find((entry) => entry.value === p.selectedKey)?.label || props.selectedKey)
           }
         </button>
         <ul class="dropdown-menu" aria-labelledby={id}>

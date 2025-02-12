@@ -1,4 +1,4 @@
-import { JsxComponent, For } from "../../core/tiny-jsx";
+import { JSXComponent, For } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 

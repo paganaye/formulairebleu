@@ -15,45 +15,37 @@ export type SelectionListInputProps = {
 
 export function BootstrapSelectionListView(props: SelectionListInputProps) {
 
-  let comp = computed({}, () => {
-    let selectionList: ISelectionList | undefined = (props.box.type as any).selectionList ?? props.box.type.selectionList;
-    if (!selectionList) {
-      return <ErrorView error="Internal Error, no selection list set." />
+  let selectionList = (props.box.type as any).selectionList ?? props.box.type.view.selectionList;
+  if (!selectionList) {
+    return <ErrorView error="Internal Error, no selection list set." />
+  }
+  if (!Array.isArray(selectionList.entries)) {
+    return <ErrorView error="dynamic-selection is not implemented yet." />
+  }
+  let entries: ISelectionEntry[] = selectionList.entries;
+  if (!entries) {
+    return <ErrorView error="Internal Error, no selection entries set." />
+  } else if (entries.length == 0) {
+    return <ErrorView error="Empty selection list." />
+  }
+  let view: IView = (props.box.type as any).selectionList ?? props.box.type.view;
+  if (selectionList.multiple) {
+    if (!view) view = { type: 'checkboxes' }
+    function setSelectedKeys(newArr: any[]) {
+      props.box.setValue(newArr);
     }
-    if (!Array.isArray(selectionList.entries)) {
-      return <ErrorView error="dynamic-selection is not implemented yet." />
-    }
-    let entries: ISelectionEntry[] = selectionList.entries;
-    if (!entries) {
-      return <ErrorView error="Internal Error, no selection entries set." />
-    } else if (entries.length == 0) {
-      return <ErrorView error="Empty selection list." />
-    }
-    let view: IView = (props.box.type as any).selectionList ?? props.box.type.view;
-    if (selectionList.multiple) {
-      if (!view) view = { type: 'checkboxes' }
-      function setSelectedKeys(newArr: any[]) {
-        props.box.setValue(newArr);
-        //        props.onValueChanged({ pagesChanged: false });
-      }
 
-      return <MultipleSelectionVue label={props.label} entries={entries}
-        selectedKeys={props.box.getValue() as string[]} setSelectedKeys={setSelectedKeys}
-        view={view as IBootstrapMultipleSelectionView} />
+    return <MultipleSelectionVue label={props.label} entries={entries}
+      selectedKeys={props.box.getValue() as string[]} setSelectedKeys={setSelectedKeys}
+      view={view as IBootstrapMultipleSelectionView} />
 
-    } else {
-      if (!view) view = { type: 'dropdown' }
-      return <SingleSelectionVue label={props.label} entries={entries}
-        selectedKey={props.box as any}
-        view={view as IBootstrapSingleSelectionView} />
-      //setSelectedKey={        (v) => {          props.box.setValue(v, true);  
-      //  props.onValueChanged({ pagesChanged: false });        }
-      //}
-    }
-  });
-  return <>
-    {comp.getValue()}
-  </>;
+  } else {
+    if (!view) view = { type: 'dropdown' }
+    return <SingleSelectionVue
+      label={props.label} entries={entries}
+      selectedKey={props.box as any}
+      view={view as IBootstrapSingleSelectionView} />
+  }
 }
 
 

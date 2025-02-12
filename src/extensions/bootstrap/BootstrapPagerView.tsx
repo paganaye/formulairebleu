@@ -1,4 +1,4 @@
-import { JsxComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX, Value, computed, IValue } from "../../core/tiny-jsx";
+import { JSXComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX, Value, computed, IValue } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 export interface PagerProps {
@@ -40,7 +40,7 @@ export function Pager(props: PagerProps) {
   };
 
   return <>{
-    computed({ pageCount: props.pageCount, selectedPage: props.selectedPage }, (p) =>
+    computed("Pager.Content", { pageCount: props.pageCount, selectedPage: props.selectedPage }, (p) =>
       <ul class="pagination mt-2">
         {/* Bouton "Previous" */}
         <li class={`page-item ${p.selectedPage === 1 ? 'disabled' : ''}`}>

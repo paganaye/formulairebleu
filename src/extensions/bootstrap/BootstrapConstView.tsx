@@ -1,4 +1,4 @@
-import { JsxComponent, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
+import { JSXComponent, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { ConstValue } from "../../core/IQuery";
 
 export type ConstVueProps = Omit<ConstValue, 'type'> & {

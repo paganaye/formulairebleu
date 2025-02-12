@@ -117,24 +117,25 @@ export function PopupFormView(props: IPopupFormProps) {
 }
 
 export function formatTemplateString(templateString: string, data: Box): HTMLElement {
-  try {
-    // const compiledTemplate = Handlebars.compile(templateString);
-    // const result = compiledTemplate(data);
+  // try {
+  //   // const compiledTemplate = Handlebars.compile(templateString);
+  //   // const result = compiledTemplate(data);
 
-    // const tempSpan = document.createElement('span');
-    // tempSpan.innerHTML = result;
+  //   // const tempSpan = document.createElement('span');
+  //   // tempSpan.innerHTML = result;
 
-    // if (templateString.startsWith('<') && tempSpan.childElementCount == 1) {
-    //   return tempSpan.firstElementChild as HTMLElement;
-    // } else {
-    //   return tempSpan
-    // }
-  }
-  catch (e: unknown) {
-    const errorSpan = document.createElement('span');
-    errorSpan.innerText = String(e);
-    return errorSpan;
-  }
+  //   // if (templateString.startsWith('<') && tempSpan.childElementCount == 1) {
+  //   //   return tempSpan.firstElementChild as HTMLElement;
+  //   // } else {
+  //   //   return tempSpan
+  //   // }
+  // }
+  // catch (e: unknown) {
+  //   const errorSpan = document.createElement('span');
+  //   errorSpan.innerText = String(e);
+  //   return errorSpan;
+  // }
+  return <p>TODO</p>;
 }
 
 export function BootstrapFormView(props: ({ engine: FormEngine } & IFormProps)) {
