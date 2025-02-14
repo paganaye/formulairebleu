@@ -67,13 +67,18 @@ export class BootstrapEngine extends FormEngine {
 
     FormView(props: IFormProps) {
         let engine = this;
-        let formTemplates = props.form.templates;
-        if (formTemplates) {
-            for (let key of Object.keys(formTemplates)) {
-                engine.templates[key] = formTemplates[key];
+        initTemplates();
+        
+        return <BootstrapFormView engine={engine} {...props} />
+        
+        function initTemplates() {
+            let formTemplates = props.form.templates;
+            if (formTemplates) {
+                for (let key of Object.keys(formTemplates)) {
+                    engine.templates[key] = formTemplates[key];
+                }
             }
         }
-        return <BootstrapFormView engine={engine} {...props} />
     }
 
     getRenderer(type: IFormType): JSXComponent {

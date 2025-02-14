@@ -1,5 +1,5 @@
 import { FormEngine } from "./FormEngine";
-import { IArrayType, IBooleanType, IFormType, InferDataType, INumberType, IObjectType, IStringType, ITemplatedType, IVariantMemberType, IVariantType } from "./IForm";
+import { IArrayType, IBooleanType, IFormType, IKeyValue, InferDataType, INumberType, IObjectType, IStringType, ITemplatedType, IVariantMemberType, IVariantType } from "./IForm";
 import { computed, IValue, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 import { ErrorString } from "./Validation";
 
@@ -20,7 +20,7 @@ export abstract class Box<TFormType extends IFormType = any, U extends JSONValue
 
   constructor(readonly engine: FormEngine, readonly parent: Box | null, readonly name: string, type: TFormType) {
     super("box", undefined)
-    let templateType = engine.templates[type.type];
+    let templateType = engine.templates && engine.templates[type.type];
     this.type = (templateType ?? type) as any;
   }
 
@@ -187,43 +187,57 @@ export class ArrayBox extends Box<IArrayType> {
 
 }
 
+export class ConstValue extends Value {
+  setValue(newValue: any): void {
+    console.error("We are setting ConstValue to ", newValue)
+  }
+  addObserver(observer: Observer<any>): void { }
+}
+
+const nullValue = new ConstValue("null", null);
+
 export class VariantBox extends Box<IVariantType> {
-  readonly key = new Value<string>("variantBoxKey", undefined);
-  variantBox: IValue<Box>;
+  variantKey: string;
+  variantInnerBox = new Value<Box<IVariantType>>("variantInnerBox");
 
   constructor(engine: FormEngine, parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
     super(engine, parent, name, type);
-    super.setValue(value as any);
-    this.variantBox = computed("variantInnerBox", { key: this.key }, p => {
-      let found = this.type.variants.find(v => v.key === p.key);
-      if (!found) return undefined;
-      return Box.enBox(engine, this, this.name, found, this.getDefaultValue().value);
-    });
-    this.key.addObserver((_) => this.notifyChildChanged(this))
+    this.setValue(value as any);
   }
 
+
   getValue() {
-    let variantBox = this.variantBox.getValue();
-    let result = { key: this.key.getValue(), value: variantBox?.getValue() as any };
+    let variantBox = this.variantInnerBox.getValue();
+    let result = variantBox ? variantBox.getValue() : null;
     return result;
   }
 
   setValue(value: JSONValue | undefined): void {
+
     if (value && typeof value === 'object' && "key" in value) {
-      this.key.setValue(String(value.key));
+      let valueKey = (value as any).key;
       let valueValue = (value as any).value;
-      // if (valueValue !== undefined) this.variantBox.setValue(valueValue);
-    } else {
-      this.key.setValue(this.getDefaultValue().key);
+      let found = this.type.variants.find(v => v.key === valueKey);
+      if (found) {
+        this.variantKey = valueKey;
+        this.variantInnerBox.setValue(Box.enBox(this.engine, this, this.name, found, valueValue ?? this.getDefaultValue().value));
+        this.notifyChildChanged(this);
+        return
+      }
     }
-    this.notifyChildChanged(this);
+    if (this.variantKey) {
+      this.variantKey = undefined;
+      this.variantInnerBox.setValue(this.engine.nullBox);
+      this.notifyChildChanged(this);
+    }
+    super.setValue(value);
   }
 
   getDefaultValue() {
     return { key: this.type.variants[0].key, value: Box.enBox(this.engine, null, this.name, this.type.variants[0], undefined).getDefaultValue() } as any;
   }
 
-  getInnerVariant() { return this.variantBox; }
+  getInnerVariant() { return this.variantInnerBox; }
 
   getVariants() {
     return this.type.variants;

@@ -19,7 +19,7 @@ export function BootstrapVariantView(props: VariantInputProps) {
   //   //let view = props.box.type.view ?? { type: 'textbox' };
   //   //mask = view.type == 'masked-textbox' ? view.mask : undefined;
   // })
-  const variantComp = computed("BootstrapVariantView.comp", { box: props.box.variantBox }, p => {
+  const variantComp = computed("BootstrapVariantView.comp", { box: props.box.variantInnerBox }, p => {
     if (p.box) {
       return props.engine.InputRenderer({
         engine: props.engine,
@@ -31,17 +31,14 @@ export function BootstrapVariantView(props: VariantInputProps) {
     return <span>...</span>
   })
 
-  function onViewChanged(value: string) {
-    props.box.key.setValue(value)
-  }
-
   let entries = props.box.getVariants().map(v => ({ value: v.key, label: v.label ?? "" }));
+  
   return (
     <>
-      {props.engine.InputTop(props)}
-      <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.key} entries={entries} label={"View as:"} />
+      {/* {props.engine.InputTop(props)} */}
+      {/* <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.key} entries={entries} label={"View as:"} /> */}
       {variantComp}
-      {props.engine.InputBottom(props)}
+      {/* {props.engine.InputBottom(props)} */}
     </>
   );
 };

@@ -63,6 +63,8 @@ export abstract class FormEngine {
     readonly pageCount = new Value("formPageCount", 1);
     readonly rePaginationCount = new Value("formRepaginationCount", 1);
 
+    readonly nullBox = Box.enBox(this, null, "null", { type: 'const', value: null }, null)
+
     constructor(templates?: Record<string, IFormType>) {
         this.templates = templates ?? {};
     }
@@ -73,7 +75,7 @@ export abstract class FormEngine {
         if (viewType) templateType = this.templates[viewType];
         if (!templateType) {
             let typeType = type?.type;
-            templateType = this.templates[typeType];
+            templateType = this.templates && this.templates[typeType];
         }
         return (templateType ?? type) as any;
     }
@@ -549,8 +551,8 @@ export abstract class FormEngine {
 
                 case 'variant': {
                     let vbox = box as VariantBox;
-                    let value = toSpan(level + 1, vbox.getInnerVariant().getValue());
-                    return [<small class="form-span-label">{String(vbox.key.getValue()) + ": "}</small>, <span class="form-span-content">{value}</span>];
+                    let value = toSpan(level + 1, vbox.getValue()) as any;
+                    return [<small class="form-span-label">{String(value.key) + ": "}</small>, <span class="form-span-content">{value.value}</span>];
                 }
 
                 default: {

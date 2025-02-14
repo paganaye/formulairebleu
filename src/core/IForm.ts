@@ -151,6 +151,11 @@ export interface ITimeViews {
 }
 
 
+export interface IKeyValue<TKey extends string, T> {
+  key: TKey;
+  value: T
+}
+
 export interface IVariantType extends TypeBase {
   type: 'variant';
   variants: IVariantMemberType[];
@@ -245,7 +250,7 @@ type InferObjectMember<T extends IObjectMemberType[]> = {
 
 type InferVariantMember<V extends IVariantMemberType> =
   V extends IVariantMemberType<infer K, infer FT>
-  ? { key: K; value: InferDataType<FT> }
+  ? IKeyValue<K, InferDataType<FT>>
   : never;
 
 export type InferFormType<T extends IForm> = InferDataType<T['dataType']>

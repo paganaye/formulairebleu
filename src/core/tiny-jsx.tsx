@@ -188,7 +188,7 @@ export function computed<T extends Record<string, any>, R>(
     const args = {} as T,
         result = new Value<R>(computationName, undefined!);
     for (const key in values) {
-        const v = values[key];
+        const v = values[key];        
         args[key] = v.getValue();
         v.addObserver(nv => {
             args[key] = nv;
