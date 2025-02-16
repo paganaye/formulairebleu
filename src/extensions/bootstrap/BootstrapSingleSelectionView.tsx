@@ -3,7 +3,7 @@ import { getUniqueId, } from "../../core/Utils";
 import { ISelectionEntry, IView } from "../../core/IForm";
 import { IBootstrapRadioButtonsView } from './BootstrapForm';
 import { Bootstrap } from "./BootstrapEngine";
-
+import { type Dropdown } from 'bootstrap'
 
 export type SingleSelectionProps = {
   label: string;
@@ -24,7 +24,7 @@ export type SingleSelectionProps = {
 
 export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
   let id = getUniqueId("single_selection");
-  let dropDown: bootstrap.Dropdown;
+  let dropDown: Dropdown;
 
   function onDropdownClick(e: MouseEvent) {
     if (!dropDown) dropDown = new Bootstrap.Dropdown(document.getElementById(id)!, { autoClose: true });

@@ -6,16 +6,12 @@ import Home from "./pages/Home";
 import NotFound from './pages/NotFound';
 import Tests from './pages/Tests';
 import "../extensions/bootstrap/BootstrapEngine"
-import { BootstrapEngine } from '../extensions/bootstrap/BootstrapEngine';
-
-  const context = new BootstrapEngine();
-
 
 export default function App() {
 
     return computed("router", { currentPage }, (p) => {
         switch (p.currentPage) {
-            case undefined: return <Home />
+            case "": return <Home />
             case '#about': return <About />
             case '#form-editor': return <FormEditor />
             case '#tests': return <Tests />

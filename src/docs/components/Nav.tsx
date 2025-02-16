@@ -13,7 +13,7 @@ Styles.add('nav.main-nav > a.active', {
 export default function App() {
     return (<>
         <nav class="main-nav">
-            <A href="/">{LANG.menu_home}</A>
+            <A href="">{LANG.menu_home}</A>
             <A href="#form-editor">{LANG.menu_form_editor}</A>
             <A href="#tests">{LANG.menu_tests}</A>
             <A href="#about">{LANG.menu_about}</A>
