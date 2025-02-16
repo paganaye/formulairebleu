@@ -1,39 +1,12 @@
-import { formulaireBleuJSX, formulaireBleuJSXFragment, Value } from "../../core/tiny-jsx";
+import { formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import Nav from "../components/Nav";
-import { IForm } from "../../core/IForm"
-import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine"
 
-export default function Tests() {
-    let version = new Value("testVersion", "...");
-    let error = new Value("testError", "");
-    (async () => {
-        try {
-            // let pkg = await import('../../../package.json');
-            // setVersion(pkg.version);
-        } catch (e) {
-            version.setValue((e as Error).message)
-        }
-    })();
-
-    let form: IForm = {
-        name: 'Form1',
-        'dataType': { type: 'string' },
-        version: "1",
-        templates: {}
-    }
-    let engine = new BootstrapEngine();
-    let value = new Value("testValue", "a")
-
+export default function Home() {
     return (<>
         <div class="container">
             <Nav />
             <h1>Tests</h1>
-            <div>
-                <p class="error">{error.getValue()}</p>
-                <p>Cette page utilise la toute dernière version {version.getValue()} de la librairie Formulaire Bleu.</p>
-
-                {engine.FormView({ value: value, form, onValueChanged(v) { } })}
-            </div>
+            
         </div>
     </>);
 }
