@@ -14,6 +14,7 @@ import { VoidView } from "./BootstrapVoidView";
 import { IFormType } from '../../core/IForm'
 
 import type * as BootstrapLib from 'bootstrap';
+import { Box } from "../../core/Box";
 
 export var Bootstrap: typeof BootstrapLib;
 
@@ -68,9 +69,9 @@ export class BootstrapEngine extends FormEngine {
     FormView(props: IFormProps) {
         let engine = this;
         initTemplates();
-        
+
         return <BootstrapFormView engine={engine} {...props} />
-        
+
         function initTemplates() {
             let formTemplates = props.form.templates;
             if (formTemplates) {

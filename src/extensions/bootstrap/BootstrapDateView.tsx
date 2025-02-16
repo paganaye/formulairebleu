@@ -71,15 +71,10 @@ export function BootstrapDateView(props: DateInputProps) {
             onBlur={(e: Event) => {
               isFocused.setValue(false);
               setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) inp.value = formattedDate() });
-              props.box.validate();
+              innerSetValue(e);
             }}
             onInput={(e: InputEvent) => {
-              if (isFocused.getValue()) {
-                let dateValue = (e.currentTarget as HTMLInputElement).valueAsDate;
-                if (isValidDate(dateValue)) {
-                  props.box.setValue(formatDate(dateValue));
-                }
-              }
+              if (isFocused.getValue()) innerSetValue(e);
             }}
           />
           <label for={id} class="form-label">{props.label}</label>
@@ -89,6 +84,12 @@ export function BootstrapDateView(props: DateInputProps) {
         </Show>
       </div>
       {props.engine.InputBottom(props)}
-    </>
-  );
+    </>);
+  function innerSetValue(e: Event) {
+    let dateValue = (e.currentTarget as HTMLInputElement).valueAsDate;
+    if (isValidDate(dateValue)) {
+      props.box.setValue(formatDate(dateValue), { notify: true, validate: true });
+    }
+  }
+
 };

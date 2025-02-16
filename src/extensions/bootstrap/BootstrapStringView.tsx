@@ -72,31 +72,13 @@ export function BootstrapStringView(props: StringInputProps) {
               // });
             }
           }}
-          onBlur={(e) => {
+          onBlur={(e: InputEvent) => {
             isFocused.setValue(false);
-            props.box.validate();
+            innerSetValue(e)
           }}
-          onInput={(e) => {
+          onInput={(e: InputEvent) => {
             if (isFocused.getValue()) {
-              let inputElt = e.currentTarget;
-              let previousValue = props.box.getValue() as string;
-              let newValue = inputElt.value;
-              let pos = inputElt.selectionStart ?? newValue.length;
-              let maskResult = mask ? applyMask(newValue, mask, pos) : undefined;
-
-              if (maskResult) {
-                let maskResultValue = maskResult.newValue;
-                if (maskResultValue !== newValue) {
-                  if (maskResultValue === previousValue && newValue.length < previousValue.length) {
-                  } else {
-                    inputElt.value = maskResultValue;
-                    setTimeout(() => (inputElt.selectionStart = inputElt.selectionEnd = maskResult.newPos));
-                    newValue = maskResultValue;
-                  }
-                }
-              }
-
-              props.box.setValue(newValue);
+              innerSetValue(e)
             }
           }}
         />
@@ -107,4 +89,27 @@ export function BootstrapStringView(props: StringInputProps) {
       {props.engine.InputBottom(props)}
     </>
   );
+
+  function innerSetValue(e: Event) {
+    let inputElt = e.currentTarget as HTMLInputElement;
+    let previousValue = props.box.getValue() as string;
+    let newValue = inputElt.value;
+    let pos = inputElt.selectionStart ?? newValue.length;
+    let maskResult = mask ? applyMask(newValue, mask, pos) : undefined;
+
+    if (maskResult) {
+      let maskResultValue = maskResult.newValue;
+      if (maskResultValue !== newValue) {
+        if (maskResultValue === previousValue && newValue.length < previousValue.length) {
+        } else {
+          inputElt.value = maskResultValue;
+          setTimeout(() => (inputElt.selectionStart = inputElt.selectionEnd = maskResult.newPos));
+          newValue = maskResultValue;
+        }
+      }
+    }
+
+    props.box.setValue(newValue, { notify: true, validate: true });
+
+  }
 };

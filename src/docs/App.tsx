@@ -6,6 +6,9 @@ import Home from "./pages/Home";
 import NotFound from './pages/NotFound';
 import Tests from './pages/Tests';
 import "../extensions/bootstrap/BootstrapEngine"
+import { BootstrapEngine } from "../extensions/bootstrap/BootstrapEngine";
+
+export let demoFormEngine = new BootstrapEngine()
 
 export default function App() {
 

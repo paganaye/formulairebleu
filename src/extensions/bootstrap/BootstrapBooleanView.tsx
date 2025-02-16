@@ -47,7 +47,7 @@ export function BootstrapBooleanView(props: BooleanInputProps) {
     inputRef.indeterminate = props.box.getValue() === null;
   }
   return (<>
-    {/* <InputTop {...props} /> */}
+    <props.engine.InputTop {...props} />
     <div class={`d-flex flex-column form-control for-checkbox position-relative ${isSwitch() ? "form-switch" : ""}`}
       onMouseDown={(e) => {
         e.preventDefault();
@@ -62,11 +62,10 @@ export function BootstrapBooleanView(props: BooleanInputProps) {
           id={id}
           checked={props.box.getValue() === true} // Assurez que seules les valeurs `true` cochent le champ
           readOnly={props.engine.isReadonly}
-          onBlur={(e) => props.box.validate()}
-          onChange={(e) => {
+          onBlur={(e: Event) => innerSetValue(e)}
+          onChange={(e: Event) => {
             // Bascule entre true et false (l’état indeterminate est géré séparément)
-            const newValue = e.currentTarget.checked;
-            props.box.setValue(newValue);
+            innerSetValue(e);
           }} />
         <label class="form-check-label ms-2 flex-grow-1" x-onMouseDown={(e: any) => {
           e.preventDefault();
@@ -74,7 +73,11 @@ export function BootstrapBooleanView(props: BooleanInputProps) {
         }}
         >{props.label}</label>
       </div>
-      {/* <InputBottom {...props} /> */}
+      <props.engine.InputBottom {...props} />
     </div>
   </>) as any;
+  function innerSetValue(e: Event) {
+    const newValue = (e.currentTarget as HTMLInputElement).checked;
+    props.box.setValue(newValue, { notify: true, validate: true });
+  }
 };

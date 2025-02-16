@@ -22,6 +22,10 @@ export function isIValue(v: any): v is IValue {
     return v && typeof v.getValue === "function";
 }
 
+export interface ISetValueOptions {
+    notify: boolean
+}
+
 export class Value<T = any> implements IValue<T> {
     #observers?: Set<Observer<T>>;
     #value: T;
@@ -33,10 +37,10 @@ export class Value<T = any> implements IValue<T> {
     }
 
     getValue(): T { return this.#value; }
-    setValue(newValue: T): void {
+    setValue(newValue: T, options: ISetValueOptions = { notify: true }): void {
         if (newValue === this.#value) return
         this.#value = newValue;
-        this.notifyObservers();
+        if (options.notify) this.notifyObservers();
     }
 
     addObserver(observer: Observer<T>) {
@@ -164,7 +168,7 @@ export function For<T>(
     const forContent = new Value<Node[]>("ForContent", []);
     const update = (eachArray: T[]) => {
         const nodes: Node[] = [];
-        eachArray.forEach((item, index) => {
+        eachArray?.forEach((item, index) => {
             if (!props.filter || props.filter(item, index)) {
                 nodes.push(...createElements(childZero(item, index)))
             }
@@ -188,7 +192,7 @@ export function computed<T extends Record<string, any>, R>(
     const args = {} as T,
         result = new Value<R>(computationName, undefined!);
     for (const key in values) {
-        const v = values[key];        
+        const v = values[key];
         args[key] = v.getValue();
         v.addObserver(nv => {
             args[key] = nv;

@@ -62,13 +62,13 @@ export function BootstrapNumberView(props: NumberInputProps) {
                 setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) { inp.value = String(props.box.getValue()); inp.select(); } });
               }
             }}
-            onBlur={(e) => {
+            onBlur={(e: InputEvent) => {
               isFocused.setValue(false);
               setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) inp.value = formatNumber() });
-              props.box.validate();
+              innerSetValue(e)
             }}
-            onInput={(e) => {
-              if (isFocused.getValue()) props.box.setValue(parseNumber(e.currentTarget.value));
+            onInput={(e: InputEvent) => {
+              if (isFocused.getValue()) innerSetValue(e);
             }}
           />
           <label for={id} class="form-label">{props.label}</label>
@@ -80,4 +80,7 @@ export function BootstrapNumberView(props: NumberInputProps) {
       {props.engine.InputBottom(props)}
     </>
   );
+  function innerSetValue(e: Event) {
+    props.box.setValue(parseNumber((e.currentTarget as HTMLInputElement).value), { notify: true, validate: true })
+  }
 };

@@ -1,4 +1,4 @@
-import { JSXComponent, JSXSource, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
+import { JSONValue, JSXComponent, JSXSource, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
 import { IForm, IFormType, IKeyedMemberType, INumberType, ITemplatedType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
@@ -22,8 +22,7 @@ Styles.add('.form-span-content', {
 
 export interface IFormProps {
     form: IForm,
-    value: Value
-    onValueChanged: (v: any) => void
+    box: Box
 }
 
 export interface FormBodyProps extends IFormProps {
@@ -277,8 +276,7 @@ export abstract class FormEngine {
 
     // }
 
-    validate(box: Box, rules: ValidationRules, errors: ErrorString[]): void {
-        const value = box.getValue();
+    validate(box: Box, value: JSONValue, rules: ValidationRules, errors: ErrorString[]): void {
         const name = box.name;
         const validators = {
             array: validateArray,

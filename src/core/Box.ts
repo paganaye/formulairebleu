@@ -1,9 +1,9 @@
 import { FormEngine } from "./FormEngine";
 import { IArrayType, IBooleanType, IFormType, IKeyValue, InferDataType, INumberType, IObjectType, IStringType, ITemplatedType, IVariantMemberType, IVariantType } from "./IForm";
-import { computed, IValue, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
+import { computed, ISetValueOptions, IValue, JSONObject, JSONValue, Observer, Value } from "./tiny-jsx";
 import { ErrorString } from "./Validation";
 
-type ChildChangedEvent = { box: Box };
+type ChildChangedEvent = { box: Box, pageChanged: boolean };
 
 // A box contains 
 //  - a form field type
@@ -33,21 +33,25 @@ export abstract class Box<TFormType extends IFormType = any, U extends JSONValue
 
   addChildChangedObserver(observer: Observer<ChildChangedEvent>, immediate: boolean = false) {
     (this.#childChangedObservers || (this.#childChangedObservers = new Set())).add(observer);
-    if (immediate) observer({ box: this });
+    if (immediate) observer({ box: this, pageChanged: false });
   }
 
-  notifyChildChanged(box: Box) {
+  notifyChildChanged(box: Box, pageChanged: boolean) {
     if (this.#childChangedObservers) {
-      this.#childChangedObservers.forEach(observer => observer({ box }));
+      this.#childChangedObservers.forEach(observer => observer({ box, pageChanged }));
     }
     if (this.parent) {
-      this.parent.notifyChildChanged(box);
+      this.parent.notifyChildChanged(box, pageChanged);
     }
   }
 
-  validate(): void {
+  clearErrors() {
+    this.errors.setValue([])
+  }
+
+  validate(value: JSONValue): void {
     const errors: ErrorString[] = [];
-    this.engine.validate(this as any, this.type.validations, errors);
+    this.engine.validate(this as any, value, this.type.validations, errors);
     this.errors.setValue(errors);
   }
 
@@ -70,10 +74,19 @@ export abstract class Box<TFormType extends IFormType = any, U extends JSONValue
     }
   }
 
+  setValue(value: JSONValue, options?: IBoxSetValueOptions) {
+    super.setValue(value as U, options)
+  }
+
   static unBox<Q extends IFormType = any>(box: Box<Q>): InferDataType<Q> {
     return box.getValue();
   }
 }
+
+export interface IBoxSetValueOptions extends ISetValueOptions {
+  validate: boolean
+}
+
 
 export class StringBox extends Box<IStringType> {
 
@@ -82,10 +95,10 @@ export class StringBox extends Box<IStringType> {
     super.setValue(value == null ? this.getDefaultValue() : String(value));
   }
 
-  setValue(value: JSONValue | undefined): void {
-    super.setValue(value == null ? this.getDefaultValue() : String(value));
-    this.validate();
-    this.notifyChildChanged(this)
+  setValue(value: JSONValue | undefined, options: IBoxSetValueOptions = { notify: true, validate: true }): void {
+    if (options.validate) this.validate(value)
+    super.setValue(value == null ? this.getDefaultValue() : String(value), options);
+    this.notifyChildChanged(this, false);
   }
 
   getDefaultValue() {
@@ -100,10 +113,8 @@ export class NumberBox extends Box<INumberType> {
     super.setValue(value == null ? this.getDefaultValue() : Number(value));
   }
 
-  setValue(value: JSONValue | undefined): void {
-    super.setValue(value == null ? this.getDefaultValue() : Number(value));
-    this.validate();
-    this.notifyChildChanged(this);
+  setValue(value: JSONValue | undefined, options?: IBoxSetValueOptions): void {
+    super.setValue(value == null ? this.getDefaultValue() : Number(value), options);
   }
 
   getDefaultValue() {
@@ -118,10 +129,8 @@ export class BooleanBox extends Box<IBooleanType> {
     super.setValue(value == null ? this.getDefaultValue() : Boolean(value));
   }
 
-  setValue(value: JSONValue | undefined): void {
-    super.setValue(value == null ? this.getDefaultValue() : Boolean(value));
-    this.validate();
-    this.notifyChildChanged(this);
+  setValue(value: JSONValue | undefined, options?: IBoxSetValueOptions): void {
+    super.setValue(value == null ? this.getDefaultValue() : Boolean(value), options);
   }
 
   getDefaultValue() {
@@ -145,8 +154,8 @@ export class ObjectBox extends Box<IObjectType> {
     if (typeof value === 'object' && value !== null) {
       this.members.forEach(member => member.setValue(value[member.name]));
     }
-    this.validate();
-    super.notifyChildChanged(this)
+    this.validate(value);
+    super.notifyChildChanged(this, true)
   }
 
   getDefaultValue() {
@@ -177,8 +186,8 @@ export class ArrayBox extends Box<IArrayType> {
     if (Array.isArray(value)) {
       this.entryBoxes.setValue(value.map((v, i) => Box.enBox(this.engine, this, `${this.name}#${i}`, this.type.entryType, v)));
     }
-    this.validate();
-    this.notifyChildChanged(this);
+    this.validate(value);
+    this.notifyChildChanged(this, true);
   }
 
   getDefaultValue() {
@@ -217,7 +226,7 @@ export class VariantBox extends Box<IVariantType> {
     return result;
   }
 
-  setValue(value: JSONValue | undefined): void {
+  setValue(value: JSONValue | undefined, options?: IBoxSetValueOptions): void {
 
     if (value && typeof value === 'object' && "key" in value) {
       let valueKey = (value as any).key;
@@ -226,16 +235,15 @@ export class VariantBox extends Box<IVariantType> {
       if (found) {
         this.key.setValue(valueKey);
         this.variantInnerBox.setValue(Box.enBox(this.engine, this, this.name, found, valueValue ?? this.getDefaultValue().value));
-        super.setValue({ key: valueKey, value: this.variantInnerBox.getValue() })
+        super.setValue({ key: valueKey, value: this.variantInnerBox.getValue() } as any, options)
         return
       }
     }
     if (this.key.getValue()) {
       this.key.setValue(undefined);
       this.variantInnerBox.setValue(this.engine.nullBox);
-      this.notifyChildChanged(this);
     }
-    super.setValue(value);
+    super.setValue(value, options);
   }
 
   getDefaultValue() {

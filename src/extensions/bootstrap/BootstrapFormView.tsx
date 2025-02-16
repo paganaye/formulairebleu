@@ -11,25 +11,12 @@ import { BootstrapEngine } from './BootstrapEngine';
 interface FormBodyProps {
   engine: BootstrapEngine;
   form: IForm,
-  value: IValue<JSONValue>,
-  onValueChanged: (v) => void,
+  box: Box,
   header?: JSXSource;
   footer?: JSXSource;
 }
 
 const FormBody = (props: FormBodyProps) => {
-  props.value.addObserver((v) => {
-    rootBox.setValue(v);
-  })
-  const rootBox = Box.enBox(props.engine, null, props.form.name, props.form.dataType, props.value.getValue());
-  //setTimeout(() => {
-  // });
-  if (rootBox.type.templates) props.engine.templates
-  rootBox.addChildChangedObserver((e) => {
-    let v = rootBox.getValue();
-    props.value.setValue(v);
-    props.engine.paginate(rootBox);
-  })
 
   // createEffect(() => {
   //   rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
@@ -62,12 +49,12 @@ const FormBody = (props: FormBodyProps) => {
       engine: props.engine,
       label: props.form.dataType.label ?? props.form.name,
       level: 1,
-      box: rootBox,
+      box: props.box,
     })}
     {props.footer}
   </div >
 
-  props.engine.paginate(rootBox)
+  props.engine.paginate(props.box)
 
   return result;
 };
@@ -149,8 +136,7 @@ export function BootstrapFormView(props: ({ engine: FormEngine } & IFormProps)) 
       <FormBody
         engine={props.engine as any}
         form={props.form}
-        value={props.value}
-        onValueChanged={props.onValueChanged}
+        box={props.box}
         header=<h1>{props.form.name}</h1>
         footer=<>
           {/* <Pager pageCount={props.engine.pageCount} selectedPage={pageNo} /> */}
