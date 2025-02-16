@@ -1,4 +1,4 @@
-import { IForm, IFormType, InferFormType, ISelectionList } from './core/IForm';
+import { IForm, IFormType, InferFormType, ISelectionList } from '../core/IForm';
 
 export function randomize<T extends IForm>(form: T): InferFormType<T> {
     function randomValue(type: IFormType): any {

@@ -1,7 +1,6 @@
 import { formulaireBleuJSX, formulaireBleuJSXFragment, Value } from "../../core/tiny-jsx";
 import Nav from "../components/Nav";
 import { IForm } from "../../core/IForm"
-import "../../extensions/bootstrap/BootstrapExtension"
 import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine"
 
 export default function Tests() {

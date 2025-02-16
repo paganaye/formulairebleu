@@ -1,21 +1,23 @@
 import { formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 import { LANG } from '../Lang'
+import A from "./A";
 
-Styles.add('nav.main-nav', {
-    padding: '5px'
-})
-Styles.add('nav.main-nav > A', {
+Styles.add('nav.main-nav > a', {
     margin: '5px'
 })
+Styles.add('nav.main-nav > a.active', {
+    margin: '15px'
+})
+
 export default function App() {
     return (<>
-        {/* <nav class="main-nav">
-            <A href="/" activeClass="active">{LANG.menu_home}</A>
-            <A href="/form-editor">{LANG.menu_form_editor}</A>
-            <A href="/tests">{LANG.menu_tests}</A>
-            <A href="/about">{LANG.menu_about}</A>
-        </nav> */}
+        <nav class="main-nav">
+            <A href="/">{LANG.menu_home}</A>
+            <A href="#form-editor">{LANG.menu_form_editor}</A>
+            <A href="#tests">{LANG.menu_tests}</A>
+            <A href="#about">{LANG.menu_about}</A>
+        </nav>
     </>);
 }
 
