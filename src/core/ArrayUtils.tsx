@@ -31,7 +31,7 @@ export class ArrayUtils {
   columns: IColumn[] = undefined;
 
   constructor(readonly box: ArrayBox) {
-    this.entryBoxes = box.$entryBoxes;
+    this.entryBoxes = box.entryBoxes;
 
     let entryType = (this.box.type as IArrayType).entryType;
     this.columns = (entryType && entryType.type == 'object')

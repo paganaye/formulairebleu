@@ -114,22 +114,23 @@ let engine = new BootstrapEngine();
 // formValue = undefined;
 
 export default function App() {
+    formValue = { key: "str1", value: "123" }
     let value = new Value("appValue", formValue);
     value.setValue(formValue);
     let onValueChanged = (v: any) => {
         console.log("v", v);
     }
 
-    let formView1 = engine.FormView({ form: form1Type, $value: value, onValueChanged })
-    setTimeout(() => {
-        value.setValue({ key: "str1", value: "ABC" } as any);
-        setTimeout(() => {
-            value.setValue({ key: "num1", value: 1234 } as any);
-            setTimeout(() => {
-                value.setValue({ key: "bool1", value: true } as any);
-            }, 1000)
-        }, 1000)
-    }, 1000)
+    let formView1 = engine.FormView({ form: form1Type, value: value, onValueChanged })
+    // setTimeout(() => {
+    //     value.setValue({ key: "str1", value: "ABC" } as any);
+    //     // setTimeout(() => {
+    //     //     value.setValue({ key: "num1", value: 1234 } as any);
+    //     //     setTimeout(() => {
+    //     //         value.setValue({ key: "bool1", value: true } as any);
+    //     //     }, 1000)
+    //     // }, 1000)
+    // }, 1000)
     return (<div>
         {formView1}
         {/* <pre>{computed("app.pre", { value }, p => JSON.stringify(p.value, undefined, '   '))}</pre> */}

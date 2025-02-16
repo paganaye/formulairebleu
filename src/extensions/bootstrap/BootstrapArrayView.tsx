@@ -43,9 +43,9 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
         popup: renderAsPopup
     };
     let renderFunction = renderFunctions[viewAsType?.type] || renderAsFlow;
-    let entryBoxes = props.box.$entryBoxes;
-    let currentPageBoxes = computed("BootstrapArrayView.currentPageBoxes", { $entryBoxes: props.box.$entryBoxes, pageNo: props.engine.pageNo, rePaginationCount: props.engine.rePaginationCount }, (p) => {
-        return props.box.$entryBoxes.getValue().filter(p => props.engine.isBoxVisible(p))
+    let entryBoxes = props.box.entryBoxes;
+    let currentPageBoxes = computed("BootstrapArrayView.currentPageBoxes", { $entryBoxes: props.box.entryBoxes, pageNo: props.engine.pageNo, rePaginationCount: props.engine.rePaginationCount }, (p) => {
+        return props.box.entryBoxes.getValue().filter(p => props.engine.isBoxVisible(p))
     })
 
     function inputTop() {

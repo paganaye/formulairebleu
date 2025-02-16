@@ -11,23 +11,23 @@ import { BootstrapEngine } from './BootstrapEngine';
 interface FormBodyProps {
   engine: BootstrapEngine;
   form: IForm,
-  $value: IValue<JSONValue>,
+  value: IValue<JSONValue>,
   onValueChanged: (v) => void,
   header?: JSXSource;
   footer?: JSXSource;
 }
 
 const FormBody = (props: FormBodyProps) => {
-  props.$value.addObserver((v) => {
+  props.value.addObserver((v) => {
     rootBox.setValue(v);
   })
-  const rootBox = Box.enBox(props.engine, null, props.form.name, props.form.dataType, props.$value.getValue());
+  const rootBox = Box.enBox(props.engine, null, props.form.name, props.form.dataType, props.value.getValue());
   //setTimeout(() => {
   // });
   if (rootBox.type.templates) props.engine.templates
   rootBox.addChildChangedObserver((e) => {
     let v = rootBox.getValue();
-    props.$value.setValue(v);
+    props.value.setValue(v);
     props.engine.paginate(rootBox);
   })
 
@@ -149,7 +149,7 @@ export function BootstrapFormView(props: ({ engine: FormEngine } & IFormProps)) 
       <FormBody
         engine={props.engine as any}
         form={props.form}
-        $value={props.$value}
+        value={props.value}
         onValueChanged={props.onValueChanged}
         header=<h1>{props.form.name}</h1>
         footer=<>

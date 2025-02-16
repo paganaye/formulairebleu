@@ -32,11 +32,11 @@ export function BootstrapVariantView(props: VariantInputProps) {
   })
 
   let entries = props.box.getVariants().map(v => ({ value: v.key, label: v.label ?? "" }));
-  
+
   return (
     <>
       {/* {props.engine.InputTop(props)} */}
-      {/* <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.key} entries={entries} label={"View as:"} /> */}
+      <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.key} entries={entries} label={"View as:"} />
       {variantComp}
       {/* {props.engine.InputBottom(props)} */}
     </>

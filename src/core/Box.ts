@@ -162,7 +162,7 @@ export class ObjectBox extends Box<IObjectType> {
 }
 
 export class ArrayBox extends Box<IArrayType> {
-  readonly $entryBoxes: IValue<Box<IArrayType['entryType']>[]> = new Value<Box[]>("arrayBoxEntryBoxes", this.getDefaultValue());
+  readonly entryBoxes: IValue<Box<IArrayType['entryType']>[]> = new Value<Box[]>("arrayBoxEntryBoxes", this.getDefaultValue());
 
   constructor(engine: FormEngine, parent: Box | null, name: string, type: IArrayType, value?: JSONValue[]) {
     super(engine, parent, name, type);
@@ -170,12 +170,12 @@ export class ArrayBox extends Box<IArrayType> {
   }
 
   getValue(): JSONValue[] {
-    return this.$entryBoxes.getValue().map(entry => entry.getValue());
+    return this.entryBoxes.getValue().map(entry => entry.getValue());
   }
 
   setValue(value: JSONValue | undefined): void {
     if (Array.isArray(value)) {
-      this.$entryBoxes.setValue(value.map((v, i) => Box.enBox(this.engine, this, `${this.name}#${i}`, this.type.entryType, v)));
+      this.entryBoxes.setValue(value.map((v, i) => Box.enBox(this.engine, this, `${this.name}#${i}`, this.type.entryType, v)));
     }
     this.validate();
     this.notifyChildChanged(this);
@@ -197,12 +197,17 @@ export class ConstValue extends Value {
 const nullValue = new ConstValue("null", null);
 
 export class VariantBox extends Box<IVariantType> {
-  variantKey: string;
-  variantInnerBox = new Value<Box<IVariantType>>("variantInnerBox");
+  key: Value<string>;
+  variantInnerBox: Value<Box<IVariantType>>;
 
   constructor(engine: FormEngine, parent: Box | null, name: string, type: IVariantType, value?: JSONValue) {
     super(engine, parent, name, type);
+    this.key = new Value<string>("variantKey", (value as any).key)
+    this.variantInnerBox = new Value<Box<IVariantType>>("variantInnerBox");
     this.setValue(value as any);
+    this.key.addObserver((newKey) => {
+      this.setValue({ key: newKey, value: undefined })
+    })
   }
 
 
@@ -219,14 +224,14 @@ export class VariantBox extends Box<IVariantType> {
       let valueValue = (value as any).value;
       let found = this.type.variants.find(v => v.key === valueKey);
       if (found) {
-        this.variantKey = valueKey;
+        this.key.setValue(valueKey);
         this.variantInnerBox.setValue(Box.enBox(this.engine, this, this.name, found, valueValue ?? this.getDefaultValue().value));
-        this.notifyChildChanged(this);
+        super.setValue({ key: valueKey, value: this.variantInnerBox.getValue() })
         return
       }
     }
-    if (this.variantKey) {
-      this.variantKey = undefined;
+    if (this.key.getValue()) {
+      this.key.setValue(undefined);
       this.variantInnerBox.setValue(this.engine.nullBox);
       this.notifyChildChanged(this);
     }

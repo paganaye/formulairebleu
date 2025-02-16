@@ -22,7 +22,7 @@ Styles.add('.form-span-content', {
 
 export interface IFormProps {
     form: IForm,
-    $value: Value
+    value: Value
     onValueChanged: (v: any) => void
 }
 
@@ -100,7 +100,7 @@ export abstract class FormEngine {
             switch (typeType) {
                 case 'array':
                     firstNonObjectSeen = true;
-                    let entries = (box as ArrayBox).$entryBoxes
+                    let entries = (box as ArrayBox).entryBoxes
                     for (let e of entries.getValue()) {
                         paginateRecursely(e)
                     }
@@ -202,7 +202,7 @@ export abstract class FormEngine {
             if (!box) return true;
             let page = p.page;
             if (page == 0) return true;
-            return box.startPage <= page && page <= box.endPage
+            return box.startPage <= page && (box.endPage == 0 || page <= box.endPage)
         });
 
         return (<>
@@ -544,7 +544,7 @@ export abstract class FormEngine {
                 }
 
                 case "array": {
-                    let entries = (box as ArrayBox).$entryBoxes.getValue();
+                    let entries = (box as ArrayBox).entryBoxes.getValue();
                     let result = entries.filter(m => m != null).flatMap(b => toSpan(level + 1, b));
                     return level == 1 ? result : ['[ ', ...result, ' ]']
                 }
