@@ -28,11 +28,17 @@ export type IPopupOptions = ICorePopupOptions & {
 
 declare module "../../core/IForm" {
 
-    export interface INumberViews {
-        mynumber1: { type: 'mynumber1', min: number; };
+    export interface IStringViews {
+        popup: { type: 'popup' } & IPopupOptions,
     }
+
+    export interface INumberViews {
+        popup: { type: 'popup' } & IPopupOptions,
+    }
+
     export interface IBooleanViews {
-        //   switch: IBootstapSwitchType;
+        switch: { type: 'switch', popup?: true | IPopupOptions },
+        popup: { type: 'popup' } & IPopupOptions,
     }
 
     export interface IArrayViews {

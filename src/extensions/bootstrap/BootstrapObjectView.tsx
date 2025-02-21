@@ -142,9 +142,6 @@ export function BootstrapObjectView(props: ObjectInputProps) {
     </>
   }
 
-
-
-
   function inputTop() {
     return props.engine.InputTop(props)
   }

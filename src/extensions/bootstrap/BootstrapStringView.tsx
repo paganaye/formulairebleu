@@ -52,43 +52,68 @@ export function BootstrapStringView(props: StringInputProps) {
   const isFocused = new Value("stringViewIsFocused", false);
   let mask: string | undefined = (props.box.type.view as any)?.mask;
 
-  return (
-    <>
-      {props.engine.InputTop(props)}
-      <div class="form-floating">
-        <input
-          type={computed("BootstrapStringView.type", { isFocused }, (p) => (p.isFocused ? "text" : "string"))}
-          id={id}
-          class="form-control"
-          value={isFocused.getValue() ? (props.box.getValue() || "") : props.box.getValue()}
-          readOnly={computed("BootstrapStringView.readonly", { isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
-          placeholder={""}
-          required={props.box.type.mandatory}
-          onFocus={(e) => {
-            if (!isFocused.getValue()) {
-              isFocused.setValue(true);
-              // setTimeout(() => {
-              //   (e.target as HTMLInputElement)?.select?.();
-              // });
-            }
-          }}
-          onBlur={(e: InputEvent) => {
-            isFocused.setValue(false);
-            innerSetValue(e)
-          }}
-          onInput={(e: InputEvent) => {
-            if (isFocused.getValue()) {
-              innerSetValue(e)
-            }
-          }}
-        />
-        <label for={id} class="form-label">
-          {props.label}
-        </label>
-      </div>
-      {props.engine.InputBottom(props)}
+  function renderAsPopupButton() {
+    let popupVisible = new Value("popupButtonPopupVisible", false);
+    let { PopupButton, Span } = props.engine;
+
+    return <>
+      <div class="row">
+        <div class="col-auto">
+          <PopupButton visible={popupVisible}>
+            {renderAsTextBox}
+          </PopupButton>
+        </div>
+        <div class="col">{Span(props.box)}</div>
+      </div >
     </>
-  );
+  }
+
+  function renderAsTextBox() {
+    return (
+      <>
+        {props.engine.InputTop(props)}
+        <div class="form-floating">
+          <input
+            type={computed("BootstrapStringView.type", { isFocused }, (p) => (p.isFocused ? "text" : "string"))}
+            id={id}
+            class="form-control"
+            value={isFocused.getValue() ? (props.box.getValue() || "") : props.box.getValue()}
+            readOnly={computed("BootstrapStringView.readonly", { isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
+            placeholder={""}
+            required={props.box.type.mandatory}
+            onFocus={(e) => {
+              if (!isFocused.getValue()) {
+                isFocused.setValue(true);
+                // setTimeout(() => {
+                //   (e.target as HTMLInputElement)?.select?.();
+                // });
+              }
+            }}
+            onBlur={(e: InputEvent) => {
+              isFocused.setValue(false);
+              innerSetValue(e)
+            }}
+            onInput={(e: InputEvent) => {
+              if (isFocused.getValue()) {
+                innerSetValue(e)
+              }
+            }}
+          />
+          <label for={id} class="form-label">
+            {props.label}
+          </label>
+        </div>
+        {props.engine.InputBottom(props)}
+      </>
+    );
+
+  }
+
+  if (props.box.type.view?.type === 'popup') {
+    return renderAsPopupButton();
+  } else {
+    return renderAsTextBox();
+  }
 
   function innerSetValue(e: Event) {
     let inputElt = e.currentTarget as HTMLInputElement;

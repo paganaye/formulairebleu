@@ -94,7 +94,7 @@ const allTests: ITabs =
                                 },
                             }
                         },
-
+                        { type: 'form', form: { version: '1', name: 'string in popup', dataType: { type: 'string', help: 'string in popup help.', view: { type: 'popup' } } } }
                     ]
                 },
                 {
@@ -103,6 +103,7 @@ const allTests: ITabs =
                         { type: 'form', form: { version: '1', name: 'Simple number form', dataType: { type: 'number', help: 'There is no extra parameters, just  a plain number form.' } } },
                         { type: 'form', form: { version: '1', name: 'number with default values', dataType: { type: 'number', help: 'A number form with a default value of 1.', defaultValue: 1 } } },
                         { type: 'form', form: { version: '1', name: 'number form', dataType: { type: 'number', validations: { mandatory: true }, help: 'A mandatory number.' } } },
+                        { type: 'form', form: { version: '1', name: 'number in popup', dataType: { type: 'number', help: 'number in popup help.', view: { type: 'popup' } } } }
                     ]
                 },
                 {
@@ -110,7 +111,10 @@ const allTests: ITabs =
                     title: 'Boolean type', content: [
                         { type: 'form', form: { version: '1', name: 'Simple boolean form', dataType: { type: 'boolean', help: 'There is no extra parameters, just  a plain boolean form. Typically it will show as a checkbox.' } } },
                         { type: 'form', form: { version: '1', name: 'boolean with default values', dataType: { type: 'boolean', help: 'A boolean form with a default value of true.', defaultValue: true } } },
-                        { type: 'form', form: { version: '1', name: 'boolean validation', dataType: { type: 'boolean', validations: { mandatory: true }, help: 'A mandatory boolean.' } } }
+                        { type: 'form', form: { version: '1', name: 'boolean validation', dataType: { type: 'boolean', validations: { mandatory: true }, help: 'A mandatory boolean.' } } },
+                        { type: 'form', form: { version: '1', name: 'boolean switch', dataType: { type: 'boolean', help: 'boolean viewed as a switch', view: { type: 'switch' } } } },
+                        { type: 'form', form: { version: '1', name: 'boolean in popup', dataType: { type: 'boolean', help: 'boolean in popup help.', view: { type: 'popup' } } } },
+                        { type: 'form', form: { version: '1', name: 'switch in popup', dataType: { type: 'boolean', help: 'boolean in popup help.', view: { type: 'switch', popup: true } } } }
                     ]
                 }
             ]
@@ -253,6 +257,6 @@ export default function Tests() {
     return (
         <div class="container">
             <Nav />
-            <TestComp test={(allTests as any).content[0].content[0].content[4]} level={1} />
+            <TestComp test={(allTests as any)/*.content[0].content[0].content[4]*/} level={1} />
         </div>);
 }

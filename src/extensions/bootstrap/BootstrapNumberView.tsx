@@ -42,8 +42,25 @@ export function BootstrapNumberView(props: NumberInputProps) {
     return isNaN(parsed) ? null : parsed;
   };
 
-  return (
-    <>
+
+  function renderAsPopupButton() {
+    let popupVisible = new Value("popupButtonPopupVisible", false);
+    let { PopupButton, Span } = props.engine;
+
+    return <>
+      <div class="row">
+        <div class="col-auto">
+          <PopupButton visible={popupVisible}>
+            {renderAsNumberBox}
+          </PopupButton>
+        </div>
+        <div class="col">{Span(props.box)}</div>
+      </div >
+    </>
+  }
+
+  function renderAsNumberBox() {
+    return (<>
       {props.engine.InputTop(props)}
       <div class="input-group mb-3">
         <div class="form-floating">
@@ -78,8 +95,16 @@ export function BootstrapNumberView(props: NumberInputProps) {
         </Show>
       </div>
       {props.engine.InputBottom(props)}
-    </>
-  );
+    </>);
+
+  }
+
+  if (props.box.type.view?.type === 'popup') {
+    return renderAsPopupButton();
+  } else {
+    return renderAsNumberBox();
+  }
+
   function innerSetValue(e: Event) {
     props.box.setValue(parseNumber((e.currentTarget as HTMLInputElement).value), { notify: true, validate: true })
   }
