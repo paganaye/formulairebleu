@@ -3,6 +3,7 @@ import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, Value } from '.
 import { IForm, IFormType, InferFormType, ISelectionList } from '../../core/IForm';
 import { BootstrapEngine } from '../../extensions/bootstrap/BootstrapEngine';
 import { randomize } from '../random';
+import { Box } from '../../core/Box';
 
 let variant1 = {
     type: 'variant',
@@ -116,13 +117,10 @@ let engine = new BootstrapEngine();
 
 export default function App() {
     formValue = { key: "str1", value: "123" }
-    let value = new Value("appValue", formValue);
-    value.setValue(formValue);
-    let onValueChanged = (v: any) => {
-        console.log("v", v);
-    }
+    let box = Box.enBox(engine, null, "form1", form1Type.dataType, formValue as any)
 
-    let formView1 = engine.FormView({ form: form1Type, value: value, onValueChanged })
+
+    let formView1 = engine.FormView({ form: form1Type, box })
     // setTimeout(() => {
     //     value.setValue({ key: "str1", value: "ABC" } as any);
     //     // setTimeout(() => {

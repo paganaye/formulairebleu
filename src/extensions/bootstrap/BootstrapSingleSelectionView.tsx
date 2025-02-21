@@ -30,6 +30,13 @@ export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
     if (!dropDown) dropDown = new Bootstrap.Dropdown(document.getElementById(id)!, { autoClose: true });
     dropDown.toggle();
   }
+  let selectedKey = props.selectedKey.getValue();
+  let idx = props.entries.findIndex(e => e.value == selectedKey);
+  if (idx < 0) {
+    selectedKey = String(props.entries[0]?.value);
+    props.selectedKey.setValue(selectedKey);
+  }
+
   switch (props.view.type) {
     case "radiobuttons":
       let view = props.view as IBootstrapRadioButtonsView
@@ -37,8 +44,8 @@ export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
         <label class="pe-1">{props.label}</label>
         <div id={id} class="selection-entries row">
           <For each={props.entries}>
-            {(entry) => (
-              <div class={`selection-entry ${view.itemClass ?? ''}`} >
+            {(entry) => {
+              return (<div class={`selection-entry ${view.itemClass ?? ''}`} >
                 <div class="form-check">
                   <input
                     class="form-check-input"
@@ -46,15 +53,15 @@ export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
                     name={id}
                     id={`${id}-${entry.value}`}
                     value={String(entry.value)}
-                    checked={entry.value === props.selectedKey}
+                    checked={entry.value === selectedKey}
                     onInput={() => props.selectedKey.setValue(entry.value)}
                   />
                   <label class="form-check-label" for={`${id}-${entry.value}`}>
                     {entry.label || String(entry.value)}
                   </label>
                 </div>
-              </div>
-            )}
+              </div>);
+            }}
           </For>
         </div >
       </div >
@@ -63,11 +70,13 @@ export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
       return <div class="form-floating">
         <select class="form-select" id={id} onInput={(e) => props.selectedKey.setValue((e.target as HTMLSelectElement).value)}>
           <For each={props.entries ?? []}>
-            {(entry) => (
-              <option value={String(entry.value)} selected={entry.value === props.selectedKey}>
-                {entry.label || String(entry.value)}
-              </option>
-            )}
+            {(entry) => {
+              return (
+                <option value={String(entry.value)} selected={entry.value === selectedKey}>
+                  {entry.label || String(entry.value)}
+                </option>
+              )
+            }}
           </For>
         </select>
         <label for={id}>{props.label}</label>
@@ -90,8 +99,8 @@ export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
         </button>
         <ul class="dropdown-menu" aria-labelledby={id}>
           <For each={props.entries ?? []}>
-            {(entry) => (
-              <li>
+            {(entry) => {
+              return (<li>
                 <button
                   class="dropdown-item"
                   type="button"
@@ -102,8 +111,8 @@ export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
                 >
                   {entry.label || String(entry.value)}
                 </button>
-              </li>
-            )}
+              </li>)
+            }}
           </For>
         </ul>
       </div >

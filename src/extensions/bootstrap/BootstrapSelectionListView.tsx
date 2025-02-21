@@ -43,7 +43,7 @@ export function BootstrapSelectionListView(props: SelectionListInputProps) {
     if (!view) view = { type: 'dropdown' }
     return <SingleSelectionVue
       label={props.label} entries={entries}
-      selectedKey={props.box as any}
+      selectedKey={props.box}
       view={view as IBootstrapSingleSelectionView} />
   }
 }
