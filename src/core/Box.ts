@@ -29,8 +29,6 @@ export abstract class Box<TFormType extends IFormType = any, U extends JSONValue
     return ++(Box.lastBoxId);
   }
 
-  abstract getDefaultValue(): U;
-
   addChildChangedObserver(observer: Observer<ChildChangedEvent>, immediate: boolean = false) {
     (this.#childChangedObservers || (this.#childChangedObservers = new Set())).add(observer);
     if (immediate) observer({ box: this, pageChanged: false });
@@ -73,6 +71,12 @@ export abstract class Box<TFormType extends IFormType = any, U extends JSONValue
         return new StringBox(engine, parent, name, type as any, value);
     }
   }
+  paginate() {
+    if (this.parent) this.parent.paginate();
+    else this.engine.paginate(this);
+  }
+
+
 
   setValue(value: JSONValue, options?: IBoxSetValueOptions) {
     super.setValue(value as U, options)
@@ -80,6 +84,10 @@ export abstract class Box<TFormType extends IFormType = any, U extends JSONValue
 
   static unBox<Q extends IFormType = any>(box: Box<Q>): InferDataType<Q> {
     return box.getValue();
+  }
+
+  getDefaultValue(): U {
+    return this.engine.getTypeDefaultValue(this.type) as U;
   }
 }
 
@@ -100,10 +108,6 @@ export class StringBox extends Box<IStringType> {
     super.setValue(value == null ? this.getDefaultValue() : String(value), options);
     this.notifyChildChanged(this, false);
   }
-
-  getDefaultValue() {
-    return this.type.defaultValue ?? "";
-  }
 }
 
 export class NumberBox extends Box<INumberType> {
@@ -116,10 +120,6 @@ export class NumberBox extends Box<INumberType> {
   setValue(value: JSONValue | undefined, options?: IBoxSetValueOptions): void {
     super.setValue(value == null ? this.getDefaultValue() : Number(value), options);
   }
-
-  getDefaultValue() {
-    return this.type.defaultValue ?? null;
-  }
 }
 
 export class BooleanBox extends Box<IBooleanType> {
@@ -131,10 +131,6 @@ export class BooleanBox extends Box<IBooleanType> {
 
   setValue(value: JSONValue | undefined, options?: IBoxSetValueOptions): void {
     super.setValue(value == null ? this.getDefaultValue() : Boolean(value), options);
-  }
-
-  getDefaultValue() {
-    return this.type.defaultValue ?? false;
   }
 }
 
@@ -158,16 +154,7 @@ export class ObjectBox extends Box<IObjectType> {
     super.notifyChildChanged(this, true)
   }
 
-  getDefaultValue() {
-    const defaultValues: JSONObject = {};
-    this.type.membersTypes.forEach((t) => {
-      if (t.type !== 'const') defaultValues[t.key] = Box.enBox(this.engine, null, t.key, t, undefined).getDefaultValue();
-    });
-    return defaultValues;
-  }
-
   getMembers() { return this.members; }
-
 }
 
 export class ArrayBox extends Box<IArrayType> {
@@ -184,16 +171,12 @@ export class ArrayBox extends Box<IArrayType> {
 
   setValue(value: JSONValue | undefined): void {
     if (Array.isArray(value)) {
-      this.entryBoxes.setValue(value.map((v, i) => Box.enBox(this.engine, this, `${this.name}#${i}`, this.type.entryType, v)));
+      let newEntryBoxes = value.map((v, i) => Box.enBox(this.engine, this, `${this.name}#${i}`, this.type.entryType, v));
+      this.entryBoxes.setValue(newEntryBoxes);
     }
     this.validate(value);
     this.notifyChildChanged(this, true);
   }
-
-  getDefaultValue() {
-    return [];
-  }
-
 }
 
 export class ConstValue extends Value {

@@ -1,5 +1,5 @@
-import { JSONValue, JSXComponent, JSXSource, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
-import { IForm, IFormType, IKeyedMemberType, INumberType, ITemplatedType } from "./IForm";
+import { JSONObject, JSONValue, JSXComponent, JSXSource, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
+import { IBooleanType, IForm, IFormType, IKeyedMemberType, INumberType, IObjectType, IStringType, ITemplatedType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
 import { ArrayBox, Box, IPageNo, ObjectBox, VariantBox } from "./Box";
@@ -260,21 +260,6 @@ export abstract class FormEngine {
         if (!boxPage || !pageNo) return true;
         return boxPage.startPage <= pageNo && pageNo <= boxPage.endPage;
     }
-
-    // validateNumber(box: Box<INumberType>, validationRule: Validation, value: any, errors: ErrorString[]) {
-    //     switch (validationRule.type) {
-    //         case 'mandatory':
-    //             if (value == null || value === '') {
-    //                 errors.push(validationRule.message || `${box.name} is required.`);
-    //             }
-    //             break;
-    //         default:
-    //             errors.push("Unknown rule " + validationRule.type);
-    //             break
-
-    //     }
-
-    // }
 
     validate(box: Box, value: JSONValue, rules: ValidationRules, errors: ErrorString[]): void {
         const name = box.name;
@@ -564,4 +549,29 @@ export abstract class FormEngine {
         }
         return <>{content}</>;
     }
+
+    getTypeDefaultValue(type: IFormType): JSONValue | undefined {
+        type = this.getActualType(type)
+        switch (type.type) {
+            case 'string':
+                return (type as IStringType).defaultValue ?? "";
+            case 'number':
+                return (type as INumberType).defaultValue ?? 0;
+            case 'boolean':
+                return (type as IBooleanType).defaultValue ?? false;
+            case 'object':
+                let res: JSONObject = {};
+                (type as IObjectType).membersTypes.forEach(t => {
+                    res[t.key] = this.getTypeDefaultValue(t);
+                });
+            case 'array':
+                return [];
+            case 'const':
+                return undefined;
+            default:
+                return undefined;
+        }
+        return null;
+    }
+
 }

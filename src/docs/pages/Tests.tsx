@@ -50,9 +50,9 @@ Styles.add("pre.output", {
     'marginTop': '0.5em'
 })
 
-const allTests: ITabs =
+const allTests: Test =
 {
-    type: 'tabs',
+    type: 'section',
     title: 'Tests Formulaire bleu',
     content: [
         {
@@ -102,6 +102,7 @@ const allTests: ITabs =
                     title: 'Number Type', content: [
                         { type: 'form', form: { version: '1', name: 'Simple number form', dataType: { type: 'number', help: 'There is no extra parameters, just  a plain number form.' } } },
                         { type: 'form', form: { version: '1', name: 'number with default values', dataType: { type: 'number', help: 'A number form with a default value of 1.', defaultValue: 1 } } },
+                        { type: 'form', form: { version: '1', name: 'number slider', dataType: { type: 'number', help: 'This is a slider help', view: { type: 'slider', tickmarks: true } } } },
                         { type: 'form', form: { version: '1', name: 'number form', dataType: { type: 'number', validations: { mandatory: true }, help: 'A mandatory number.' } } },
                         { type: 'form', form: { version: '1', name: 'number in popup', dataType: { type: 'number', help: 'number in popup help.', view: { type: 'popup' } } } }
                     ]
@@ -123,11 +124,10 @@ const allTests: ITabs =
             type: 'section',
             title: 'Arrays',
             content: [
-                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'string', help: 'Array1 help.' } } },
-                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'string', help: 'Array2 help.' } } },
-                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'string', help: 'Array3 help.' } } },
-                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'string', help: 'Array4 help.' } } },
-
+                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'array', entryType: { type: 'string' }, help: 'Array1 help.' } } },
+                { type: 'form', form: { version: '1', name: 'Array2', dataType: { type: 'array', entryType: { type: 'number' }, help: 'Array1 help.' } } },
+                { type: 'form', form: { version: '1', name: 'Array3', dataType: { type: 'array', entryType: { type: 'boolean' }, help: 'Array1 help.' } } },
+                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'array', entryType: { type: 'string' }, help: 'Array1 help.' } } },
             ]
         },
         {
@@ -157,36 +157,18 @@ function TestComp(props: { test: Test, level: number }) {
         let test = props.test;
         let form = 'form' in test ? test.form : undefined;
         let innerFormEngine = new BootstrapEngine();
+        let jsonValue = new Value("");
         let box = Box.enBox(innerFormEngine, null, form.name, form.dataType, 'value' in test ? test.value : undefined);
-        // let currentJSONValue = "";
-
-        // props.value.addObserver((v) => checkJSONValue)
-        // const rootBox = Box.enBox(props.engine, null, props.form.name, props.form.dataType, props.value.getValue());
-        // props.engine.rootBox = rootBox;
-
-        // if (rootBox.type.templates) props.engine.templates
-        // rootBox.addChildChangedObserver((e) => {
-        //   let v = rootBox.getValue();
-        //   props.value.setValue(v);
-        //   props.engine.paginate(rootBox);
-        // })
-
-        // checkJSONValue();
-
-        // function checkJSONValue() {
-        //   let newValue = JSON.stringify(props.value.getValue());
-        //   if (newValue != currentJSONValue) rootBox.setValue(newValue, { notify: true, validate: false })
-
-        //   currentJSONValue = newValue;
-        // }
-        return (<div>
-
-            <div class="form-comp">
-                <BootstrapFormView engine={innerFormEngine} form={form} box={box} />
-                <pre class="output">current form value: {computed("", { value: box }, (p) => JSON.stringify(p.value, undefined, '  '))}</pre>
+        box.addChildChangedObserver((o) => {
+            jsonValue.setValue(JSON.stringify(box.getValue(), undefined, '  '))
+        });
+        return (<div class="form-comp">
+            <BootstrapFormView engine={innerFormEngine} form={form} box={box} />
+            <pre class="output">current form value: {jsonValue}</pre>
+            <Show when={box.type.validations}>
                 <button type="button" class="btn btn-secondary" onClick={validate}>Validate</button>
                 <button type="button" class="btn btn-secondary" onClick={clearErrors}>Clear</button>
-            </div>
+            </Show>
         </div>);
 
         function validate() {
@@ -257,6 +239,6 @@ export default function Tests() {
     return (
         <div class="container">
             <Nav />
-            <TestComp test={(allTests as any)/*.content[0].content[0].content[4]*/} level={1} />
+            <TestComp test={(allTests as any)/*.content[1].content[0]*/} level={1} />
         </div>);
 }

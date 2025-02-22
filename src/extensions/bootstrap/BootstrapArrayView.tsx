@@ -58,7 +58,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
 
     function newArrayEntry(): JSONValue {
         let entryType = (props.box.type).entryType;
-        return props.box.getDefaultValue();
+        return props.engine.getTypeDefaultValue(entryType);
     }
 
     function addButton() {
@@ -69,6 +69,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     let values = props.box.getValue();
                     let newValues = [...values, newArrayEntry()]
                     props.box.setValue(newValues);
+                    props.box.paginate();
                 }}
             >Add</button>;
     }
@@ -88,17 +89,14 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
 
     function renderEntry(entry: Box, rowIndex: number) {
         let simpleField = (columns.length == 1 && columns[0].key === "#value");
+        //props.engine.InputRenderer()
         return (
             <div>
                 <label>{entry.name}</label>
                 {simpleField
-                    ? <input
-                        type="text"
-                        value={entry.getValue() as string}
-                        onInput={(e) => entry.setValue(e.currentTarget.value)}
-                    />
+                    ? props.engine.InputRenderer({ engine: props.engine, label: props.label, level: props.level + 1, box: entry })
                     : <For each={columns}>
-                        {(column, columnIndex) => (renderEntryField(entry, rowIndex, column, columnIndex))}
+                        {(column: IColumn, columnIndex: number) => (renderEntryField(entry, rowIndex, column, columnIndex))}
                     </For>}
                 {deleteButton(rowIndex)}
             </div>

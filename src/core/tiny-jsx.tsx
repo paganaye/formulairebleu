@@ -115,7 +115,7 @@ export function formulaireBleuJSX(
     switch (typeof src) {
         case 'string':
             const elt = document.createElement(src);
-            elt.id = getUniqueId(src);
+            // elt.id = getUniqueId(src);
             if (attrs) {
                 Object.keys(attrs).forEach(k => {
                     let v = attrs[k];
@@ -133,7 +133,7 @@ export function formulaireBleuJSX(
                                 else elt.setAttribute(k, v as string)
                             }, true)
                         } else {
-                            if (v == true) v = "";
+                            if (v === true) v = "";
                             if (v !== false) elt.setAttribute(k, v as any);
                         }
                     }

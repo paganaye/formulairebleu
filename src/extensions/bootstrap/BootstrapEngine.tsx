@@ -34,6 +34,7 @@ declare module "../../core/IForm" {
 
     export interface INumberViews {
         popup: { type: 'popup' } & IPopupOptions,
+        slider: { type: 'slider', min?: number, max?: number, step?: number, tickmarks?: boolean }
     }
 
     export interface IBooleanViews {
