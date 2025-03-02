@@ -1,4 +1,4 @@
-import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, Show, Value } from "../../core/tiny-jsx";
+import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, Show, Observable, Variable } from "../../core/tiny-jsx";
 import { Box, ArrayBox, ObjectBox } from "../../core/Box";
 import { IArrayType, IObjectType, ISelectionList } from "../../core/IForm";
 import { BootstrapEngine } from './BootstrapEngine';
@@ -214,7 +214,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                 <div class="list-group">
                     <For each={currentPageBoxes}>
                         {(entry, index) => {
-                            let isOpen = new Value("popupIsOpen", false);
+                            let isOpen = new Variable("popupIsOpen", false);
                             return (
                                 <div class="list-group-item list-group-item-action d-flex align-items-center"
                                     onClick={() => isOpen.setValue(true)}>
@@ -254,7 +254,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
 
 
     function renderAsTabs() {
-        const activeTab = new Value("tabsActiveTab", 0);
+        const activeTab = new Variable("tabsActiveTab", 0);
         return <>
             <div class="tabs-container">
                 <ul class="nav nav-tabs">
@@ -288,7 +288,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
 
 
     function renderAsCarousel() {
-        const activeIndex = new Value("carouselActiveIndex", 0);
+        const activeIndex = new Variable("carouselActiveIndex", 0);
         const length = entryBoxes.getValue().length;
         const view: { autoplay?: boolean, interval?: number } = props.box.type.view as any || {};
         const autoplay = view.autoplay !== undefined ? view.autoplay : true;

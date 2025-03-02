@@ -1,9 +1,8 @@
-import { JSONObject, JSONValue, JSXComponent, JSXSource, Show, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
-import { IBooleanType, IForm, IFormType, IKeyedMemberType, INumberType, IObjectType, IStringType, ITemplatedType } from "./IForm";
+import { JSONObject, JSONValue, JSXComponent, JSXSource, Show, Variable, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "./tiny-jsx";
+import { IBooleanType, IForm, IFormType, IKeyedMemberType, INumberType, IObjectType, IStringType, IVariantType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
-import { formatTemplateString } from "../extensions/bootstrap/BootstrapFormView";
-import { ArrayBox, Box, IPageNo, ObjectBox, VariantBox } from "./Box";
-import { Value } from './tiny-jsx';
+import { ArrayBox, Box, ObjectBox, VariantBox } from "./Box";
+import { Observable } from './tiny-jsx';
 import { ArrayValidations, BooleanValidations, ConstValidations, DatetimeValidations, DateValidations, ErrorString, NumberValidations, ObjectValidations, StringValidations, TimeValidations, ValidationRules, VariantValidations, VoidValidations } from "./Validation";
 import { Styles } from "./Styles";
 
@@ -58,11 +57,9 @@ type TitleProps = {
 export abstract class FormEngine {
     templates: Record<string, IFormType>;
     isReadonly: boolean = false;
-    readonly pageNo = new Value("formPageNo", 1);
-    readonly pageCount = new Value("formPageCount", 1);
-    readonly rePaginationCount = new Value("formRepaginationCount", 1);
-
-    readonly nullBox = Box.enBox(this, null, "null", { type: 'const', value: null }, null)
+    readonly pageNo = new Variable("formPageNo", 1);
+    readonly pageCount = new Variable("formPageCount", 1);
+    readonly rePaginationCount = new Variable("formRepaginationCount", 1);
 
     constructor(templates?: Record<string, IFormType>) {
         this.templates = templates ?? {};
@@ -111,7 +108,7 @@ export abstract class FormEngine {
                     }
                     break;
                 case 'variant':
-                    let innerVariant = (box as VariantBox).getInnerVariant().getValue();
+                    let innerVariant = (box as VariantBox).variantInnerBox.getValue();
                     if (innerVariant) paginateRecursely(innerVariant);
                     break;
                 case 'boolean':
@@ -143,7 +140,7 @@ export abstract class FormEngine {
     }
 
     FormBody(props: FormBodyProps) {
-        const rootBox = new Value("formBodyRootBox", undefined);
+        const rootBox = new Variable("formBodyRootBox", undefined);
 
         // createEffect(() => {
         //     rootBox.setValue(Box.enBox(null, props.form.name, props.form.dataType, null));
@@ -195,7 +192,7 @@ export abstract class FormEngine {
 
     InputRenderer(props: InputRenderProps) {
         let inputComponent = this.getRenderer(props.box.type);
-
+        //props.box.sanitize();
         const isVisible = computed("inputRenderIsVisible", { page: this.pageNo, box: props.box.pageNo }, (p) => {
             let box = p.box;
             if (!box) return true;
@@ -257,7 +254,7 @@ export abstract class FormEngine {
     isBoxVisible(box: Box) {
         let pageNo = this.pageNo.getValue();
         let boxPage = box.pageNo.getValue()
-        if (!boxPage || !pageNo) return true;
+        if (!boxPage || boxPage.startPage == 0 || !pageNo) return true;
         return boxPage.startPage <= pageNo && pageNo <= boxPage.endPage;
     }
 
@@ -511,7 +508,7 @@ export abstract class FormEngine {
     }
 
     Span(box: Box): HTMLSpanElement {
-        let content = new Value<JSXSource[]>("BoxSpan", ["..."]);
+        let content = new Variable<JSXSource[]>("BoxSpan", ["..."]);
 
         box.addChildChangedObserver(() => {
             content.setValue(toSpan(1, box));
@@ -533,9 +530,8 @@ export abstract class FormEngine {
                 }
 
                 case 'variant': {
-                    let vbox = box as VariantBox;
-                    let value = toSpan(level + 1, vbox.getValue()) as any;
-                    return [<small class="form-span-label">{String(value.key) + ": "}</small>, <span class="form-span-content">{value.value}</span>];
+                    let v = (box as VariantBox).getValue();
+                    return [<small class="form-span-label">{String(v.type) + ": "}</small>, <span class="form-span-content">{v.value}</span>];
                 }
 
                 default: {
@@ -564,12 +560,20 @@ export abstract class FormEngine {
                 (type as IObjectType).membersTypes.forEach(t => {
                     res[t.key] = this.getTypeDefaultValue(t);
                 });
+                return res;
             case 'array':
                 return [];
+            case 'variant':
+                let variant0 = (type as IVariantType).variants[0];
+                return { key: variant0.key, value: this.getTypeDefaultValue(variant0) };
             case 'const':
                 return undefined;
+            case 'date':
+            case 'time':
+            case 'datetime':
+                return '';
             default:
-                return undefined;
+                throw Error("Unexpected type " + type.type)
         }
         return null;
     }

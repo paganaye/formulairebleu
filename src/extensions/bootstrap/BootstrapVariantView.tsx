@@ -13,22 +13,19 @@ export type VariantInputProps = {
 
 export function BootstrapVariantView(props: VariantInputProps) {
   //let id = getUniqueId(`txt_${props.label}`);
-  let innerVariant = props.box.getInnerVariant();
 
   // createEffect(() => {
   //   //let view = props.box.type.view ?? { type: 'textbox' };
   //   //mask = view.type == 'masked-textbox' ? view.mask : undefined;
   // })
   const variantComp = computed("BootstrapVariantView.comp", { box: props.box.variantInnerBox }, p => {
-    if (p.box) {
-      return props.engine.InputRenderer({
-        engine: props.engine,
-        label: props.label,
-        level: props.level,
-        box: p.box
-      });
-    }
-    return <span>...</span>
+
+    return p.box ? props.engine.InputRenderer({
+      engine: props.engine,
+      label: props.label,
+      level: props.level,
+      box: p.box
+    }) : <p>no box</p>;
   })
 
   let entries = props.box.getVariants().map(v => ({ value: v.key, label: v.label ?? "" }));
@@ -36,7 +33,7 @@ export function BootstrapVariantView(props: VariantInputProps) {
   return (
     <>
       {/* {props.engine.InputTop(props)} */}
-      <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.key} entries={entries} label={"View as:"} />
+      <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.typeKey} entries={entries} label={"View as:"} />
       {variantComp}
       {/* {props.engine.InputBottom(props)} */}
     </>

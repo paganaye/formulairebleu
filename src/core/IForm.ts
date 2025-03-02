@@ -32,7 +32,7 @@ type OneOf<T> = T[keyof T];
 
 export type GetFormViews<T extends PrimitiveType = any> = FormPrimitives[T]['views']
 export type GetFormType<T extends PrimitiveType = any> = FormPrimitives[T]['type']
-export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType | ITemplatedType;
+export type IFormType = IStringType | INumberType | IBooleanType | IObjectType | IArrayType | IConstType | IDateType | IDateTimeType | ITimeType | IVariantType | IVoidType | ITemplatedType | INullType;
 
 interface TypeBase {
   label?: string;
@@ -158,15 +158,34 @@ export interface IKeyValue<TKey extends string, T> {
 
 export interface IVariantType extends TypeBase {
   type: 'variant';
-  variants: IVariantMemberType[];
   defaultValue?: 'void';
   view?: OneOf<IVariantViews>
   validations?: VariantValidations;
+  variants: IVariantMemberType[];
+  determinant?: string;
+  flat?: boolean;
+  // booleanType?: IBooleanType;
+  // stringType?: IStringType;
+  // numberType?: IBooleanType;
+  // arrayType?: IArrayType;
 }
+
+export type IVariantMemberType<TKind extends string = string, TType extends IObjectType = any> = { key: TKind, label?: string } & TType;
+
+
+
 
 export interface IVariantViews {
 }
 
+export interface INullType extends TypeBase {
+  type: 'null';
+  view?: OneOf<INullViews>
+  validations?: undefined;
+}
+
+export interface INullViews {
+}
 
 export interface IVoidType extends TypeBase {
   type: 'void';
@@ -177,29 +196,6 @@ export interface IVoidType extends TypeBase {
 export interface IVoidViews {
 }
 
-// Tes autres types restent inchangés
-
-// export type PrimitiveType =
-//   | 'array'
-//   | 'boolean'
-//   | 'const'
-//   //    | 'date'
-//   //    | 'datetime'
-//   | 'number'
-//   | 'object'
-//   | 'string'
-//   | 'struct'
-//   //    | 'time'
-//   | 'variant'
-//   | 'void';
-
-
-// export interface DateObject {
-//   type: 'date' | 'time' | 'datetime';
-//   value: string | null;
-// }
-
-export type IVariantMemberType<TKind extends string = string, TType extends IFormType = any> = { key: TKind, label?: string } & TType;
 
 export type IObjectMemberType = IKeyedMemberType | IConstType;
 export type IKeyedMemberType<TKey extends string = string, TType extends IFormType = any> = {

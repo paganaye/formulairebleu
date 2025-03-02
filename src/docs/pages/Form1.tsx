@@ -1,4 +1,4 @@
-import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, Value } from '../../core/tiny-jsx'
+import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, Observable } from '../../core/tiny-jsx'
 
 import { IForm, IFormType, InferFormType, ISelectionList } from '../../core/IForm';
 import { BootstrapEngine } from '../../extensions/bootstrap/BootstrapEngine';

@@ -7,18 +7,22 @@ export type JSONValue = JSONPrimitive | JSONArray | JSONObject;
 
 export class formulaireBleuJSXFragment { }
 
-export type JSXSource = JSONValue | Node | (() => JSXSource) | IValue<JSXSource>;
+export type JSXSource = JSONValue | Node | (() => JSXSource) | IObservable<JSXSource>;
 
 export type Observer<T> = (newValue: T) => void
 
 
-export interface IValue<T = any> {
+export interface IObservable<T = any> {
     getValue(): T;
-    setValue(newValue: T): void;
     addObserver(observer: Observer<T>);
 }
 
-export function isIValue(v: any): v is IValue {
+export interface IVariable<T = any> extends IObservable<T> {
+    setValue(newValue: T, options?: ISetValueOptions): void;
+}
+
+
+export function isObservable(v: any): v is IObservable {
     return v && typeof v.getValue === "function";
 }
 
@@ -26,41 +30,50 @@ export interface ISetValueOptions {
     notify: boolean
 }
 
-export class Value<T = any> implements IValue<T> {
-    #observers?: Set<Observer<T>>;
-    #value: T;
-    readonly id: string;
+const directProperties = new Set([
+    "value", "checked", "selected", "disabled", "readOnly",
+    "className", "id", "href", "src"
+]);
 
-    constructor(namePrefix: string, value: T = undefined) {
-        this.#value = value;
-        this.id = getUniqueId(namePrefix);
+
+export abstract class Observable<T = any> implements IObservable<T> {
+    #observers?: Set<Observer<T>>;
+    readonly id: string;
+    abstract getValue(): T;
+
+    constructor(namePrefix?: string) {
+        this.id = getUniqueId(namePrefix ?? this.constructor.name);
     }
 
+    addObserver(observer: Observer<T>, immediate: boolean = false) {
+        (this.#observers || (this.#observers = new Set())).add(observer);
+        if (immediate) observer(this.getValue())
+    }
+
+    notifyObservers(value: T) {
+        this.#observers?.forEach(observer => observer(value));
+    }
+}
+
+export class Variable<T = any> extends Observable<T> implements IVariable<T> {
+    #value: T;
     getValue(): T { return this.#value; }
     setValue(newValue: T, options: ISetValueOptions = { notify: true }): void {
         if (newValue === this.#value) return
+        //if (Array.isArray(newValue) && Array.isArray(this.#value) && newValue.length == 0 && this.#value.length == 0) return
         this.#value = newValue;
-        if (options.notify) this.notifyObservers();
+        if (options.notify) this.notifyObservers(newValue);
     }
 
-    addObserver(observer: Observer<T>) {
-        (this.#observers || (this.#observers = new Set())).add(observer);
-    }
-
-    // removeObserver(observer: Observer<T>) {
-    //     this.#observers?.delete(observer);
-    //     // observer.observedValues.delete(this);
-    // }
-
-    notifyObservers() {
-        this.#observers?.forEach(observer => observer(this.#value));
+    constructor(namePrefix: string, value: T = undefined) {
+        super(namePrefix)
+        this.#value = value;
     }
 }
 
 
-
-function observe<T>(source: T | IValue<T>, update: (value: T) => void, init: boolean): void {
-    if (isIValue(source)) {
+function observe<T>(source: T | IObservable<T>, update: (value: T) => void, init: boolean): void {
+    if (isObservable(source)) {
         if (init) update(source.getValue());
         source.addObserver(update);
     } else {
@@ -75,13 +88,13 @@ function createElements(source: JSXSource): Node[] {
     if (['string', 'number', 'boolean'].includes(type))
         return [document.createTextNode(source.toString())];
     if (type == 'object') {
-        if (isIValue(source)) {
+        if (isObservable(source)) {
             let elts = createElements(source.getValue());
             const observer = (val: any) => {
                 const next = elts[elts.length - 1]?.nextSibling;
                 const newElts = createElements(val);
                 if (newElts.length == 0) {
-                    newElts.push(document.createComment(getUniqueId((source as Value).id + "-placeholder")));
+                    newElts.push(document.createComment(getUniqueId((source as Observable).id + "-placeholder")));
                 }
                 const parent = elts[0]?.parentNode;
                 if (parent) {
@@ -119,29 +132,23 @@ export function formulaireBleuJSX(
             if (attrs) {
                 Object.keys(attrs).forEach(k => {
                     let v = attrs[k];
-                    if (k == 'ref' && v instanceof Value) {
-                        setTimeout(() => (v as Value).setValue(elt));
+                    if (k == 'ref' && v instanceof Observable) {
+                        setTimeout(() => (v as Variable).setValue(elt));
                     }
                     if (k.startsWith("on") && typeof v === "function")
                         elt.addEventListener(k.slice(2).toLowerCase(), v);
                     else {
                         if (v === undefined) v = "";
-                        if (isIValue(v)) {
-                            observe(v, (v) => {
-                                if (v === true) v = ""
-                                if (v === false) elt.removeAttribute(k)
-                                else elt.setAttribute(k, v as string)
-                            }, true)
-                        } else {
-                            if (v === true) v = "";
-                            if (v !== false) elt.setAttribute(k, v as any);
-                        }
+                        if (isObservable(v)) observe(v, (v) => setElementAttribute(elt, k, v), true)
+                        else setElementAttribute(elt, k, v);
                     }
                 });
             }
-            children.forEach(child =>
-                createElements(child).forEach(n => elt.appendChild(n))
-            );
+            children.forEach(child => {
+                createElements(child).forEach(n => {
+                    elt.appendChild(n)
+                });
+            });
             return elt;
         case 'function':
             if (src === formulaireBleuJSXFragment)
@@ -153,25 +160,32 @@ export function formulaireBleuJSX(
         default:
             throw Error('Unexpected JSX element ' + src);
     }
+
+    function setElementAttribute(elt: HTMLElement, key: string, value: any) {
+        if (directProperties.has(key)) {
+            elt[key] = value;
+        } else {
+            if (value === true) value = ""
+            if (value === false) elt.removeAttribute(key)
+            else elt.setAttribute(key, value);
+        }
+    }
 }
 
 export function For<T>(
     props: {
-        each: T[] | IValue<T[]>
-        filter?: (e: T, index: number) => boolean
+        each: T[] | IObservable<T[]>
     },
     children: (entry: any, index: number) => JSXSource
 ) {
     const childZero = children[0];
     if (typeof childZero !== 'function')
         throw new Error("For expects its child to be a function");
-    const forContent = new Value<Node[]>("ForContent", []);
+    const forContent = new Variable<Node[]>("ForContent", []);
     const update = (eachArray: T[]) => {
         const nodes: Node[] = [];
         eachArray?.forEach((item, index) => {
-            if (!props.filter || props.filter(item, index)) {
-                nodes.push(...createElements(childZero(item, index)))
-            }
+            nodes.push(...createElements(childZero(item, index)))
         });
         if (nodes.length == 0) nodes.push(document.createComment(getUniqueId('For-placeholder')));
         forContent.setValue(nodes);
@@ -186,11 +200,11 @@ export function render(content: JSXSource, root: HTMLElement = document.body) {
 
 export function computed<T extends Record<string, any>, R>(
     computationName: string,
-    values: { [K in keyof T]: IValue<T[K]> },
+    values: { [K in keyof T]: IObservable<T[K]> },
     calculation: (props: T) => R
-): IValue<R> {
+): IObservable<R> {
     const args = {} as T,
-        result = new Value<R>(computationName, undefined!);
+        result = new Variable<R>(computationName, undefined!);
     for (const key in values) {
         const v = values[key];
         args[key] = v.getValue();
@@ -204,11 +218,11 @@ export function computed<T extends Record<string, any>, R>(
     return result;
 }
 
-export function Show(props: { when: IValue<any> | any, fallback?: any }, children?: JSXSource[]) {
+export function Show(props: { when: IObservable<any> | any, fallback?: any }, children?: JSXSource[]) {
     let when = props.when;
     while (typeof when == 'function') when = when();
-    if (when instanceof Value) {
-        const showResult = new Value("show", undefined);
+    if (when instanceof Observable) {
+        const showResult = new Variable("show", undefined);
         observe(when, v => showResult.setValue(v ? children : props.fallback), true);
         return showResult;
     } else {
@@ -225,9 +239,9 @@ interface MatchElement<T> {
 }
 
 export function Switch<T>(
-    props: { when: IValue<T> | T },
+    props: { when: IObservable<T> | T },
     children: MatchElement<T>[]) {
-    const switchContent = new Value<Node[]>("switchContent", []);
+    const switchContent = new Variable<Node[]>("switchContent", []);
     const update = (value: T) => {
         const matchedChild = children.find(child =>
             child.props?.value !== undefined ? child.props.value === value : child.props?.fallback

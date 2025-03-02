@@ -1,8 +1,8 @@
-import { JSXComponent, Show, Value } from "../../core/tiny-jsx";
+import { JSXComponent, Show, Observable, Variable } from "../../core/tiny-jsx";
 //import { Portal } from "solid-js/web";
 import { Buttons, DialogButton } from "./BootstrapButtonsView";
 
-const currentModals = new Value<InnerModalPropsPlus[]>("currentModals", []);
+const currentModals = new Variable<InnerModalPropsPlus[]>("currentModals", []);
 
 type InnerModalPropsPlus = InnerModalProps & { handleClose: () => void }
 
@@ -23,9 +23,9 @@ export function closeTopModal() {
 
 export function InnerModalView(props, children): JSXComponent<InnerModalProps> {
   let animationTimeout: number | undefined;
-  const showBackdrop = new Value("innerModalViewShowBackdrop", false);
-  const showModal = new Value("innerModalViewShowModal", false);
-  const isAnimating = new Value("innerModalIsAnimating", false);
+  const showBackdrop = new Variable("innerModalViewShowBackdrop", false);
+  const showModal = new Variable("innerModalViewShowModal", false);
+  const isAnimating = new Variable("innerModalIsAnimating", false);
 
   // createEffect(() => {
   //   if (props.isOpen) {

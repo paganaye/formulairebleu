@@ -1,4 +1,4 @@
-import { formulaireBleuJSX, formulaireBleuJSXFragment, IValue, JSONValue, JSXSource, Observer, Value } from "../../core/tiny-jsx";
+import { formulaireBleuJSX, formulaireBleuJSXFragment, IObservable, JSONValue, JSXSource, Observer, Observable } from "../../core/tiny-jsx";
 import { ModalView, PopupView } from './BootstrapModalView';
 import { IForm } from "../../core/IForm";
 import { Box } from "../../core/Box";

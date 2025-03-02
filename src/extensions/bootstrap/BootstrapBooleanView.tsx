@@ -1,10 +1,10 @@
-import { formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
+import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, Variable } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
 import { BootstrapEngine } from "./BootstrapEngine";
 import { IFormType } from "../../core/IForm";
-import { Value } from "../../core/tiny-jsx";
+import { Observable } from "../../core/tiny-jsx";
 
 export interface IBootstapSwitchType {
   type: "switch";
@@ -47,7 +47,7 @@ export function BootstrapBooleanView(props: BooleanInputProps) {
   }
 
   function renderAsPopupButton() {
-    let popupVisible = new Value("popupButtonPopupVisible", false);
+    let popupVisible = new Variable("popupButtonPopupVisible", false);
     let { PopupButton, Span } = props.engine;
 
     return (
@@ -80,11 +80,13 @@ export function BootstrapBooleanView(props: BooleanInputProps) {
               ref={setInputRef}
               class="form-check-input"
               id={id}
-              checked={props.box.getValue() === true}
+              checked={computed("bool", { value: props.box }, (p) => {
+                return p.value === true
+              })}
               readOnly={props.engine.isReadonly}
-              onBlur={(e: Event) => innerSetValue(e)}
+              onBlur={(e: Event) => onInputChanged(e)}
               onChange={(e: Event) => {
-                innerSetValue(e);
+                onInputChanged(e);
               }}
             />
             <label
@@ -109,7 +111,7 @@ export function BootstrapBooleanView(props: BooleanInputProps) {
     return renderAsBooleanBox();
   }
 
-  function innerSetValue(e: Event) {
+  function onInputChanged(e: Event) {
     const newValue = (e.currentTarget as HTMLInputElement).checked;
     props.box.setValue(newValue, { notify: true, validate: true });
   }

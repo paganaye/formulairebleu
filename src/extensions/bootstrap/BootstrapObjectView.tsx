@@ -1,4 +1,4 @@
-import { JSXComponent, For, formulaireBleuJSX, formulaireBleuJSXFragment, computed, Value, Show } from "../../core/tiny-jsx";
+import { JSXComponent, For, formulaireBleuJSX, formulaireBleuJSXFragment, computed, Observable, Show, Variable } from "../../core/tiny-jsx";
 import { ConstView } from './BootstrapConstView';
 import { Box, ObjectBox } from "../../core/Box";
 import { BootstrapEngine } from './BootstrapEngine';
@@ -33,7 +33,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
   }
 
   function renderAsTabs() {
-    const activeTab = new Value("tabActiveTab", 0);
+    const activeTab = new Variable("tabActiveTab", 0);
     return <>
       <div class="tabs-container">
         <ul class="nav nav-tabs">
@@ -70,7 +70,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
 
 
   function renderAsWizard(args: { onClosed?: () => void } = {}) {
-    const activeStep = new Value("wizardActiveStep", 0);
+    const activeStep = new Variable("wizardActiveStep", 0);
 
     function nextStep(index) {
       if (validateStep(index)) {
@@ -127,7 +127,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
   }
 
   function renderAsPopupButton() {
-    let popupVisible = new Value("popupButtonPopupVisible", false);
+    let popupVisible = new Variable("popupButtonPopupVisible", false);
     let { PopupButton, Span } = props.engine;
 
     return <>
@@ -151,31 +151,29 @@ export function BootstrapObjectView(props: ObjectInputProps) {
   }
 
   function renderAsFlow() {
-    return (
-      <>
-        {inputTop}
-        <p>{props.label ?? props.box.type.label}</p>
-        <For each={members}>
-          {(sub, index) => {
-            return (sub.type.type == 'const'
-              ? <ConstView  {...sub.getType() as any} />
-              : <div class="mb-2">
-                <label class="form-label">{(sub as any).key}</label>
-                {
-                  props.engine.InputRenderer({
-                    engine: props.engine,
-                    label: sub.type.label ?? sub.name,
-                    box: sub,
-                    level: props.level + 1,
-                  })
-                }
-              </div>
-            );
-          }}
-        </For>
-        {inputBottom}
-      </>
-    );
+    return (<>
+      {inputTop}
+      <p>{props.label ?? props.box.type.label}</p>
+      <For each={members}>
+        {(sub, index) => {
+          return (sub.type.type == 'const'
+            ? <ConstView  {...sub.type} />
+            : <div class="mb-2">
+              <label class="form-label">{(sub as any).key}</label>
+              {
+                props.engine.InputRenderer({
+                  engine: props.engine,
+                  label: sub.type.label ?? sub.name,
+                  box: sub,
+                  level: props.level + 1,
+                })
+              }
+            </div>
+          );
+        }}
+      </For>
+      {inputBottom}
+    </>);
   }
 
   if (typeof viewAsType === 'object' && 'popup' in viewAsType && viewAsType.popup) {

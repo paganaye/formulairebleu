@@ -1,4 +1,4 @@
-import { JSXComponent, Show, Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
+import { JSXComponent, Show, Observable, computed, formulaireBleuJSX, formulaireBleuJSXFragment, Variable } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Styles } from "../../core/Styles";
 import { Box } from "../../core/Box";
@@ -26,7 +26,7 @@ Styles.add('input.form-range[type="range"]', {
 
 export function BootstrapNumberView(props: NumberInputProps) {
   let id = getUniqueId(`num_${props.label}`);
-  const isFocused = new Value("bootstrapNumberIsFocused", false);
+  const isFocused = new Variable("bootstrapNumberIsFocused", false);
   const suffix = (props.box.type.view as any)?.suffix;
 
   // Détection des différents types de vues
@@ -56,7 +56,7 @@ export function BootstrapNumberView(props: NumberInputProps) {
   };
 
   function renderAsPopupButton() {
-    let popupVisible = new Value("popupButtonPopupVisible", false);
+    let popupVisible = new Variable("popupButtonPopupVisible", false);
     let { PopupButton, Span } = props.engine;
 
     return (
@@ -82,7 +82,7 @@ export function BootstrapNumberView(props: NumberInputProps) {
               )}
               id={id}
               class="form-control number-input"
-              value={formatNumber()}
+              value={computed("box", { value: props.box }, p => formatNumber())}
               readOnly={computed("BootstrapNumber.readonly", { isFocused }, (p) =>
                 (props.engine.isReadonly || !isFocused.getValue())
               )}
@@ -105,10 +105,10 @@ export function BootstrapNumberView(props: NumberInputProps) {
                   let inp = e.target as HTMLInputElement;
                   if (inp) inp.value = formatNumber();
                 });
-                innerSetValue(e);
+                onInputChanged(e);
               }}
               onInput={(e: InputEvent) => {
-                if (isFocused.getValue()) innerSetValue(e);
+                if (isFocused.getValue()) onInputChanged(e);
               }}
             />
             <label for={id} class="form-label">
@@ -133,15 +133,13 @@ export function BootstrapNumberView(props: NumberInputProps) {
     const step = (props.box.type.view as any)?.step ?? 1;
     const tickmarks = (props.box.type.view as any)?.tickmarks ?? false;
     // On récupère la valeur courante, ou zéro si invalide
-    let rawValue = props.box.getValue();
-    let numericValue = typeof rawValue === 'number' ? rawValue : parseNumber(String(rawValue)) ?? 0;
     let markersId = tickmarks ? getUniqueId("marks") : undefined;
     return (
       <>
         {props.engine.InputTop(props)}
         <div class="mb-3">
           <label for={id} class="form-label">
-            {props.label} ({numericValue})
+            {props.label}
           </label>
           <input
             id={id}
@@ -151,7 +149,7 @@ export function BootstrapNumberView(props: NumberInputProps) {
             max={max}
             step={step}
             list={markersId}
-            value={numericValue}
+            value={computed("rangeValue", { value: props.box }, (p) => p.value)}
             onInput={(e) => {
               const val = parseNumber((e.currentTarget as HTMLInputElement).value) ?? 0;
               props.box.setValue(val, { notify: true, validate: true });
@@ -179,7 +177,7 @@ export function BootstrapNumberView(props: NumberInputProps) {
     return renderAsNumberBox();
   }
 
-  function innerSetValue(e: Event) {
+  function onInputChanged(e: Event) {
     props.box.setValue(parseNumber((e.currentTarget as HTMLInputElement).value), {
       notify: true,
       validate: true,

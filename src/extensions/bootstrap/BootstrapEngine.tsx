@@ -1,4 +1,4 @@
-import { JSXComponent, JSXSource, Show, Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx"
+import { JSXComponent, JSXSource, Show, Observable, Variable, computed, formulaireBleuJSX, formulaireBleuJSXFragment, IVariable } from "../../core/tiny-jsx"
 import { FormEngine, IFormProps } from "../../core/FormEngine";
 import { BootstrapArrayView } from "./BootstrapArrayView";
 import { BootstrapBooleanView } from "./BootstrapBooleanView";
@@ -155,10 +155,10 @@ export class BootstrapEngine extends FormEngine {
     }
 
     PopupButton(props: {
-        visible?: Value<boolean>, button?: JSXComponent, header?: JSXComponent, footer?: JSXComponent, closeable?: boolean,
+        visible?: IVariable<boolean>, button?: JSXComponent, header?: JSXComponent, footer?: JSXComponent, closeable?: boolean,
         validate?: () => boolean
     }, children: JSXSource[]) {
-        let isOpen = props.visible ?? new Value("popupButtonIsOpen", false);
+        let isOpen = props.visible ?? new Variable("popupButtonIsOpen", false);
         let button = props.button ?? <button class="btn btn-primary" onClick={() => { isOpen.setValue(true) }}>{"…"}</button>
 
         function validateAndClose(): boolean {
@@ -172,14 +172,14 @@ export class BootstrapEngine extends FormEngine {
                 if (validateAndClose()) { e.stopPropagation() }
             }
         }
-        let modalBody = new Value<HTMLDivElement>("popupButtonModalBody");
+        let modalBody = new Variable<HTMLDivElement>("popupButtonModalBody");
 
         isOpen.addObserver(v => {
             if (v) setTimeout(() => {
                 let body = modalBody.getValue();
                 let input = body?.querySelector("input, textarea, button") as HTMLInputElement;
                 input?.focus();
-                input?.select()
+                if (typeof input.select === "function") input?.select()
             })
         })
         return <>

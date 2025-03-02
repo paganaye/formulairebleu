@@ -1,7 +1,7 @@
 import { computed, formulaireBleuJSX, formulaireBleuJSXFragment } from '../core/tiny-jsx'
 import { currentPage } from './components/A';
 import About from './pages/About';
-import FormEditor from './pages/FormEditor';
+//import FormEditor from './pages/FormEditor';
 import Home from "./pages/Home";
 import NotFound from './pages/NotFound';
 import Tests from './pages/Tests';
@@ -16,7 +16,7 @@ export default function App() {
         switch (p.currentPage) {
             case "": return <Home />
             case '#about': return <About />
-            case '#form-editor': return <FormEditor />
+          //  case '#form-editor': return <FormEditor />
             case '#tests': return <Tests />
             default: return <NotFound />
         }

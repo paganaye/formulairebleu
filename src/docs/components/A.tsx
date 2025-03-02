@@ -1,10 +1,10 @@
 import { Styles } from "../../core/Styles";
-import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, JSXSource, Value } from "../../core/tiny-jsx";
+import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, JSXSource, Observable, Variable } from "../../core/tiny-jsx";
 
 interface IAProps {
     href: string;
 }
-export let currentPage = new Value("currentPage", document.location.hash);
+export let currentPage = new Variable("currentPage", document.location.hash);
 
 Styles.add("a.link.selected", {
     textDecoration: 'none'

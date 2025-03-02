@@ -1,4 +1,4 @@
-import { Value, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
+import { Observable, Variable, computed, formulaireBleuJSX, formulaireBleuJSXFragment } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
 import { BootstrapEngine } from "./BootstrapEngine";
@@ -49,11 +49,11 @@ const applyMask = (value: string, mask: string, pos: number): { newValue: string
 
 export function BootstrapStringView(props: StringInputProps) {
   let id = getUniqueId(`txt_${props.label}`);
-  const isFocused = new Value("stringViewIsFocused", false);
+  const isFocused = new Variable("stringViewIsFocused", false);
   let mask: string | undefined = (props.box.type.view as any)?.mask;
 
   function renderAsPopupButton() {
-    let popupVisible = new Value("popupButtonPopupVisible", false);
+    let popupVisible = new Variable("popupButtonPopupVisible", false);
     let { PopupButton, Span } = props.engine;
 
     return <>
@@ -77,7 +77,7 @@ export function BootstrapStringView(props: StringInputProps) {
             type={computed("BootstrapStringView.type", { isFocused }, (p) => (p.isFocused ? "text" : "string"))}
             id={id}
             class="form-control"
-            value={isFocused.getValue() ? (props.box.getValue() || "") : props.box.getValue()}
+            value={props.box}
             readOnly={computed("BootstrapStringView.readonly", { isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
             placeholder={""}
             required={props.box.type.mandatory}
@@ -91,11 +91,11 @@ export function BootstrapStringView(props: StringInputProps) {
             }}
             onBlur={(e: InputEvent) => {
               isFocused.setValue(false);
-              innerSetValue(e)
+              onInputChanged(e)
             }}
             onInput={(e: InputEvent) => {
               if (isFocused.getValue()) {
-                innerSetValue(e)
+                onInputChanged(e)
               }
             }}
           />
@@ -115,7 +115,7 @@ export function BootstrapStringView(props: StringInputProps) {
     return renderAsTextBox();
   }
 
-  function innerSetValue(e: Event) {
+  function onInputChanged(e: Event) {
     let inputElt = e.currentTarget as HTMLInputElement;
     let previousValue = props.box.getValue() as string;
     let newValue = inputElt.value;

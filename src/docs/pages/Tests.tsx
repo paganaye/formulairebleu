@@ -1,7 +1,7 @@
 import { Box } from "../../core/Box";
 import { IForm } from "../../core/IForm";
 import { Styles } from "../../core/Styles";
-import { computed, For, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, JSXSource, Show, Value } from "../../core/tiny-jsx";
+import { computed, For, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, JSXSource, Show, Observable, Variable } from "../../core/tiny-jsx";
 import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine";
 import { BootstrapFormView } from "../../extensions/bootstrap/BootstrapFormView";
 import Nav from "../components/Nav";
@@ -50,40 +50,46 @@ Styles.add("pre.output", {
     'marginTop': '0.5em'
 })
 
+Styles.add("textarea.form-schema-editor", {
+    fontFamily: 'monospace'
+})
+
 const allTests: Test =
 {
     type: 'section',
-    title: 'Tests Formulaire bleu',
+    title: 'Formulaire Bleu - Test Suite',
+    description: 'A comprehensive test suite for Formulaire Bleu, covering all supported data types, validations, and input styles.',
     content: [
         {
             type: 'section',
-            title: 'Simple types',
-            description: "One of Formulaire bleu primarily goals is to produces JSON output, this is why FormulaireBleu's basic types are JSON types. We have strings, numbers, booleans, objects and arrays.",
+            title: 'Basic Types',
+            description: "This section covers the fundamental JSON data types: strings, numbers, and booleans. These are the building blocks of any form.",
             content: [
                 {
                     type: 'section',
-                    title: 'String type', content: [
-                        { type: 'form', form: { version: '1', name: 'Simple string form', dataType: { type: 'string', help: 'There is no extra parameters, just  a plain string form.' } } },
-                        { type: 'form', form: { version: '1', name: 'string with default values', dataType: { type: 'string', help: 'A string with a default value of "A".', defaultValue: "A" } } },
-                        { type: 'form', form: { version: '1', name: 'string with validation', dataType: { type: 'string', validations: { mandatory: true }, help: 'Here the string is mandatory. By default, the validation is done when the user leave the field' } } },
+                    title: 'String Type',
+                    description: "String inputs allow users to enter text values. Additional options include default values, validation rules, and dropdown selections.",
+                    content: [
+                        { type: 'form', form: { version: '1', name: 'Basic String', dataType: { type: 'string', help: 'A simple text input without constraints.' } } },
+                        { type: 'form', form: { version: '1', name: 'String with Default', dataType: { type: 'string', help: 'Pre-filled with "A".', defaultValue: "A" } } },
+                        { type: 'form', form: { version: '1', name: 'Required String', dataType: { type: 'string', validations: { mandatory: true }, help: 'User must enter a value before leaving the field.' } } },
                         {
                             type: 'form', form: {
-                                version: '1', name: 'string with regex', dataType: {
+                                version: '1', name: 'Regex Validation', dataType: {
                                     type: 'string', validations: {
-                                        regex: [{ regex: '^[0-7\-]+$', message: "The string must only consist of octal numbers 0 to 7 or dashes " }],
+                                        regex: [{ regex: '^[0-7\-]+$', message: "Only digits 0-7 and dashes are allowed." }],
                                         minLength: 3,
                                         maxLength: 10,
-                                    }, help: 'This string can only contain the number 0 to 7 and dashes.'
+                                    }, help: 'Text input restricted to octal digits (0-7) and dashes.'
                                 },
                             }
                         },
                         {
                             type: 'form', form: {
-                                version: '1', name: 'String from selection list',
+                                version: '1', name: 'Dropdown Selection',
                                 dataType: {
-                                    type: 'string', help: 'There is no extra parameters, just  a plain string form.', view: {
+                                    type: 'string', help: 'Select a predefined option from a dropdown menu.', view: {
                                         type: 'select', selectionList: {
-
                                             entries: [
                                                 { label: 'Small', value: 'SM' },
                                                 { label: 'Medium', value: 'MD' },
@@ -94,28 +100,57 @@ const allTests: Test =
                                 },
                             }
                         },
-                        { type: 'form', form: { version: '1', name: 'string in popup', dataType: { type: 'string', help: 'string in popup help.', view: { type: 'popup' } } } }
+                        { type: 'form', form: { version: '1', name: 'Popup Input', dataType: { type: 'string', help: 'Text input shown in a popup for better focus.', view: { type: 'popup' } } } }
                     ]
                 },
                 {
                     type: 'section',
-                    title: 'Number Type', content: [
-                        { type: 'form', form: { version: '1', name: 'Simple number form', dataType: { type: 'number', help: 'There is no extra parameters, just  a plain number form.' } } },
-                        { type: 'form', form: { version: '1', name: 'number with default values', dataType: { type: 'number', help: 'A number form with a default value of 1.', defaultValue: 1 } } },
-                        { type: 'form', form: { version: '1', name: 'number slider', dataType: { type: 'number', help: 'This is a slider help', view: { type: 'slider', tickmarks: true } } } },
-                        { type: 'form', form: { version: '1', name: 'number form', dataType: { type: 'number', validations: { mandatory: true }, help: 'A mandatory number.' } } },
-                        { type: 'form', form: { version: '1', name: 'number in popup', dataType: { type: 'number', help: 'number in popup help.', view: { type: 'popup' } } } }
+                    title: 'Number Type',
+                    description: "Number inputs allow users to enter numerical values, including sliders and required fields.",
+                    content: [
+                        { type: 'form', form: { version: '1', name: 'Basic Number', dataType: { type: 'number', help: 'A simple numeric input.' } } },
+                        { type: 'form', form: { version: '1', name: 'Number with Default', dataType: { type: 'number', help: 'Pre-filled with 1.', defaultValue: 1 } } },
+                        { type: 'form', form: { version: '1', name: 'Number Slider', dataType: { type: 'number', help: 'Slider input with tick marks for better selection.', view: { type: 'slider', tickmarks: true } } } },
+                        { type: 'form', form: { version: '1', name: 'Required Number', dataType: { type: 'number', validations: { mandatory: true }, help: 'User must enter a number before submitting.' } } },
+                        { type: 'form', form: { version: '1', name: 'Popup Number', dataType: { type: 'number', help: 'Number input displayed in a popup for better focus.', view: { type: 'popup' } } } }
                     ]
                 },
                 {
                     type: 'section',
-                    title: 'Boolean type', content: [
-                        { type: 'form', form: { version: '1', name: 'Simple boolean form', dataType: { type: 'boolean', help: 'There is no extra parameters, just  a plain boolean form. Typically it will show as a checkbox.' } } },
-                        { type: 'form', form: { version: '1', name: 'boolean with default values', dataType: { type: 'boolean', help: 'A boolean form with a default value of true.', defaultValue: true } } },
-                        { type: 'form', form: { version: '1', name: 'boolean validation', dataType: { type: 'boolean', validations: { mandatory: true }, help: 'A mandatory boolean.' } } },
-                        { type: 'form', form: { version: '1', name: 'boolean switch', dataType: { type: 'boolean', help: 'boolean viewed as a switch', view: { type: 'switch' } } } },
-                        { type: 'form', form: { version: '1', name: 'boolean in popup', dataType: { type: 'boolean', help: 'boolean in popup help.', view: { type: 'popup' } } } },
-                        { type: 'form', form: { version: '1', name: 'switch in popup', dataType: { type: 'boolean', help: 'boolean in popup help.', view: { type: 'switch', popup: true } } } }
+                    title: 'Boolean Type',
+                    description: "Boolean inputs represent true/false values and can be displayed as checkboxes or switches.",
+                    content: [
+                        { type: 'form', form: { version: '1', name: 'Basic Boolean', dataType: { type: 'boolean', help: 'A simple checkbox input for true/false values.' } } },
+                        { type: 'form', form: { version: '1', name: 'Boolean with Default', dataType: { type: 'boolean', help: 'Pre-filled with "true".', defaultValue: true } } },
+                        { type: 'form', form: { version: '1', name: 'Required Boolean', dataType: { type: 'boolean', validations: { mandatory: true }, help: 'User must select an option before proceeding.' } } },
+                        { type: 'form', form: { version: '1', name: 'Boolean Switch', dataType: { type: 'boolean', help: 'Displayed as an ON/OFF switch for better UX.', view: { type: 'switch' } } } },
+                        { type: 'form', form: { version: '1', name: 'Popup Boolean', dataType: { type: 'boolean', help: 'Boolean selection inside a popup.', view: { type: 'popup' } } } },
+                        { type: 'form', form: { version: '1', name: 'Switch in Popup', dataType: { type: 'boolean', help: 'Switch control inside a popup for better visibility.', view: { type: 'switch', popup: true } } } }
+                    ]
+                }
+            ]
+        },
+        {
+            type: 'section',
+            title: 'Other Types',
+            description: "This section covers date, time, datetime and location type. While not JSON these common type are in the core package for any form.",
+            content: [
+                {
+                    type: 'section',
+                    title: 'Date and time types',
+                    description: "String inputs allow users to enter text values. Additional options include default values, validation rules, and dropdown selections.",
+                    content: [
+                        { type: 'form', form: { version: '1', name: 'Simple date', dataType: { type: 'date' } } },
+                        { type: 'form', form: { version: '1', name: 'Simple time', dataType: { type: 'time' } } },
+                        { type: 'form', form: { version: '1', name: 'Simple datetime', dataType: { type: 'datetime' } } }
+                    ]
+                },
+                {
+                    type: 'section',
+                    title: 'Location Type',
+                    description: "A location on the map.",
+                    content: [
+                        { type: 'form', form: { version: '1', name: 'TODO', dataType: { type: 'number', help: 'TODO' } } },
                     ]
                 }
             ]
@@ -123,29 +158,97 @@ const allTests: Test =
         {
             type: 'section',
             title: 'Arrays',
+            description: "Arrays allow users to enter multiple values of the same type, such as a list of numbers, strings or any other type.",
             content: [
-                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'array', entryType: { type: 'string' }, help: 'Array1 help.' } } },
-                { type: 'form', form: { version: '1', name: 'Array2', dataType: { type: 'array', entryType: { type: 'number' }, help: 'Array1 help.' } } },
-                { type: 'form', form: { version: '1', name: 'Array3', dataType: { type: 'array', entryType: { type: 'boolean' }, help: 'Array1 help.' } } },
-                { type: 'form', form: { version: '1', name: 'Array1', dataType: { type: 'array', entryType: { type: 'string' }, help: 'Array1 help.' } } },
+                { type: 'form', form: { version: '1', name: 'String Array', dataType: { type: 'array', entryType: { type: 'string' }, help: 'A list of text values.' } } },
+                { type: 'form', form: { version: '1', name: 'Number Array', dataType: { type: 'array', entryType: { type: 'number' }, help: 'A list of numeric values.' } } },
+                { type: 'form', form: { version: '1', name: 'Boolean Array', dataType: { type: 'array', entryType: { type: 'boolean' }, help: 'A list of true/false values.' } } },
+                { type: 'form', form: { version: '1', name: 'Object Array', dataType: { type: 'array', entryType: { type: 'object', membersTypes: [{ key: "name", type: "string" }, { key: "dob", type: "date" }] }, help: 'A list of person.' } } },
+                { type: 'form', form: { version: '1', name: 'Object Array with table view', dataType: { type: 'array', view: { type: "table" }, entryType: { type: 'object', membersTypes: [{ key: "name", type: "string" }, { key: "dob", type: "date" }] }, help: 'A list of person.' } } },
+                { type: 'form', form: { version: '1', name: 'Object Array with popup view', dataType: { type: 'array', view: { type: "popup" }, entryType: { type: 'object', membersTypes: [{ key: "name", type: "string" }, { key: "dob", type: "date" }] }, help: 'A list of person.' } } },
+                { type: 'form', form: { version: '1', name: 'Object Array with tabs view', dataType: { type: 'array', view: { type: "tabs" }, entryType: { type: 'object', membersTypes: [{ key: "name", type: "string" }, { key: "dob", type: "date" }] }, help: 'A list of person.' } } },
+                { type: 'form', form: { version: '1', name: 'Object Array with popup and button view', dataType: { type: 'array', view: { type: "popup", buttons: "OKCancel" }, entryType: { type: 'object', membersTypes: [{ key: "name", type: "string" }, { key: "dob", type: "date" }] }, help: 'A list of person.' } } },
+                { type: 'form', form: { version: '1', name: 'Variant Array', dataType: { type: 'array', view: { type: "popup", buttons: "OKCancel" }, entryType: { type: 'variant', variants: [{ key: "name", type: "string" }, { key: "dob", type: "date" }] }, help: 'A list of either name or dob.' } } }
             ]
         },
         {
             type: 'section',
             title: 'Objects',
+            description: "Objects contain multiple fields of different types, allowing for complex data structures.",
             content: [
-                { type: 'form', form: { version: '1', name: 'Simple string form', dataType: { type: 'string', help: 'There is no extra parameters, just  a plain string form.' } } },
-                { type: 'form', form: { version: '1', name: 'string with default values', dataType: { type: 'string', help: 'A string with a default value of "A".', defaultValue: "A" } } },
-                { type: 'form', form: { version: '1', name: 'string form', dataType: { type: 'string', validations: { mandatory: true }, help: 'A mandatory string.' } } }
-
+                {
+                    type: 'form', form: {
+                        version: '1', name: 'Object Form', dataType: {
+                            type: 'object', membersTypes: [
+                                { key: "str", type: "string" },
+                                // { key: "num", type: "number" },
+                                // { key: "bool1", type: "boolean" },
+                                // { key: "bool2", type: "boolean", view: { type: 'switch' } },
+                                {
+                                    key: "innerObject",
+                                    type: 'object', membersTypes: [
+                                        // { key: "first", type: "string" },
+                                        { key: "last", type: "string" }
+                                    ],
+                                    help: 'A structured object containing multiple fields with different data types.'
+                                }
+                            ],
+                            help: 'A structured object containing multiple fields with different data types.'
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            type: 'section',
+            title: 'Variants',
+            description: "Variant types allow a field to take different types at different times, enforcing mutually exclusive options.",
+            content: [
+                {
+                    type: 'form', form: {
+                        version: '1', name: 'Variant Form', dataType: {
+                            type: 'variant', variants: [
+                                { key: "str", type: "string" },
+                                { key: "num", type: "number" },
+                                { key: "bool1", type: "boolean" },
+                                { key: "boolIn", type: "object", membersTypes: [{ key: "v", type: 'boolean', view: { type: 'switch' } }] },
+                                {
+                                    key: "obj", type: "object", membersTypes: [
+                                        { key: 'firstname', type: 'string' },
+                                        { key: 'lastname', type: 'string' },
+                                        { key: 'dog', type: 'const', value: 'k9' }
+                                    ]
+                                }
+                            ], help: 'A field that can take only one type at a time, ensuring valid input.'
+                        }
+                    }
+                },
+                {
+                    type: 'form', form: {
+                        version: '1', name: 'Flat Variant Form', dataType: {
+                            flat: true,
+                            type: 'variant', variants: [
+                                { key: "str", type: "string" },
+                                { key: "num", type: "number" },
+                                {
+                                    key: "obj", type: "object", membersTypes: [
+                                        { key: 'firstname', type: 'string' },
+                                        { key: 'lastname', type: 'string' },
+                                        { key: 'dog', type: 'const', value: 'k9' }
+                                    ]
+                                }
+                            ], help: 'A field that can take only one type at a time, ensuring valid input.'
+                        }
+                    }
+                }
             ]
         }
     ]
-
 };
 
-function TestComp(props: { test: Test, level: number }) {
 
+function TestComp(props: { test: Test, level: number }) {
+    if (!props.test) return <p>No test</p>
     switch (props.test.type) {
         case "form": return formComp();
         case "tabs": return tabsComp(props.test);
@@ -157,14 +260,20 @@ function TestComp(props: { test: Test, level: number }) {
         let test = props.test;
         let form = 'form' in test ? test.form : undefined;
         let innerFormEngine = new BootstrapEngine();
-        let jsonValue = new Value("");
+        let jsonValue = new Variable("");
+        let isValid = new Variable("isValid", true);
         let box = Box.enBox(innerFormEngine, null, form.name, form.dataType, 'value' in test ? test.value : undefined);
         box.addChildChangedObserver((o) => {
             jsonValue.setValue(JSON.stringify(box.getValue(), undefined, '  '))
-        });
+        }, true);
         return (<div class="form-comp">
             <BootstrapFormView engine={innerFormEngine} form={form} box={box} />
-            <pre class="output">current form value: {jsonValue}</pre>
+            <div class="container mt-3">
+                <label for="exampleTextarea" class="form-label">Form data</label>
+                <textarea class={computed("isValid", { isValid }, (p) => "form-control form-schema-editor" + (p.isValid ? "" : " is-invalid"))} placeholder="Source" style="height: 150px;"
+                    onInput={onSourceInput} value={jsonValue} />
+                <div class="invalid-feedback">Invalid JSON Value</div>
+            </div>
             <Show when={box.type.validations}>
                 <button type="button" class="btn btn-secondary" onClick={validate}>Validate</button>
                 <button type="button" class="btn btn-secondary" onClick={clearErrors}>Clear</button>
@@ -172,12 +281,30 @@ function TestComp(props: { test: Test, level: number }) {
         </div>);
 
         function validate() {
-            box.validate(box.getValue())
+            //box.validate(box.getValue())
         }
+
         function clearErrors() {
             box.clearErrors();
         }
 
+        function onSourceInput(e: InputEvent) {
+            try {
+                let preElt = e.target as HTMLInputElement;
+                let val = JSON.parse(preElt.value);
+                let newJSON = JSON.stringify(val, undefined, '  ');
+                if (preElt.value != newJSON) {
+                    preElt.value = newJSON;
+                }
+                if (JSON.stringify(box.getValue()) != JSON.stringify(val)) {
+                    box.setValue(val, { notify: true, validate: true });
+                }
+                isValid.setValue(true);
+            }
+            catch (e: any) {
+                isValid.setValue(false);
+            }
+        }
     }
 
     function sectionComp(section: ISection) {
@@ -198,9 +325,9 @@ function TestComp(props: { test: Test, level: number }) {
         return <p>sourceComp</p>
     }
     function tabsComp(tabs: ITabs) {
-        const activeTab = new Value("tabsActiveTab", 0);
+        const activeTab = new Variable("tabsActiveTab", 0);
         let content = tabs.content;
-        return <>
+        return (<>
             <Show when={tabs.title}><h1 class={"display-" + props.level}>{tabs.title}</h1></Show>
             <Show when={tabs.description}><p>{tabs.description}</p></Show>
             <div class="tabs-container">
@@ -228,17 +355,16 @@ function TestComp(props: { test: Test, level: number }) {
                     </For>
                 </div>
             </div >
-
-        </>
+        </>)
     }
 
 }
-
 
 export default function Tests() {
     return (
         <div class="container">
             <Nav />
-            <TestComp test={(allTests as any)/*.content[1].content[0]*/} level={1} />
+            {/* <TestComp test={(allTests as any).content[1].content[0]} level={1} /> */}
+            <TestComp test={(allTests as any).content[4]/*.content[0].content[2].content[3].content[1].content[0]*/} level={1} />
         </div>);
 }

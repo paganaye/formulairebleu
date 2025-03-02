@@ -1,4 +1,4 @@
-import { formulaireBleuJSXFragment, formulaireBleuJSX, For, JSONValue, JSXComponent, Value, computed, IValue } from "../../core/tiny-jsx";
+import { formulaireBleuJSXFragment, formulaireBleuJSX, For, JSONValue, JSXComponent, Observable, computed, IObservable, Variable, IVariable } from "../../core/tiny-jsx";
 import { getUniqueId, } from "../../core/Utils";
 import { ISelectionEntry, IView } from "../../core/IForm";
 import { IBootstrapRadioButtonsView } from './BootstrapForm';
@@ -8,7 +8,7 @@ import { type Dropdown } from 'bootstrap'
 export type SingleSelectionProps = {
   label: string;
   entries: ISelectionEntry[];
-  selectedKey: IValue<string>;
+  selectedKey: IVariable<string>;
   view: IView;
 };
 
@@ -94,7 +94,9 @@ export function SingleSelectionVue(props: SingleSelectionProps): JSXComponent {
           aria-expanded="false"
           onClick={onDropdownClick}
         >
-          {computed("SingleSelectionVue.buttonText", { selectedKey: props.selectedKey }, (p) => (props.entries ?? []).find((entry) => entry.value === p.selectedKey)?.label || props.selectedKey)
+          {computed("SingleSelectionVue.buttonText", { selectedKey: props.selectedKey }, (p) => {
+            return (props.entries ?? []).find((entry) => entry.value === p.selectedKey)?.label || props.selectedKey;
+          })
           }
         </button>
         <ul class="dropdown-menu" aria-labelledby={id}>

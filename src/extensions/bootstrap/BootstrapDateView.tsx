@@ -1,4 +1,4 @@
-import { Show, formulaireBleuJSX, formulaireBleuJSXFragment, Value, computed } from "../../core/tiny-jsx";
+import { Show, formulaireBleuJSX, formulaireBleuJSXFragment, Observable, computed, Variable } from "../../core/tiny-jsx";
 import { getUniqueId } from "../../core/Utils";
 import { Box } from "../../core/Box";
 import { BootstrapEngine } from './BootstrapEngine';
@@ -16,7 +16,7 @@ export interface IJSONDate {
 
 export function BootstrapDateView(props: DateInputProps) {
   let id = getUniqueId(`date_${props.label}`);
-  const isFocused = new Value("bootstrapDateIsFocused", false);
+  const isFocused = new Variable("bootstrapDateIsFocused", false);
   const suffix = (props.box.type.view as any)?.suffix;
 
 
@@ -61,20 +61,20 @@ export function BootstrapDateView(props: DateInputProps) {
             type={inputType}
             id={id}
             class="form-control"
-            value={formattedDate()}
+            value={computed("box", { box: props.box }, (p) => formattedDate())}
             readOnly={computed("BootstrapDateView.readonly", { isFocused }, (p) => props.engine.isReadonly || !p.isFocused)}
             placeholder=""
             onFocus={(e: Event) => {
               isFocused.setValue(true)
-              setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) { inp.value = props.box.getValue().toString(); inp.select(); } });
+              setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) { inp.value = String(props.box.getValue()); inp.select(); } });
             }}
             onBlur={(e: Event) => {
               isFocused.setValue(false);
               setTimeout(() => { let inp = (e.target as HTMLInputElement); if (inp) inp.value = formattedDate() });
-              innerSetValue(e);
+              onInputChanged(e);
             }}
             onInput={(e: InputEvent) => {
-              if (isFocused.getValue()) innerSetValue(e);
+              if (isFocused.getValue()) onInputChanged(e);
             }}
           />
           <label for={id} class="form-label">{props.label}</label>
@@ -85,10 +85,14 @@ export function BootstrapDateView(props: DateInputProps) {
       </div>
       {props.engine.InputBottom(props)}
     </>);
-  function innerSetValue(e: Event) {
-    let dateValue = (e.currentTarget as HTMLInputElement).valueAsDate;
+  function onInputChanged(e: Event) {
+    let elt = e.currentTarget as HTMLInputElement;
+    let dateValue = elt.valueAsDate ?? new Date(elt.value);
     if (isValidDate(dateValue)) {
       props.box.setValue(formatDate(dateValue), { notify: true, validate: true });
+    } else if (elt.value == '') {
+      props.box.setValue(null, { notify: true, validate: true });
+
     }
   }
 

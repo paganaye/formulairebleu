@@ -1,9 +1,9 @@
-import { JSXComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX, Value, computed, IValue } from "../../core/tiny-jsx";
+import { JSXComponent, For, Show, formulaireBleuJSXFragment, formulaireBleuJSX, Observable, computed, IObservable, Variable, IVariable } from "../../core/tiny-jsx";
 import { Styles } from "../../core/Styles";
 
 export interface PagerProps {
-  pageCount: IValue<number>;
-  selectedPage: IValue<number>;
+  pageCount: IObservable<number>;
+  selectedPage: IVariable<number>;
 }
 
 Styles.add(".buttons.btn:focus", {

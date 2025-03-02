@@ -1,4 +1,4 @@
-import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, IValue, JSONObject, JSONValue, Value } from "./tiny-jsx";
+import { computed, formulaireBleuJSX, formulaireBleuJSXFragment, IObservable, JSONObject, JSONValue, Observable, Variable } from "./tiny-jsx";
 import { Box, ArrayBox, ObjectBox } from "./Box";
 import { IArrayType, IFormType, IObjectType, ISelectionList } from "./IForm";
 import { FormEngine } from "./FormEngine";
@@ -25,9 +25,9 @@ export interface SortOrder {
 }
 
 export class ArrayUtils {
-  sortOrders = new Value<SortOrder[]>("arraySortOrders", []);
-  filters = new Value<string[]>("arrayFilters", []);
-  entryBoxes: IValue<Box<IFormType>[]>;
+  sortOrders = new Variable<SortOrder[]>("arraySortOrders", []);
+  filters = new Variable<string[]>("arrayFilters", []);
+  entryBoxes: IObservable<Box<IFormType>[]>;
   columns: IColumn[] = undefined;
 
   constructor(readonly box: ArrayBox) {
@@ -91,7 +91,7 @@ export class ArrayUtils {
     this.filters.setValue(newFilters);
   }
 
-  _filteredValues: IValue<any[]> = undefined;
+  _filteredValues: IObservable<any[]> = undefined;
 
   get filteredValues() {
     return this._filteredValues ?? (this._filteredValues = computed("arrayFilteredValues", { entries: this.entryBoxes, filters: this.filters }, (p) => {
