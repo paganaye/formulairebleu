@@ -27,7 +27,8 @@ export function isObservable(v: any): v is IObservable {
 }
 
 export interface ISetValueOptions {
-    notify: boolean
+    notify?: boolean
+    forceUpdate?: boolean;
 }
 
 const directProperties = new Set([
@@ -59,8 +60,7 @@ export class Variable<T = any> extends Observable<T> implements IVariable<T> {
     #value: T;
     getValue(): T { return this.#value; }
     setValue(newValue: T, options: ISetValueOptions = { notify: true }): void {
-        if (newValue === this.#value) return
-        //if (Array.isArray(newValue) && Array.isArray(this.#value) && newValue.length == 0 && this.#value.length == 0) return
+        if (newValue === this.#value && !options.forceUpdate) return
         this.#value = newValue;
         if (options.notify) this.notifyObservers(newValue);
     }
@@ -68,6 +68,22 @@ export class Variable<T = any> extends Observable<T> implements IVariable<T> {
     constructor(namePrefix: string, value: T = undefined) {
         super(namePrefix)
         this.#value = value;
+    }
+}
+
+export class Snapshot<T = any> extends Observable<T> implements IVariable<T> {
+    #value: T;
+    getValue(): T { return this.#value; }
+    setValue(newValue: T, options: ISetValueOptions = { notify: true }): void {
+        let newJsonValue = JSON.stringify(newValue);
+        if (newJsonValue === JSON.stringify(this.#value) && !options.forceUpdate) return
+        this.#value = JSON.parse(newJsonValue);
+        if (options.notify) this.notifyObservers(newValue);
+    }
+
+    constructor(namePrefix: string, value: T = undefined) {
+        super(namePrefix)
+        this.setValue(value);
     }
 }
 

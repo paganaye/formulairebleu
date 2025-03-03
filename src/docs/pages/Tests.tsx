@@ -1,7 +1,7 @@
 import { Box } from "../../core/Box";
 import { IForm } from "../../core/IForm";
 import { Styles } from "../../core/Styles";
-import { computed, For, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, JSXSource, Show, Observable, Variable } from "../../core/tiny-jsx";
+import { computed, For, formulaireBleuJSX, formulaireBleuJSXFragment, JSONValue, JSXSource, Show, Variable, IVariable } from "../../core/tiny-jsx";
 import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine";
 import { BootstrapFormView } from "../../extensions/bootstrap/BootstrapFormView";
 import Nav from "../components/Nav";
@@ -19,7 +19,6 @@ interface IFormTest {
     value?: JSONValue;
 }
 
-
 interface ITabs {
     type: 'tabs',
     title?: string;
@@ -34,7 +33,6 @@ interface ISection {
     content: Test[];
 }
 
-
 type Test = ISourceTest | IFormTest | ITabs | ISection;
 
 Styles.add("div.section", {
@@ -44,7 +42,6 @@ Styles.add("div.section", {
 Styles.add("div.form-comp", {
     paddingLeft: '4em'
 });
-
 
 Styles.add("pre.output", {
     'marginTop': '0.5em'
@@ -246,8 +243,40 @@ const allTests: Test =
     ]
 };
 
+export function JSONEditor(props: { jsonValue: IVariable<any> }) {
+    let isValid = new Variable("isValid", true);
+    let source = new Variable("source", "");
+
+    props.jsonValue.addObserver((s) => {
+        let newJSON = JSON.stringify(s, undefined, "   ");
+        source.setValue(newJSON);
+    });
+
+    return (<div class="container mt-3">
+        <label for="exampleTextarea" class="form-label">Form data</label>
+        <textarea class={computed("isValid", { isValid }, (p) => "form-control form-schema-editor" + (p.isValid ? "" : " is-invalid"))} placeholder="Source" style="height: 150px;"
+            onInput={onSourceInput} value={source} />
+        <div class="invalid-feedback">Invalid JSON Value</div>
+    </div>)
+
+    function onSourceInput(e: InputEvent) {
+        try {
+            let preElt = e.target as HTMLInputElement;
+            let val = JSON.parse(preElt.value);
+            if (JSON.stringify(props.jsonValue.getValue()) != JSON.stringify(val)) {
+                props.jsonValue.setValue(val, { notify: true });
+            }
+            isValid.setValue(true);
+        }
+        catch (e: any) {
+            isValid.setValue(false);
+        }
+    }
+}
 
 function TestComp(props: { test: Test, level: number }) {
+    var jsonValue = new Variable("jsonValue", {})
+
     if (!props.test) return <p>No test</p>
     switch (props.test.type) {
         case "form": return formComp();
@@ -260,20 +289,17 @@ function TestComp(props: { test: Test, level: number }) {
         let test = props.test;
         let form = 'form' in test ? test.form : undefined;
         let innerFormEngine = new BootstrapEngine();
-        let jsonValue = new Variable("");
-        let isValid = new Variable("isValid", true);
         let box = Box.enBox(innerFormEngine, null, form.name, form.dataType, 'value' in test ? test.value : undefined);
         box.addChildChangedObserver((o) => {
-            jsonValue.setValue(JSON.stringify(box.getValue(), undefined, '  '))
+            let v = box.getValue();
+            jsonValue.setValue(v, { forceUpdate: true, notify: true })
         }, true);
+        jsonValue.addObserver((v) => {
+            if (JSON.stringify(v) != JSON.stringify(box.getValue())) box.setValue(v, { validate: true, notify: true });
+        })
         return (<div class="form-comp">
             <BootstrapFormView engine={innerFormEngine} form={form} box={box} />
-            <div class="container mt-3">
-                <label for="exampleTextarea" class="form-label">Form data</label>
-                <textarea class={computed("isValid", { isValid }, (p) => "form-control form-schema-editor" + (p.isValid ? "" : " is-invalid"))} placeholder="Source" style="height: 150px;"
-                    onInput={onSourceInput} value={jsonValue} />
-                <div class="invalid-feedback">Invalid JSON Value</div>
-            </div>
+            <JSONEditor jsonValue={jsonValue} />
             <Show when={box.type.validations}>
                 <button type="button" class="btn btn-secondary" onClick={validate}>Validate</button>
                 <button type="button" class="btn btn-secondary" onClick={clearErrors}>Clear</button>
@@ -288,23 +314,6 @@ function TestComp(props: { test: Test, level: number }) {
             box.clearErrors();
         }
 
-        function onSourceInput(e: InputEvent) {
-            try {
-                let preElt = e.target as HTMLInputElement;
-                let val = JSON.parse(preElt.value);
-                let newJSON = JSON.stringify(val, undefined, '  ');
-                if (preElt.value != newJSON) {
-                    preElt.value = newJSON;
-                }
-                if (JSON.stringify(box.getValue()) != JSON.stringify(val)) {
-                    box.setValue(val, { notify: true, validate: true });
-                }
-                isValid.setValue(true);
-            }
-            catch (e: any) {
-                isValid.setValue(false);
-            }
-        }
     }
 
     function sectionComp(section: ISection) {
@@ -357,7 +366,6 @@ function TestComp(props: { test: Test, level: number }) {
             </div >
         </>)
     }
-
 }
 
 export default function Tests() {
