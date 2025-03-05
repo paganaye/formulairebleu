@@ -271,6 +271,8 @@ export class VariantBox extends Box<IVariantType> {
         let value = newBox.getValue();
         if (!this.type.flat) {
           value = { type: key, value }
+        } else if (this.type.determinant && key && value && typeof value === "object") {
+          value[this.type.determinant] = key;
         }
         this.setValue(value, { notify: true, validate: false })
       }, true)
@@ -287,16 +289,14 @@ export class VariantBox extends Box<IVariantType> {
     if (this.type.flat) {
       let type = Array.isArray(value) ? 'array' : value == null ? 'null' : typeof value
 
-      // if (valueType != this.value.type || valueValue != this.value.value) {
-      //   this.value.type = valueType;
-      //   this.value.value = valueValue;
-      //   this.notifyObservers(value)
-      // }
+
       let newKey = null;
-      for (let t of this.type.variants) {
+      for (let t of this.type.variants) {        
         if (t.type === type) {
-          newKey = t.key;
-          break;
+          if (type != 'object' || !this.type.determinant || value[this.type.determinant] == t.key) {
+            newKey = t.key;
+            break;
+          }
         }
       }
 
@@ -305,6 +305,7 @@ export class VariantBox extends Box<IVariantType> {
         this.typeKey.setValue(newKey);
         (this.variantInnerBox.getValue() as Box).setValue(value, { notify: true, validate: false });
         this._value = value;
+        if (this.type.determinant) value[this.type.determinant] = newKey;
         this.notifyObservers(value)
       }
 

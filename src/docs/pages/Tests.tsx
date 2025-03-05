@@ -237,6 +237,25 @@ const allTests: Test =
                             ], help: 'A field that can take only one type at a time, ensuring valid input.'
                         }
                     }
+                },
+                {
+                    type: 'form', form: {
+                        version: '1', name: 'Flat Variant with determinant Form', dataType: {
+                            flat: true, determinant: "type",
+                            type: 'variant', variants: [
+                                {
+                                    key: "car", type: "object", membersTypes: [
+                                        { key: 'hybrid', type: 'boolean' },
+                                    ]
+                                }
+                                , {
+                                    key: "man", type: "object", membersTypes: [
+                                        { key: 'firstname', type: 'string' },
+                                    ]
+                                }
+                            ], help: 'A field that can take only one type at a time, ensuring valid input.'
+                        }
+                    }
                 }
             ]
         }
@@ -274,8 +293,20 @@ export function JSONEditor(props: { jsonValue: IVariable<any> }) {
     }
 }
 
-function TestComp(props: { test: Test, level: number }) {
+export function BoxEditor(props: { box: Box }) {
     var jsonValue = new Variable("jsonValue", {})
+    props.box.addChildChangedObserver((o) => {
+        let v = props.box.getValue();
+        jsonValue.setValue(v, { forceUpdate: true, notify: true })
+    }, true);
+    jsonValue.addObserver((v) => {
+        if (JSON.stringify(v) != JSON.stringify(props.box.getValue())) props.box.setValue(v, { validate: true, notify: true });
+    })
+    return <JSONEditor jsonValue={jsonValue} />
+
+}
+
+function TestComp(props: { test: Test, level: number }) {
 
     if (!props.test) return <p>No test</p>
     switch (props.test.type) {
@@ -290,16 +321,9 @@ function TestComp(props: { test: Test, level: number }) {
         let form = 'form' in test ? test.form : undefined;
         let innerFormEngine = new BootstrapEngine();
         let box = Box.enBox(innerFormEngine, null, form.name, form.dataType, 'value' in test ? test.value : undefined);
-        box.addChildChangedObserver((o) => {
-            let v = box.getValue();
-            jsonValue.setValue(v, { forceUpdate: true, notify: true })
-        }, true);
-        jsonValue.addObserver((v) => {
-            if (JSON.stringify(v) != JSON.stringify(box.getValue())) box.setValue(v, { validate: true, notify: true });
-        })
         return (<div class="form-comp">
             <BootstrapFormView engine={innerFormEngine} form={form} box={box} />
-            <JSONEditor jsonValue={jsonValue} />
+            <BoxEditor box={box} />
             <Show when={box.type.validations}>
                 <button type="button" class="btn btn-secondary" onClick={validate}>Validate</button>
                 <button type="button" class="btn btn-secondary" onClick={clearErrors}>Clear</button>

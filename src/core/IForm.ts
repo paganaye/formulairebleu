@@ -42,6 +42,7 @@ interface TypeBase {
   visibility?: IQuery;
   templateString?: string;
   pageBreak?: boolean;
+  optional?: boolean
 }
 
 export type TemplateName = `${Uppercase<string>}${string}`;
@@ -198,8 +199,8 @@ export interface IVoidViews {
 
 
 export type IObjectMemberType = IKeyedMemberType | IConstType;
-export type IKeyedMemberType<TKey extends string = string, TType extends IFormType = any> = {
-  key: TKey
+export type IKeyedMemberType<TType extends IFormType = any> = {
+  key: string
 } & TType;
 
 export type ISelectionEntry<T extends JSONValue = string> = {
@@ -239,7 +240,7 @@ export type InferDataType<T extends IFormType> =
 
 type InferObjectMember<T extends IObjectMemberType[]> = {
   [M in T[number]as M extends IKeyedMemberType<infer K> ? K : never]:
-  M extends IKeyedMemberType<any, infer SubT>
+  M extends IKeyedMemberType<infer SubT>
   ? InferDataType<SubT>
   : never
 };
