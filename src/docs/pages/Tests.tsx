@@ -262,7 +262,7 @@ const allTests: Test =
     ]
 };
 
-export function JSONEditor(props: { jsonValue: IVariable<any> }) {
+export function JSONEditor(props: { jsonValue: IVariable<any>, style?: string }) {
     let isValid = new Variable("isValid", true);
     let source = new Variable("source", "");
 
@@ -273,7 +273,7 @@ export function JSONEditor(props: { jsonValue: IVariable<any> }) {
 
     return (<div class="container mt-3">
         <label for="exampleTextarea" class="form-label">Form data</label>
-        <textarea class={computed("isValid", { isValid }, (p) => "form-control form-schema-editor" + (p.isValid ? "" : " is-invalid"))} placeholder="Source" style="height: 150px;"
+        <textarea class={computed("isValid", { isValid }, (p) => "form-control form-schema-editor" + (p.isValid ? "" : " is-invalid"))} placeholder="Source" style={props.style}
             onInput={onSourceInput} value={source} />
         <div class="invalid-feedback">Invalid JSON Value</div>
     </div>)
@@ -293,7 +293,7 @@ export function JSONEditor(props: { jsonValue: IVariable<any> }) {
     }
 }
 
-export function BoxEditor(props: { box: Box }) {
+export function BoxEditor(props: { box: Box, style?: string }) {
     var jsonValue = new Variable("jsonValue", {})
     props.box.addChildChangedObserver((o) => {
         let v = props.box.getValue();
@@ -302,7 +302,7 @@ export function BoxEditor(props: { box: Box }) {
     jsonValue.addObserver((v) => {
         if (JSON.stringify(v) != JSON.stringify(props.box.getValue())) props.box.setValue(v, { validate: true, notify: true });
     })
-    return <JSONEditor jsonValue={jsonValue} />
+    return <JSONEditor jsonValue={jsonValue} style={props.style} />
 
 }
 
@@ -397,6 +397,6 @@ export default function Tests() {
         <div class="container">
             <Nav />
             {/* <TestComp test={(allTests as any).content[1].content[0]} level={1} /> */}
-            <TestComp test={(allTests as any).content[4]/*.content[0].content[2].content[3].content[1].content[0]*/} level={1} />
+            <TestComp test={(allTests as any)/*.content[0].content[2].content[3].content[1].content[0]*/} level={1} />
         </div>);
 }
