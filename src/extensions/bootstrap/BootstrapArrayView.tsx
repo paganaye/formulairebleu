@@ -158,10 +158,9 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
 
         return <>
             <label>{props.label}</label>
-            {inputTop}
+            {inputTop()}
             <table>
                 <thead>
-
                     <Show when={columns[0]?.key != "#value"}>
                         {computed("tableLabels", { sortOrder: arrayUtils.sortOrders }, (p) => (<tr>
                             <For each={columns}>
@@ -210,7 +209,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
     function renderAsPopup() {
         return (
             <>
-                {inputTop}
+                {inputTop()}
                 <div class="list-group">
                     <For each={currentPageBoxes}>
                         {(entry, index) => {
@@ -228,7 +227,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     </For >
                 </div >
                 {addButton()}
-                {props.engine.InputBottom(props)}
+                {inputBottom()}
             </>
         );
     }
@@ -238,17 +237,20 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
     function renderAsFlow() {
         return (
             <>
-                {inputTop}
-                <For each={currentPageBoxes}>
-                    {(entry, index) => (
-                        <div class="flow-item">
-                            {renderEntry?.(entry, index)}
-                        </div>
-                    )}
-                </For>
-                {addButton()}
-                {props.engine.InputBottom(props)}
+                <div class="card p-3">
+                    {inputTop()}
+                    <For each={currentPageBoxes}>
+                        {(entry, index) => (
+                            <div class="flow-item">
+                                {renderEntry?.(entry, index)}
+                            </div>
+                        )}
+                    </For>
+                    {addButton()}
+                    {inputBottom()}
+                    </div>
             </>
+
         );
     }
 
@@ -281,7 +283,7 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
                     </For>
                 </div>
             </div >
-            {inputBottom}
+            {inputBottom()}
             {addButton()}
         </>
     }
@@ -393,11 +395,5 @@ export function BootstrapArrayView(props: BootstrapArrayProps) {
         // </>;
         return <>todo</>
     }
-
-    return <>
-        <pre>hi here we have: {computed("BootstrapArrayView.Content", {}, (p) => 0)}</pre>
-        {renderFunction}
-    </>;
-
-
+    return renderFunction();
 }

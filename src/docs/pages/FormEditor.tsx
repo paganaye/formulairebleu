@@ -6,6 +6,11 @@ import { BootstrapEngine } from "../../extensions/bootstrap/BootstrapEngine";
 import { BootstrapFormView } from "../../extensions/bootstrap/BootstrapFormView";
 import Nav from "../components/Nav";
 import { BoxEditor } from "./Tests";
+import { Styles } from "../../core/Styles";
+
+Styles.add(".object-members", {
+    'padding-left': '3em'
+})
 
 const stringType = {
     type: 'object',
@@ -165,20 +170,31 @@ const keyedFormType: IFormType = {
     flat: true,
     determinant: 'type',
     variants: [
-        { type: 'object', membersTypes: [keyField, ...stringType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...numberType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...objectType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...arrayType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...constType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...dateType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...datetimeType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...timeType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...variantType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...voidType.membersTypes] },
-        { type: 'object', membersTypes: [keyField, ...nullType.membersTypes] }
+        { key: 'string', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'string' }, keyField, ...stringType.membersTypes] },
+        { key: 'number', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'number' }, keyField, ...numberType.membersTypes] },
+        { key: 'object', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'object' }, keyField, ...objectType.membersTypes] },
+        { key: 'array', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'array' }, keyField, ...arrayType.membersTypes] },
+        { key: 'const', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'const' }, keyField, ...constType.membersTypes] },
+        { key: 'datetime', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'date' }, keyField, ...dateType.membersTypes] },
+        { key: 'date', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'datetime' }, keyField, ...datetimeType.membersTypes] },
+        { key: 'time', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'time' }, keyField, ...timeType.membersTypes] },
+        { key: 'variant', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'variant' }, keyField, ...variantType.membersTypes] },
+        { key: 'void', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'void' }, keyField, ...voidType.membersTypes] },
+        { key: 'null', type: 'object', membersTypes: [{ key: 'type', type: 'const', value: 'null' }, keyField, ...nullType.membersTypes] }
     ]
 } satisfies IFormType;
-
+/*
+const stringType = {
+    type: 'object',
+    membersTypes: [
+        { key: 'label', type: 'string' },
+        { key: 'help', type: 'string' },
+        { key: 'defaultValue', type: 'string' },
+        { key: 'view', type: 'string' },
+        { key: 'validations', type: 'string' }
+    ]
+} satisfies IFormType;
+ */
 
 const metaForm: IForm = {
     version: '1',

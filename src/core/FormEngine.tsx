@@ -2,7 +2,6 @@ import { JSONObject, JSONValue, JSXComponent, JSXSource, Show, Variable, compute
 import { IBooleanType, IForm, IFormType, IKeyedMemberType, INumberType, IObjectType, IStringType, IVariantType } from "./IForm";
 import { ErrorsView } from "../extensions/bootstrap/BootstrapErrorsView";
 import { ArrayBox, Box, ObjectBox, VariantBox } from "./Box";
-import { Observable } from './tiny-jsx';
 import { ArrayValidations, BooleanValidations, ConstValidations, DatetimeValidations, DateValidations, ErrorString, NumberValidations, ObjectValidations, StringValidations, TimeValidations, ValidationRules, VariantValidations, VoidValidations } from "./Validation";
 import { Styles } from "./Styles";
 

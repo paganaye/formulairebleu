@@ -28,14 +28,14 @@ export function BootstrapVariantView(props: VariantInputProps) {
     }) : <p>no box</p>;
   })
 
-  let entries = props.box.getVariants().map(v => ({ value: v.key, label: v.label ?? "" }));
+  let entries = props.box.getVariants().map((v, i) => ({ value: v.key, label: v.label ?? v.key ?? "#" + (i + 1) }));
 
   return (
     <>
-      {/* {props.engine.InputTop(props)} */}
+      {props.engine.InputTop(props)}
       <SingleSelectionVue view={{ type: 'dropdown' }} selectedKey={props.box.typeKey} entries={entries} label={"View as:"} />
       {variantComp}
-      {/* {props.engine.InputBottom(props)} */}
+      {props.engine.InputBottom(props)}
     </>
   );
 };

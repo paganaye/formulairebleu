@@ -60,7 +60,7 @@ export function BootstrapObjectView(props: ObjectInputProps) {
           </For>
         </div>
       </div >
-      {inputBottom}
+      {inputBottom()}
     </>
   }
 
@@ -152,27 +152,29 @@ export function BootstrapObjectView(props: ObjectInputProps) {
 
   function renderAsFlow() {
     return (<>
-      {inputTop}
-      <p>{props.label ?? props.box.type.label}</p>
-      <For each={members}>
-        {(sub, index) => {
-          return (sub.type.type == 'const'
-            ? <ConstView  {...sub.type} />
-            : <div class="mb-2">
-              <label class="form-label">{(sub as any).key}</label>
-              {
-                props.engine.InputRenderer({
-                  engine: props.engine,
-                  label: sub.type.label ?? sub.name,
-                  box: sub,
-                  level: props.level + 1,
-                })
-              }
-            </div>
-          );
-        }}
-      </For>
-      {inputBottom}
+      <div class="card p-3">
+        {inputTop()}
+        <p>{props.label ?? props.box.type.label}</p>
+        <For each={members}>
+          {(sub, index) => {
+            return (sub.type.type == 'const'
+              ? <ConstView  {...sub.type} />
+              : <div class="mb-2 object-members">
+                <label class="form-label">{(sub as any).key}</label>
+                {
+                  props.engine.InputRenderer({
+                    engine: props.engine,
+                    label: sub.type.label ?? sub.name,
+                    box: sub,
+                    level: props.level + 1,
+                  })
+                }
+              </div>
+            );
+          }}
+        </For>
+        {inputBottom()}
+      </div>
     </>);
   }
 
