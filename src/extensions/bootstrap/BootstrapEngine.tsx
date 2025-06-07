@@ -211,9 +211,4 @@ export class BootstrapEngine extends FormEngine {
         </>
     }
 
-
-    createFormView(form: IForm, value: JSONValue) {
-        let box = Box.enBox(this, null, form.name, form.dataType, value)
-        return this.FormView({ form, box });
-    }
 }

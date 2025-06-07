@@ -32,7 +32,7 @@
     "deploy-docs": "vite build && gh-pages -d dist",
     "push-gscript": "tsc -p gscript-lib && cp ~/clasprc/paganaye/.clasprc.json ~ && mkdir dist/gscript-lib -p && cp gscript-lib/.clasp.json dist/gscript-lib/ && cd dist/gscript-lib && clasp push"
   },
-  "version": "1.0.13",
+  "version": "1.0.14",
   "browser": {},
   "typesVersions": {},
   "type": "module",
