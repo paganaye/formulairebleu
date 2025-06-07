@@ -111,7 +111,7 @@ let form1Type = {
 } as const satisfies IForm;
 
 
-let formValue = randomize(form1Type);
+let formValue = randomize(form1Type) as any;
 let engine = new BootstrapEngine();
 // formValue = undefined;
 

@@ -32,7 +32,7 @@ export function BootstrapSelectionListView(props: SelectionListInputProps) {
   if (selectionList.multiple) {
     if (!view) view = { type: 'checkboxes' }
     function setSelectedKeys(newArr: any[]) {
-      props.box.setValue(newArr);
+      props.box.setValue(newArr, { validate: false });
     }
 
     return <MultipleSelectionVue label={props.label} entries={entries}

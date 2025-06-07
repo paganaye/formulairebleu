@@ -27,7 +27,7 @@ export function BootstrapJSONView(props: JSONInputProps) {
           placeholder=""
           onInput={(e) => {
             let newValue = String(e.currentTarget.value);
-            props.box.setValue(newValue);
+            props.box.setValue(newValue, { validate: false });
           }} />
         <label for={id} class="form-label">{props.label}</label>
       </div>
