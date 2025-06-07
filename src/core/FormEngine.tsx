@@ -577,4 +577,9 @@ export abstract class FormEngine {
         return null;
     }
 
+    enBox(form: IForm, value: JSONValue) {
+        let box = Box.enBox(this, null, form.name, form.dataType, value)
+        return box;
+    }
+
 }

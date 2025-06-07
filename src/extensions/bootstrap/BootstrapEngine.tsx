@@ -1,4 +1,4 @@
-import { JSXComponent, JSXSource, Show, Observable, Variable, computed, formulaireBleuJSX, formulaireBleuJSXFragment, IVariable } from "../../core/tiny-jsx"
+import { JSXComponent, JSXSource, Show, Observable, Variable, computed, formulaireBleuJSX, formulaireBleuJSXFragment, IVariable, JSONValue } from "../../core/tiny-jsx"
 import { FormEngine, IFormProps } from "../../core/FormEngine";
 import { BootstrapArrayView } from "./BootstrapArrayView";
 import { BootstrapBooleanView } from "./BootstrapBooleanView";
@@ -11,7 +11,7 @@ import { BootstrapSelectionListView } from "./BootstrapSelectionListView";
 import { BootstrapStringView } from "./BootstrapStringView";
 import { BootstrapVariantView } from "./BootstrapVariantView";
 import { VoidView } from "./BootstrapVoidView";
-import { IFormType } from '../../core/IForm'
+import { IForm, IFormType } from '../../core/IForm'
 
 import type * as BootstrapLib from 'bootstrap';
 import { Box } from "../../core/Box";
@@ -212,4 +212,8 @@ export class BootstrapEngine extends FormEngine {
     }
 
 
+    createFormView(form: IForm, value: JSONValue) {
+        let box = Box.enBox(this, null, form.name, form.dataType, value)
+        return this.FormView({ form, box });
+    }
 }
